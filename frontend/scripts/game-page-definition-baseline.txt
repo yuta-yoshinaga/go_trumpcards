@@ -202,7 +202,6 @@ MonteCarloPage.tsx
 MrsMopPage.tsx
 MushiPage.tsx
 NainJaunePage.tsx
-NapPage.tsx
 NapoleonPage.tsx
 NapoleonsSquarePage.tsx
 NarcoticPage.tsx

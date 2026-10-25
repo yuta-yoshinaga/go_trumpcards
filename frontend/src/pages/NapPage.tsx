@@ -1,37 +1,22 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { napApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useNapGame } from '../hooks/useNapGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { NapResponse } from '../types/card';
 import { NapContract, NapPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
 import { NAP_HELP, parseNapCommand } from '../utils/cli/commands/napCommands';
 import { formatNapState } from '../utils/cli/formatters/napFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { napPayout } from '../utils/napPayout';
 import { playerName } from '../utils/playerUtils';
@@ -89,65 +74,24 @@ const NAP_PHASE_KEYS: Readonly<Record<number, string>> = {
   [NapPhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Nap (Napoleon) game page: a British 4-player 5-trick gambling trick-taker with a bidding phase. */
-export const NapPage = withTutorial(NapPageContent, 'nap', NAP_TUTORIAL_STEPS);
+type NapGame = ReturnType<typeof useNapGame>;
 
-/** Inner content of the Nap page, wrapped by TutorialProvider. */
-function NapPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('nap');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    napConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handleBid,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useNapGame();
-
-  // Fetch a fresh game on mount.
+function useNapView({ game }: { game: NapGame }) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
-
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('nap');
-  const cliConfig: CliGameConfig<NapResponse, Parameters<typeof napApi.exec>> = useMemo(
-    () => ({
-      gameName: 'nap',
-      parseCommand: parseNapCommand,
-      formatResponse: formatNapState,
-      helpText: NAP_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('nap', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('nap', NAP_PHASE_KEYS);
+  return { cardWidth, isMobile, phaseNames };
+}
 
-  if (!state)
-    return <GameSkeleton gameKey="nap" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+type NapView = ReturnType<typeof useNapView>;
+type NapContext = GamePageContext<NapResponse, NapGame, NapView>;
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanTurn = state.isHumanTurn;
+function Board({ state, t, view }: NapContext) {
+  const { cardWidth, isMobile } = view;
   const isHumanBidTurn = state.isHumanBidTurn;
-
   const isBidPhase = state.phase === NapPhase.BID;
   const isPlayPhase = state.phase === NapPhase.PLAY;
   const isTrickEnd = state.phase === NapPhase.TRICK_END;
@@ -163,7 +107,6 @@ function NapPageContent() {
   const isGameEnd = state.phase === NapPhase.GAME_END || state.gameEndFlag;
   const showBidsAfterAuction = !isBidPhase;
 
-  const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
@@ -186,350 +129,349 @@ function NapPageContent() {
   const contractUnreachable = tricksStillNeeded > tricksRemaining;
   const showDeclarerProgress = (isPlayPhase || isTrickEnd) && state.declarerIdx >= 0;
 
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
   return (
-    <GamePageShell
-      title={tc('nav.nap')}
-      gameThemeBg={gameTheme.nap.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={(isHumanTurn || isHumanBidTurn) && !isGameEnd}
-      gamePath="/nap"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerPlayer === humanIdx}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: napConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetPoints',
-                    label: t('settings.targetPoints'),
-                    value: napConfig.targetPoints,
-                    options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetPoints', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      {isBidPhase && isHumanBidTurn && (
+        <div className="mb-2 flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+          <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
+            {highestBid > 0 && highestBidLabelKey
+              ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
+              : t('bidNone')}
+          </span>
+          <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
+        </div>
+      )}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary mb-2" data-tutorial="nap-info">
+        <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+        <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+        <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+        <span className="whitespace-nowrap">{t('target', { points: state.config.targetPoints })}</span>
+      </div>
+
+      <div className="text-ds-text-muted text-center mb-2 text-sm">
+        {state.declarerIdx >= 0
+          ? t('declarerLine', {
+              name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
+              contract: contractName,
+            })
+          : t('contractUndecided')}
+      </div>
+
+      {showDeclarerProgress && (
+        <div
+          className={`text-center mb-2 text-sm ${contractUnreachable ? 'text-ds-error-text font-semibold' : 'text-ds-text-muted'}`}
+          data-testid="nap-declarer-progress"
+          role="status"
+          aria-live="polite"
+        >
+          {t('declarerProgress', {
+            name: playerName(state.declarerIdx, declarer?.isHuman ?? false),
+            won: declarerWon,
+            needed: state.contract,
+            remaining: tricksRemaining,
+          })}
+          {contractUnreachable && <span className="ml-2">{t('contractUnreachable')}</span>}
+        </div>
+      )}
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="nap-trick-display"
           />
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {isBidPhase && isHumanBidTurn && (
-              <div className="mb-2 flex flex-wrap gap-2 items-center">
-                <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
-                  {highestBid > 0 && highestBidLabelKey
-                    ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
-                    : t('bidNone')}
+        {/* Right: info sidebar */}
+        <div>
+          {/* Per-player chip scores with declarer badge */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+            {state.players.map((p) => (
+              <div key={p.id} className="py-0.5 flex items-center gap-2">
+                <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
+                  {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                 </span>
-                <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
+                {state.dealerIdx === p.id && (
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} data-testid="nap-dealer-badge">
+                    {t('dealerBadge')}
+                  </span>
+                )}
+                {p.isDeclarer && (
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('declarerBadge')}</span>
+                )}
               </div>
-            )}
-            <div
-              className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary mb-2"
-              data-tutorial="nap-info"
-            >
-              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
-              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
-              <span className="whitespace-nowrap">{t('target', { points: state.config.targetPoints })}</span>
+            ))}
+          </div>
+
+          {/* Players: cards / tricks */}
+          {showBidsAfterAuction && (
+            <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="nap-bid-results">
+              <div className="mb-1 text-ds-text-primary">{t('bidsAfter')}</div>
+              {state.players.map((p) => {
+                const bid = state.bids[p.id] as number;
+                const bidText = !state.bidDone[p.id]
+                  ? t('bidNotDone')
+                  : t(
+                      bid === NapContract.PASS
+                        ? 'bid.pass'
+                        : CONTRACT_KEYS[bid]
+                          ? `bid.${CONTRACT_KEYS[bid]}`
+                          : 'bid.pass',
+                    );
+                return (
+                  <div key={p.id}>
+                    {playerName(p.id, p.isHuman)}: {bidText}
+                  </div>
+                );
+              })}
             </div>
-
-            <div className="text-ds-text-muted text-center mb-2 text-sm">
-              {state.declarerIdx >= 0
-                ? t('declarerLine', {
-                    name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
-                    contract: contractName,
-                  })
-                : t('contractUndecided')}
-            </div>
-
-            {showDeclarerProgress && (
-              <div
-                className={`text-center mb-2 text-sm ${contractUnreachable ? 'text-ds-error-text font-semibold' : 'text-ds-text-muted'}`}
-                data-testid="nap-declarer-progress"
-                role="status"
-                aria-live="polite"
-              >
-                {t('declarerProgress', {
-                  name: playerName(state.declarerIdx, declarer?.isHuman ?? false),
-                  won: declarerWon,
-                  needed: state.contract,
-                  remaining: tricksRemaining,
-                })}
-                {contractUnreachable && <span className="ml-2">{t('contractUnreachable')}</span>}
+          )}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                  </div>
+                ))}
               </div>
-            )}
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="nap-trick-display"
-                />
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* Per-player chip scores with declarer badge */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5 flex items-center gap-2">
-                      <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
-                        {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
-                      </span>
-                      {state.dealerIdx === p.id && (
-                        <span
-                          className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}
-                          data-testid="nap-dealer-badge"
-                        >
-                          {t('dealerBadge')}
-                        </span>
-                      )}
-                      {p.isDeclarer && (
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                          {t('declarerBadge')}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                  {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                  {t('tricks', { count: p.trickCount })}
                 </div>
-
-                {/* Players: cards / tricks */}
-                {showBidsAfterAuction && (
-                  <div
-                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="nap-bid-results"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('bidsAfter')}</div>
-                    {state.players.map((p) => {
-                      const bid = state.bids[p.id] as number;
-                      const bidText = !state.bidDone[p.id]
-                        ? t('bidNotDone')
-                        : t(
-                            bid === NapContract.PASS
-                              ? 'bid.pass'
-                              : CONTRACT_KEYS[bid]
-                                ? `bid.${CONTRACT_KEYS[bid]}`
-                                : 'bid.pass',
-                          );
-                      return (
-                        <div key={p.id}>
-                          {playerName(p.id, p.isHuman)}: {bidText}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Round result: tricks won per player */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    {state.players.map((p) => (
-                      <div key={p.id}>
-                        {t('roundResult.tricks', {
-                          name: playerName(p.id, p.isHuman),
-                          count: state.roundTricks[p.id] ?? 0,
-                        })}
-                      </div>
-                    ))}
-                    {/* トリック数だけでは、そのラウンドでチップがいくら動いたのか
-                        分からない。達成なら宣言者が、失敗なら相手それぞれが得る (#5651)。 */}
-                    {roundPayout && (
-                      <div className="mt-1 text-ds-text-primary" data-testid="nap-round-payout">
-                        {t(roundPayout.made ? 'roundResult.payoutMade' : 'roundResult.payoutFailed', {
-                          name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
-                          chips: roundPayout.chips,
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
+          )}
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="nap-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          {/* Round result: tricks won per player */}
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              {state.players.map((p) => (
+                <div key={p.id}>
+                  {t('roundResult.tricks', {
+                    name: playerName(p.id, p.isHuman),
+                    count: state.roundTricks[p.id] ?? 0,
+                  })}
+                </div>
+              ))}
+              {/* トリック数だけでは、そのラウンドでチップがいくら動いたのか
+                  分からない。達成なら宣言者が、失敗なら相手それぞれが得る (#5651)。 */}
+              {roundPayout && (
+                <div className="mt-1 text-ds-text-primary" data-testid="nap-round-payout">
+                  {t(roundPayout.made ? 'roundResult.payoutMade' : 'roundResult.payoutFailed', {
+                    name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
+                    chips: roundPayout.chips,
+                  })}
                 </div>
               )}
             </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex flex-wrap gap-2 items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="nap-reset-button"
-              />
-            </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* Footer */}
-          <GameFooter
-            dataTutorial="nap-action-buttons"
-            className={`${gameTheme.nap.footer} px-4 py-2.5`}
-            actions={
-              (isHumanBidTurn && isBidPhase) || canPlay || isTrickEnd || isRoundEnd ? (
-                <div className="flex flex-wrap gap-2 items-center">
-                  {isBidPhase &&
-                    isHumanBidTurn &&
-                    BIDS.map((b) => {
-                      // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                      const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
-                      const disabled = loading || tooLow;
-                      const reason = tooLow
-                        ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' })
-                        : undefined;
-                      // The title lives on the wrapping span: browsers suppress native tooltips and
-                      // hover events on disabled buttons, so hovering the span still surfaces the reason.
-                      const payout = napPayout(b.value);
-                      return (
-                        <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
-                          <button
-                            type="button"
-                            className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
-                            onClick={() => handleBid(b.value)}
-                            disabled={disabled}
-                            aria-disabled={disabled}
-                            aria-label={
-                              reason
-                                ? `${t(b.key)} — ${reason}`
-                                : payout
-                                  ? t('bidStakeAria', { bid: t(b.key), make: payout.make, fail: payout.fail })
-                                  : undefined
-                            }
-                            data-testid={`bid-${b.value}`}
-                          >
-                            {t(b.key)}
-                            {payout && (
-                              <span className="ml-1 text-xs opacity-80">
-                                {t('bidStake', { make: payout.make, fail: payout.fail })}
-                              </span>
-                            )}
-                          </button>
-                        </span>
-                      );
-                    })}
-                  {canPlay && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
-                </div>
-              ) : null
-            }
-          >
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="nap"
-                validIndices={canPlay ? state.playableIndices : []}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+      {/* Message */}
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterStatus({ state, t, frontendHint }: NapContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="nap-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices &&
+              state.hint.cardIndices.length > 0 &&
+              ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function primaryActions({ game, state, t, busy }: NapContext) {
+  const isHumanBidTurn = state.isHumanBidTurn;
+  const isBidPhase = state.phase === NapPhase.BID;
+  const isPlayPhase = state.phase === NapPhase.PLAY;
+  const isTrickEnd = state.phase === NapPhase.TRICK_END;
+  const isRoundEnd = state.phase === NapPhase.ROUND_END;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  const highestBid = Math.max(0, ...state.bids);
+  const highestBidLabelKey = BIDS.find((b) => b.value === highestBid)?.key;
+  const loading = busy;
+
+  if (!((isHumanBidTurn && isBidPhase) || canPlay || isTrickEnd || isRoundEnd)) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2 items-center">
+      {isBidPhase &&
+        isHumanBidTurn &&
+        BIDS.map((b) => {
+          // Pass (0) is always allowed; a non-pass bid must beat the current highest.
+          const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
+          const disabled = loading || tooLow;
+          const reason = tooLow ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' }) : undefined;
+          // The title lives on the wrapping span: browsers suppress native tooltips and
+          // hover events on disabled buttons, so hovering the span still surfaces the reason.
+          const payout = napPayout(b.value);
+          return (
+            <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+              <button
+                type="button"
+                className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
+                onClick={() => game.handleBid(b.value)}
+                disabled={disabled}
+                aria-disabled={disabled}
+                aria-label={
+                  reason
+                    ? `${t(b.key)} — ${reason}`
+                    : payout
+                      ? t('bidStakeAria', { bid: t(b.key), make: payout.make, fail: payout.fail })
+                      : undefined
+                }
+                data-testid={`bid-${b.value}`}
+              >
+                {t(b.key)}
+                {payout && (
+                  <span className="ml-1 text-xs opacity-80">
+                    {t('bidStake', { make: payout.make, fail: payout.fail })}
+                  </span>
+                )}
+              </button>
+            </span>
+          );
+        })}
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={loading || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={loading}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={loading}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function FooterHand({ game, state, t, view }: NapContext) {
+  const isPlayPhase = state.phase === NapPhase.PLAY;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+  return (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="nap"
+      validIndices={canPlay ? state.playableIndices : []}
+      restrictedTooltip={t('playButton')}
+    />
+  );
+}
+
+const napDefinition: GameDefinition<NapResponse, NapGame, Parameters<typeof napApi.exec>, NapView> = {
+  key: 'nap',
+  useGame: useNapGame,
+  useView: useNapView,
+  tutorial: NAP_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 5 },
+  cli: () => ({
+    parseCommand: parseNapCommand,
+    formatResponse: formatNapState,
+    helpText: NAP_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === NapPhase.GAME_END || state.gameEndFlag;
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerPlayer === humanIdx,
+    };
+  },
+  shell: ({ state }) => {
+    const isGameEnd = state.phase === NapPhase.GAME_END || state.gameEndFlag;
+    return {
+      isHumanTurn: (state.isHumanTurn || state.isHumanBidTurn) && !isGameEnd,
+    };
+  },
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.napConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetPoints',
+          label: t('settings.targetPoints'),
+          value: game.napConfig.targetPoints,
+          options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetPoints', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  footerTutorialId: 'nap-action-buttons',
+  resetTutorialId: 'nap-reset-button',
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Nap (Napoleon) game page: a British 4-player 5-trick gambling trick-taker with a bidding phase. */
+export const NapPage = createGamePage(napDefinition);

@@ -410,4 +410,10 @@ describe('NapPage', () => {
     renderWithProviders(<NapPage />);
     expect(await screen.findAllByTestId('nap-dealer-badge')).toHaveLength(1);
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<NapPage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
