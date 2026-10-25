@@ -1047,4 +1047,10 @@ describe('BinokelPage meld reference', () => {
     expect(footerContent.querySelector('[data-tutorial="bn-reset-button"]')).not.toBeInTheDocument();
     expect(playArea?.querySelector('[data-tutorial="bn-reset-button"]')).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BinokelPage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

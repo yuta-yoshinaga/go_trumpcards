@@ -31,7 +31,6 @@ BigBenPage.tsx
 BigOHiLoPage.tsx
 BigOPage.tsx
 BigTwoPage.tsx
-BinokelPage.tsx
 BisleyPage.tsx
 BlackHolePage.tsx
 BlackJackPage.tsx
