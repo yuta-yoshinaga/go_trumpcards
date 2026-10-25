@@ -369,7 +369,7 @@ function FooterActions({ game, state, t, busy, view, renderResetButton }: OldMai
         {t('button.shuffle')}
       </button>
       {/* Keyboard shortcut hints, shown on the human's turn (matches the d/s
-          bindings in useActionKeyboardNav above). */}
+          bindings returned by the definition's `shortcuts`). */}
       {isHumanTurn && (
         <p className="text-center text-game-text-muted text-xs mt-2" data-testid="oldmaid-key-hints">
           {t('keyHints')}
