@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { blackholeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -20,10 +24,19 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { BlackHoleResponse } from '../types/games/blackhole';
 import { BlackHolePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
+import {
+  BLACKHOLE_HELP,
+  getAcceptableRanks,
+  getLegalFans,
+  parseBlackHoleCommand,
+} from '../utils/cli/commands/blackholeCommands';
+import { formatBlackHoleState } from '../utils/cli/formatters/blackholeFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** 1 デッキの総枚数。`BlackHoleTotalCards` (internal/domain/BlackHole.go) と同じ。 */
@@ -107,6 +120,19 @@ function BlackHolePageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('blackhole', state);
 
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('blackhole');
+  const cliConfig: CliGameConfig<BlackHoleResponse, Parameters<typeof blackholeApi.exec>> = useMemo(
+    () => ({
+      gameName: 'blackhole',
+      parseCommand: (input: string) => parseBlackHoleCommand(input, state ?? undefined),
+      formatResponse: formatBlackHoleState,
+      helpText: BLACKHOLE_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
   if (!state) return <GameSkeleton gameKey="blackhole" layout={{ kind: 'tableau', topRow: 1, tableau: 9 }} />;
 
   const isClear = state.phase === BlackHolePhase.GAME_CLEAR;
@@ -140,19 +166,12 @@ function BlackHolePageContent() {
 
   // A fan's top card is playable when its rank is exactly one away from the hole's
   // top rank (no A↔K wrap, so plain numeric ±1 is correct).
-  const legalFans = new Set<number>(
-    holeTop
-      ? state.fans
-          .map((fan, idx) => ({ idx, top: fan[fan.length - 1] }))
-          .filter(({ top }) => top && Math.abs(top.value - holeTop.value) === 1)
-          .map(({ idx }) => idx)
-      : [],
-  );
+  const legalFans = getLegalFans(state);
 
   // Ranks currently accepted by the hole: the hole top's rank ±1, clamped to
   // [1, 13] with no A↔K wrap (matching the Go domain's blackHoleAdjacent). At the
   // A/K ends only one neighbour survives the clamp, so a single rank is shown.
-  const acceptableRanks = holeTop ? [holeTop.value - 1, holeTop.value + 1].filter((v) => v >= 1 && v <= 13) : [];
+  const acceptableRanks = getAcceptableRanks(holeTop);
 
   // The backend's strategic recommendation (single "best" fan to dig, e.g. one
   // that avoids getting stuck). `state.hint` is only populated by a `hint`
@@ -271,127 +290,138 @@ function BlackHolePageContent() {
       giveUpConfirmOpen={giveUpConfirmOpen}
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
-        {/* Central black hole */}
-        <div className="flex flex-wrap items-center gap-3 mb-3" data-tutorial="bh-hole">
-          <div className="text-ds-text-muted text-xs whitespace-nowrap">{t('blackHole')}</div>
-          <div
-            className="rounded-full bg-black/60 border-2 border-ds-accent flex items-center justify-center"
-            style={{ width: cardH, height: cardH }}
-            role="img"
-            aria-label={holeTop ? t('holeAria', { card: cardAlt(holeTop) }) : t('holeEmptyAria')}
-            data-testid="bh-hole-top"
-          >
-            {holeTop ? <CardImage card={holeTop} width={w} /> : null}
-          </div>
-          <div className="text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
-          {/* **17個の扇を掘る長いゲーム**なのに、あと何枚で終わるかが出ていなかった
-              (#5681)。勝利条件は52枚すべてを吸い込むこと。 */}
-          <div className="text-ds-text-muted text-xs" data-testid="bh-progress">
-            {t('progress', { count: state.blackHole.length, total: BLACKHOLE_TOTAL_CARDS })}
-          </div>
-          {/* Always-on readout of which rank(s) the hole accepts next, plus the
-              current legal-move count (warning colour when no move remains). */}
-          <div className="flex flex-col gap-0.5 text-xs" data-testid="bh-acceptable">
-            <span className="text-ds-text-primary whitespace-nowrap">
-              {acceptableRanks.length > 0
-                ? t('acceptableRanks', { ranks: acceptableRanks.map(valueName).join(' / ') })
-                : t('acceptableRanksNone')}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
+            {/* Central black hole */}
+            <div className="flex flex-wrap items-center gap-3 mb-3" data-tutorial="bh-hole">
+              <div className="text-ds-text-muted text-xs whitespace-nowrap">{t('blackHole')}</div>
+              <div
+                className="rounded-full bg-black/60 border-2 border-ds-accent flex items-center justify-center"
+                style={{ width: cardH, height: cardH }}
+                role="img"
+                aria-label={holeTop ? t('holeAria', { card: cardAlt(holeTop) }) : t('holeEmptyAria')}
+                data-testid="bh-hole-top"
+              >
+                {holeTop ? <CardImage card={holeTop} width={w} /> : null}
+              </div>
+              <div className="text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
+              {/* **17個の扇を掘る長いゲーム**なのに、あと何枚で終わるかが出ていなかった
+                  (#5681)。勝利条件は52枚すべてを吸い込むこと。 */}
+              <div className="text-ds-text-muted text-xs" data-testid="bh-progress">
+                {t('progress', { count: state.blackHole.length, total: BLACKHOLE_TOTAL_CARDS })}
+              </div>
+              {/* Always-on readout of which rank(s) the hole accepts next, plus the
+                  current legal-move count (warning colour when no move remains). */}
+              <div className="flex flex-col gap-0.5 text-xs" data-testid="bh-acceptable">
+                <span className="text-ds-text-primary whitespace-nowrap">
+                  {acceptableRanks.length > 0
+                    ? t('acceptableRanks', { ranks: acceptableRanks.map(valueName).join(' / ') })
+                    : t('acceptableRanksNone')}
+                </span>
+                <span
+                  className={legalFans.size === 0 ? 'text-ds-warning' : 'text-ds-text-muted'}
+                  data-testid="bh-legal-count"
+                >
+                  {t('legalMoveCount', { count: legalFans.size })}
+                </span>
+              </div>
+            </div>
+
+            {/* Hint result also spoken (colour/animation is not enough). */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="bh-hint-announce">
+              {hintAnnounce}
             </span>
-            <span
-              className={legalFans.size === 0 ? 'text-ds-warning' : 'text-ds-text-muted'}
-              data-testid="bh-legal-count"
+            {showLegalHint && recommendedTop && state.hint && (
+              <p className="mt-2 text-xs text-ds-text-primary" data-testid="bh-hint-detail">
+                {clearLabel}
+              </p>
+            )}
+
+            <div
+              className={
+                isMobile
+                  ? 'flex flex-nowrap overflow-x-auto gap-1 items-start pb-1'
+                  : 'grid grid-cols-6 sm:grid-cols-9 gap-1 items-start'
+              }
+              data-tutorial="bh-fans"
             >
-              {t('legalMoveCount', { count: legalFans.size })}
-            </span>
+              {state.fans.map((fan, i) => renderFan(fan, i))}
+            </div>
+            {canAct && <div className="mt-2 text-ds-text-primary text-xs">{t('selectSource')}</div>}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnd}
+              availableDuringPlay
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        </div>
 
-        {/* Hint result also spoken (colour/animation is not enough). */}
-        <span className="sr-only" role="status" aria-live="polite" data-testid="bh-hint-announce">
-          {hintAnnounce}
-        </span>
-        {showLegalHint && recommendedTop && state.hint && (
-          <p className="mt-2 text-xs text-ds-text-primary" data-testid="bh-hint-detail">
-            {clearLabel}
-          </p>
-        )}
-
-        <div
-          className={
-            isMobile
-              ? 'flex flex-nowrap overflow-x-auto gap-1 items-start pb-1'
-              : 'grid grid-cols-6 sm:grid-cols-9 gap-1 items-start'
-          }
-          data-tutorial="bh-fans"
-        >
-          {state.fans.map((fan, i) => renderFan(fan, i))}
-        </div>
-        {canAct && <div className="mt-2 text-ds-text-primary text-xs">{t('selectSource')}</div>}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isEnd}
-          availableDuringPlay
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.blackhole.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center" data-tutorial="bh-controls">
-          {canAct && state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('u')}
-              disabled={loading}
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handleHint}
-              disabled={loading}
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={confirmGiveUpAction}
-              disabled={loading}
-              data-testid="giveup-button"
-            >
-              {t('giveup')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="bh-reset-button"
-          />
-        </div>
-      </GameFooter>
+          <GameFooter className={`${gameTheme.blackhole.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center" data-tutorial="bh-controls">
+              {canAct && state.canUndo && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => exec('u')}
+                  disabled={loading}
+                  data-testid="undo-button"
+                >
+                  {t('undo')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleHint}
+                  disabled={loading}
+                  data-testid="hint-button"
+                >
+                  {t('hint')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={confirmGiveUpAction}
+                  disabled={loading}
+                  data-testid="giveup-button"
+                >
+                  {t('giveup')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="bh-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
