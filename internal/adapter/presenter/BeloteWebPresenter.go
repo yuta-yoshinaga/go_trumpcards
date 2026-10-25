@@ -129,6 +129,13 @@ func (p *BeloteWebPresenter) HintOutput(b interfaces.BeloteGame) string {
 			Reason:    hint.Reason,
 		}
 	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "belote.hintRequested"
+	} else {
+		resObj.MessageCode = "belote.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

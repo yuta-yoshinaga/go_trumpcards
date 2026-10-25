@@ -1263,6 +1263,8 @@
     "beleagueredcastle.playing": "プレイ中",
     "beleagueredcastle.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "belote.callTrumpPhase": "切り札スートを宣言してください。",
+    "belote.hintRequested": "ヒントがあります",
+    "belote.noHint": "ヒントはありません",
     "belote.pickUpPhase": "ターンアップを切り札として取るか、パスしてください。",
     "belote.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
     "belote.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
