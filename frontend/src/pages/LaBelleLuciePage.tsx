@@ -28,7 +28,11 @@ import type { Card, LaBelleLucieResponse } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { LABELLELUCIE_HELP, parseLaBelleLucieCommand } from '../utils/cli/commands/labellelucieCommands';
+import {
+  LABELLELUCIE_HELP,
+  parseLaBelleLucieCommand,
+  toLaBelleLucieCommandState,
+} from '../utils/cli/commands/labellelucieCommands';
 import { formatLaBelleLucieState } from '../utils/cli/formatters/labellelucieFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -84,16 +88,11 @@ function LaBelleLuciePageContent() {
   const cliConfig: CliGameConfig<LaBelleLucieResponse, Parameters<typeof labellelucieApi.exec>> = useMemo(
     () => ({
       gameName: 'labellelucie',
-      parseCommand: (input: string) =>
-        parseLaBelleLucieCommand(input, {
-          fanCount: state?.fans.length ?? 0,
-          phase: state?.phase ?? LaBelleLuciePhase.GAME_OVER,
-          canUndo: state?.canUndo ?? false,
-        }),
+      parseCommand: (input: string) => parseLaBelleLucieCommand(input, toLaBelleLucieCommandState(state)),
       formatResponse: formatLaBelleLucieState,
       helpText: LABELLELUCIE_HELP,
     }),
-    [state?.fans.length, state?.phase, state?.canUndo],
+    [state],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの

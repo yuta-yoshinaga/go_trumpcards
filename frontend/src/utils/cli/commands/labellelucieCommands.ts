@@ -1,4 +1,5 @@
 import type { labellelucieApi } from '../../../api/gameApi';
+import type { LaBelleLucieResponse } from '../../../types/card';
 import { LaBelleLuciePhase } from '../../../types/phases';
 import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
@@ -12,6 +13,15 @@ export interface LaBelleLucieCommandState {
   /** Whether the page currently permits undo. */
   canUndo: boolean;
 }
+/**
+ * Maps the page state to what the parser checks. Before the state loads, no fan
+ * exists and undo is refused (the terminal is not shown then anyway).
+ */
+export function toLaBelleLucieCommandState(state: LaBelleLucieResponse | null | undefined): LaBelleLucieCommandState {
+  if (!state) return { fanCount: 0, phase: LaBelleLuciePhase.GAME_OVER, canUndo: false };
+  return { fanCount: state.fans.length, phase: state.phase, canUndo: state.canUndo };
+}
+
 const VALID_COMMANDS = [
   'p',
   'play',
@@ -40,6 +50,7 @@ export function parseLaBelleLucieCommand(
   state?: LaBelleLucieCommandState,
 ): CliParseResult<LaBelleLucieArgs> {
   const { cmd, args } = splitCommand(input);
+  const fanCount = state?.fanCount ?? 0;
   switch (cmd) {
     case 'p':
     case 'play': {
@@ -50,9 +61,9 @@ export function parseLaBelleLucieCommand(
         'error' in from ||
         'error' in to ||
         from.value < 0 ||
-        from.value >= (state?.fanCount ?? 18) ||
+        from.value >= fanCount ||
         to.value < 0 ||
-        to.value >= (state?.fanCount ?? 18)
+        to.value >= fanCount
       ) {
         return { error: 'Usage: p <from> <to> (fan index out of range)' };
       }
@@ -61,7 +72,7 @@ export function parseLaBelleLucieCommand(
     case 'f':
     case 'foundation': {
       const from = parseIntArg(args, 0);
-      if ('error' in from || from.value < 0 || from.value >= (state?.fanCount ?? 18))
+      if ('error' in from || from.value < 0 || from.value >= fanCount)
         return { error: 'Usage: f <idx> (fan index out of range)' };
       return { args: ['ff', from.value] };
     }

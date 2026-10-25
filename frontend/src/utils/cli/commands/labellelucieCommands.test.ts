@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { LaBelleLucieResponse } from '../../../types/card';
 import { LaBelleLuciePhase } from '../../../types/phases';
-import { parseLaBelleLucieCommand } from './labellelucieCommands';
+import { parseLaBelleLucieCommand, toLaBelleLucieCommandState } from './labellelucieCommands';
 
 const playingState = { fanCount: 18, phase: LaBelleLuciePhase.PLAYING, canUndo: true };
 
@@ -62,5 +63,29 @@ describe('parseLaBelleLucieCommand', () => {
   it('rejects unknown commands without accepting log', () => {
     expect(parseLaBelleLucieCommand('bogus')).toEqual({ error: 'Unknown command: bogus' });
     expect(parseLaBelleLucieCommand('log')).toHaveProperty('error');
+  });
+
+  it('rejects fan moves before the state has loaded', () => {
+    expect(parseLaBelleLucieCommand('p 0 1')).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('f 0')).toHaveProperty('error');
+  });
+});
+
+describe('toLaBelleLucieCommandState', () => {
+  it('refuses everything state-dependent before the state loads', () => {
+    expect(toLaBelleLucieCommandState(null)).toEqual({
+      fanCount: 0,
+      phase: LaBelleLuciePhase.GAME_OVER,
+      canUndo: false,
+    });
+  });
+
+  it('maps the fan count, phase and undo availability from the page state', () => {
+    const state = {
+      fans: [[], [], []],
+      phase: LaBelleLuciePhase.PLAYING,
+      canUndo: true,
+    } as unknown as LaBelleLucieResponse;
+    expect(toLaBelleLucieCommandState(state)).toEqual({ fanCount: 3, phase: LaBelleLuciePhase.PLAYING, canUndo: true });
   });
 });
