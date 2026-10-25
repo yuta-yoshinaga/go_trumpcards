@@ -7,7 +7,6 @@
     "gameEnd": "Game over"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU difficulty",
     "targetScore": "Target score",
     "easy": "Easy",

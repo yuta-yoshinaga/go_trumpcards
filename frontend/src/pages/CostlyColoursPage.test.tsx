@@ -325,4 +325,10 @@ describe('CostlyColoursPage', () => {
       expect(screen.queryByTestId('costlycolours-mog-discard')).not.toBeInTheDocument();
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CostlyColoursPage />);
+    expect(await screen.findByText('交換', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('mog', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

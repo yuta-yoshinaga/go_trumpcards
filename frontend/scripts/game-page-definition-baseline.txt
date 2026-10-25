@@ -65,7 +65,6 @@ ColourWhistPage.tsx
 CongressPage.tsx
 ContinentalRummyPage.tsx
 ContractRummyPage.tsx
-CostlyColoursPage.tsx
 CourchevelHiLoPage.tsx
 CourchevelPage.tsx
 CourtPiecePage.tsx
