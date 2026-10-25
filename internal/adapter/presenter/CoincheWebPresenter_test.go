@@ -186,6 +186,7 @@ func TestCoincheWebPresenter_HintOutput(t *testing.T) {
 		var resObj controller.CoincheWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Nil(t, resObj.Hint)
+		assert.Equal(t, "coinche.noHint", resObj.MessageCode)
 	})
 
 	t.Run("with hint", func(t *testing.T) {
@@ -201,7 +202,17 @@ func TestCoincheWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint.Bid)
 		assert.NotNil(t, resObj.Hint.Suit)
 		assert.Equal(t, "strategic_bid", resObj.Hint.Reason)
+		assert.Equal(t, "coinche.hintRequested", resObj.MessageCode)
 	})
+}
+
+func TestCoincheWebPresenterOutputDoesNotMarkHintAsRequested(t *testing.T) {
+	m, _ := setupCoincheWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+	m.On("GetHint").Return((*domain.CoincheHint)(nil))
+	var resObj controller.CoincheWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.CoincheWebPresenter).Output(m, nil)), &resObj))
+	assert.NotEqual(t, "coinche.hintRequested", resObj.MessageCode)
 }
 
 func TestCoincheWebPresenter_ActionLogOutput(t *testing.T) {

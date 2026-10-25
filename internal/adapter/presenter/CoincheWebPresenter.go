@@ -132,6 +132,13 @@ func (p *CoincheWebPresenter) HintOutput(b interfaces.CoincheGame) string {
 			Reason:    hint.Reason,
 		}
 	}
+	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
+	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。
+	if hint != nil {
+		resObj.MessageCode = "coinche.hintRequested"
+	} else {
+		resObj.MessageCode = "coinche.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

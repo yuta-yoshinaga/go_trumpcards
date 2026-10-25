@@ -2275,6 +2275,8 @@
     "estimation.roundEnd": "ラウンド{{round}}が終了しました（あなたは {{score}} 点）。",
     "estimation.trump.choose": "あなたが親です。切り札スートを決めてください。",
     "estimation.trump.wait": "CPU{{idx}} が親です。切り札を決めています。",
+    "coinche.hintRequested": "ヒントがあります",
+    "coinche.noHint": "ヒントはありません",
     "euchre.callTrumpPhase": "切り札スートを宣言してください。",
     "euchre.discardPhase": "カードを1枚捨てるか、上がってください",
     "euchre.hintRequested": "ヒントがあります",
