@@ -1,5 +1,6 @@
 import type { FourteenOutResponse } from '../../../types/card';
 import { FourteenOutPhase } from '../../../types/phases';
+import { fourteenOutCanUndo, fourteenOutRemovablePairs } from '../../fourteenOutRules';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES: Readonly<Record<number, string>> = {
@@ -12,7 +13,7 @@ const PHASE_NAMES: Readonly<Record<number, string>> = {
 export function formatFourteenOutState(state: FourteenOutResponse): string {
   const lines = [formatHeader('Fourteen Out'), `phase: ${PHASE_NAMES[state.phase] ?? state.phase}`];
   lines.push(
-    `removed: ${state.removedCount}/52 | removable pairs: ${state.removablePairs} | undo available: ${state.canUndo ? 'yes' : 'no'}`,
+    `removed: ${state.removedCount}/52 | removable pairs: ${fourteenOutRemovablePairs(state).length} | undo available: ${fourteenOutCanUndo(state) ? 'yes' : 'no'}`,
   );
   lines.push('Columns (only the top card is playable; use p <from> <to>):');
   state.columns.forEach((column, index) => {
@@ -25,9 +26,7 @@ export function formatFourteenOutState(state: FourteenOutResponse): string {
     lines.push(`[${index}] ${cards || '[empty]'}`);
   });
   if (state.phase === FourteenOutPhase.PLAYING) {
-    const pairs = Object.entries(state.legalTargets)
-      .filter(([key]) => key.startsWith('tableau-'))
-      .flatMap(([key, targets]) => targets.tableau.map((to) => `p ${key.slice('tableau-'.length)} ${to}`));
+    const pairs = fourteenOutRemovablePairs(state).map(([from, to]) => `p ${from} ${to}`);
     lines.push(
       `Available commands: ${[...pairs, ...(state.canUndo ? ['u (undo)'] : []), 'h (hint)', 'g (give up)', 'r (reset)'].join(', ')}`,
     );
@@ -37,6 +36,10 @@ export function formatFourteenOutState(state: FourteenOutResponse): string {
     );
     lines.push('Available command: r (reset)');
   }
+  if (state.phase === FourteenOutPhase.PLAYING && state.isStalemate) {
+    lines.push('No more pairs. Undo, give up or reset.');
+  }
+  if (state.phase === FourteenOutPhase.PLAYING && state.message && !state.messageCode) lines.push(state.message);
   if (state.messageCode === 'fourteenout.noHint') lines.push('No hint available.');
   if (state.hint && isRequestedHint(state))
     lines.push(`HINT: Remove columns ${state.hint.fromCol} and ${state.hint.toCol}.`);

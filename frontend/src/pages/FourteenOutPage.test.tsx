@@ -81,6 +81,17 @@ describe('FourteenOutPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 1));
   });
 
+  it('does not execute an invalid CLI pair that is not a legal target', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    await screen.findByTestId('mc-col-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 0 2' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getAllByText('The selected cards do not make 14').length).toBeGreaterThan(0));
+    expect(mockExec).not.toHaveBeenCalledWith('remove', 0, 2);
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<FourteenOutPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -47,6 +47,36 @@ describe('formatFourteenOutState', () => {
     );
   });
 
+  it('lists each pair once in numeric order and reports a playing stalemate', () => {
+    const state = {
+      ...playing,
+      columns: [...playing.columns, ...Array.from({ length: 89 }, () => [])],
+      removablePairs: 3,
+      isStalemate: true,
+      legalTargets: {
+        'tableau-10': { tableau: [11], foundation: [] },
+        'tableau-2': { tableau: [10, 3], foundation: [] },
+        'tableau-3': { tableau: [2], foundation: [] },
+        'tableau-11': { tableau: [10], foundation: [] },
+      },
+    } as FourteenOutResponse;
+    const text = formatFourteenOutState(state);
+    expect(text).toContain('removable pairs: 3');
+    expect(text).toContain('Available commands: p 2 3, p 2 10, p 10 11');
+    expect(text).toContain('No more pairs. Undo, give up or reset.');
+    expect(text).not.toContain('p 3 2');
+    expect(text).not.toContain('p 11 10');
+  });
+
+  it('shows uncoded server errors during play but never exposes terminal messages', () => {
+    expect(formatFourteenOutState({ ...playing, message: 'Server rejected that pair', messageCode: '' })).toContain(
+      'Server rejected that pair',
+    );
+    expect(
+      formatFourteenOutState({ ...playing, phase: FourteenOutPhase.GAME_OVER, message: 'ゲーム終了', messageCode: '' }),
+    ).not.toContain('ゲーム終了');
+  });
+
   it('shows terminal phase commands and English outcome text', () => {
     const clear = formatFourteenOutState({
       ...playing,

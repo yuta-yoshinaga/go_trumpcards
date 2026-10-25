@@ -1,6 +1,7 @@
 import type { fourteenoutApi } from '../../../api/games/fourteenout';
 import type { FourteenOutResponse } from '../../../types/card';
 import { FourteenOutPhase } from '../../../types/phases';
+import { fourteenOutCanUndo, fourteenOutPartners, fourteenOutTail } from '../../fourteenOutRules';
 import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
@@ -27,16 +28,16 @@ export function parseFourteenOutCommand(
       if (from.value < 0 || from.value >= state.columns.length || to.value < 0 || to.value >= state.columns.length)
         return { error: `Column indices must be between 0 and ${state.columns.length - 1}` };
       if (from.value === to.value) return { error: 'Choose two different columns' };
-      if (!state.columns[from.value]?.at(-1)?.card || !state.columns[to.value]?.at(-1)?.card)
+      if (!fourteenOutTail(state.columns[from.value]) || !fourteenOutTail(state.columns[to.value]))
         return { error: 'Both columns must contain a card' };
-      if (!state.legalTargets[`tableau-${from.value}`]?.tableau.includes(to.value))
+      if (!fourteenOutPartners(state, from.value).includes(to.value))
         return { error: 'The selected cards do not make 14' };
       return { args: ['remove', from.value, to.value] };
     }
     case 'u':
     case 'undo':
       if (state?.phase !== FourteenOutPhase.PLAYING) return { error: 'You can only undo while playing' };
-      if (!state.canUndo) return { error: 'There is no action to undo' };
+      if (!fourteenOutCanUndo(state)) return { error: 'There is no action to undo' };
       return { args: ['undo'] };
     case 'g':
     case 'giveup':
@@ -44,6 +45,7 @@ export function parseFourteenOutCommand(
       return { args: ['giveup'] };
     case 'h':
     case 'hint':
+      if (state?.phase !== FourteenOutPhase.PLAYING) return { error: 'You can only request a hint while playing' };
       return { args: ['hint'] };
     case 'r':
     case 'reset':

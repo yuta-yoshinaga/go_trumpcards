@@ -5,9 +5,9 @@ import { parseFourteenOutCommand } from './fourteenoutCommands';
 
 const state: FourteenOutResponse = {
   columns: [
-    [{ card: { design: 'SPADE', value: 9 } }, { card: { design: 'CLOVER', value: 2 } }],
+    [{ card: { design: 'CLOVER', value: 2 } }, { card: { design: 'SPADE', value: 9 } }],
     [{ card: { design: 'HEART', value: 5 } }],
-    [],
+    [{ card: { design: 'CLOVER', value: 4 } }],
     ...Array.from({ length: 9 }, () => []),
   ],
   phase: FourteenOutPhase.PLAYING,
@@ -42,6 +42,7 @@ describe('parseFourteenOutCommand', () => {
     expect(parseFourteenOutCommand('p 0 0', state)).toHaveProperty('error');
     expect(parseFourteenOutCommand('p 0 2', state)).toHaveProperty('error');
     expect(parseFourteenOutCommand('p 0 3', state)).toHaveProperty('error');
+    expect(parseFourteenOutCommand('p 0 2', state)).toEqual({ error: 'The selected cards do not make 14' });
   });
 
   it('rejects play and guarded actions outside their valid state', () => {
@@ -49,6 +50,7 @@ describe('parseFourteenOutCommand', () => {
     expect(parseFourteenOutCommand('p 0 1', { ...state, phase: FourteenOutPhase.GAME_OVER })).toHaveProperty('error');
     expect(parseFourteenOutCommand('u', { ...state, canUndo: false })).toHaveProperty('error');
     expect(parseFourteenOutCommand('g', { ...state, phase: FourteenOutPhase.GAME_CLEAR })).toHaveProperty('error');
+    expect(parseFourteenOutCommand('h', { ...state, phase: FourteenOutPhase.GAME_OVER })).toHaveProperty('error');
     expect(parseFourteenOutCommand('zz')).toHaveProperty('error');
     expect(parseFourteenOutCommand('log')).toHaveProperty('error');
   });
