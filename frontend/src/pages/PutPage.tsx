@@ -3,6 +3,8 @@ import { putApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -14,6 +16,8 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -23,6 +27,9 @@ import type { PutResponse } from '../types/card';
 import { PutPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { PUT_HELP, parsePutCommand } from '../utils/cli/commands/putCommands';
+import { formatPutState } from '../utils/cli/formatters/putFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Tutorial steps for the Put page. */
 const PUT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -65,6 +72,12 @@ function PutPageContent() {
   } = useGameApi<PutResponse, Parameters<typeof putApi.exec>>(putApi.exec);
   const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('put', state);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('put');
+  const cliConfig: CliGameConfig<PutResponse, Parameters<typeof putApi.exec>> = useMemo(
+    () => ({ gameName: 'put', parseCommand: parsePutCommand, formatResponse: formatPutState, helpText: PUT_HELP }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const [matchTarget, setMatchTarget] = useState(PUT_DEFAULT_MATCH_TARGET);
   const matchTargetRef = useRef(matchTarget);
@@ -175,201 +188,213 @@ function PutPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3" data-tutorial="put-score" data-testid="put-header">
-          <span className="mr-4">
-            {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
-            {state.matchTarget})
-          </span>
-        </div>
-        <div className="text-ds-text-muted text-center text-sm mb-3">
-          <span className="mr-4">
-            {t('header.hand')}: {state.handNumber}
-          </span>
-          <span className="mr-4">
-            {t('header.trick')}: {state.trickNumber}
-          </span>
-          <span data-testid="put-stake">
-            {t('header.stake')}: {state.handStake} ({levelLabel(state.acceptedLevel)})
-          </span>
-        </div>
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div className="text-ds-text-primary text-center mb-3" data-tutorial="put-score" data-testid="put-header">
+              <span className="mr-4">
+                {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} (
+                {t('header.target')}: {state.matchTarget})
+              </span>
+            </div>
+            <div className="text-ds-text-muted text-center text-sm mb-3">
+              <span className="mr-4">
+                {t('header.hand')}: {state.handNumber}
+              </span>
+              <span className="mr-4">
+                {t('header.trick')}: {state.trickNumber}
+              </span>
+              <span data-testid="put-stake">
+                {t('header.stake')}: {state.handStake} ({levelLabel(state.acceptedLevel)})
+              </span>
+            </div>
 
-        <details
-          className="my-3 p-2 rounded bg-black/30 max-w-md mx-auto"
-          data-testid="put-rank-ref"
-          data-tutorial="put-rankref"
-        >
-          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
-          {/* **One order, no special cards.** Truco (the clone source) has
+            <details
+              className="my-3 p-2 rounded bg-black/30 max-w-md mx-auto"
+              data-testid="put-rank-ref"
+              data-tutorial="put-rankref"
+            >
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
+              {/* **One order, no special cards.** Truco (the clone source) has
               suit-specific matadores and a stripped deck; Put has neither, so
               showing two tiers here would state a rule the game does not have. */}
-          <div className="mt-2 text-ds-text-muted text-xs space-y-1">
-            <div className="mt-0.5 font-mono">{t('rankRef.order')}</div>
-            <div className="pt-1">{t('rankRef.note')}</div>
+              <div className="mt-2 text-ds-text-muted text-xs space-y-1">
+                <div className="mt-0.5 font-mono">{t('rankRef.order')}</div>
+                <div className="pt-1">{t('rankRef.note')}</div>
+              </div>
+            </details>
+
+            {!isGameEnd && (
+              <table
+                className="w-full max-w-md mx-auto mb-4 text-sm text-ds-text-primary"
+                aria-label={t('playerCountsTable')}
+                data-testid="put-player-counts"
+              >
+                <thead className="text-ds-text-muted">
+                  <tr>
+                    <th scope="col" className="text-left p-2"></th>
+                    <th scope="col" className="text-right p-2">
+                      {t('header.cards')}
+                    </th>
+                    <th scope="col" className="text-right p-2">
+                      {t('header.tricks')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { player: human, name: t('header.you') },
+                    { player: cpu, name: t('header.cpu') },
+                  ].map(({ player, name }) => (
+                    <tr key={name} className="border-t border-ds-border-subtle">
+                      <th scope="row" className="text-left p-2 font-medium">
+                        {name}
+                      </th>
+                      <td className="text-right p-2 tabular-nums">{player?.cardCount ?? 0}</td>
+                      <td className="text-right p-2 tabular-nums">{player?.trickCount ?? 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            <TrickDisplay
+              currentTrick={state.currentTrick}
+              players={state.players}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="put-trick"
+              winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+              winnerLabel={t('trickWinnerBadge')}
+            />
+
+            {resultBanner && (
+              <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+                {resultBanner}
+              </div>
+            )}
+
+            {isMobile && messageBox}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={() => requestConfirm(handleReset)}
+                disabled={loading}
+              >
+                {t('actions.reset')}
+              </button>
+              <label
+                className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
+                data-testid="put-hint-toggle"
+              >
+                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                {tc('button.hint')}
+              </label>
+            </div>
           </div>
-        </details>
 
-        {!isGameEnd && (
-          <table
-            className="w-full max-w-md mx-auto mb-4 text-sm text-ds-text-primary"
-            aria-label={t('playerCountsTable')}
-            data-testid="put-player-counts"
-          >
-            <thead className="text-ds-text-muted">
-              <tr>
-                <th scope="col" className="text-left p-2"></th>
-                <th scope="col" className="text-right p-2">
-                  {t('header.cards')}
-                </th>
-                <th scope="col" className="text-right p-2">
-                  {t('header.tricks')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { player: human, name: t('header.you') },
-                { player: cpu, name: t('header.cpu') },
-              ].map(({ player, name }) => (
-                <tr key={name} className="border-t border-ds-border-subtle">
-                  <th scope="row" className="text-left p-2 font-medium">
-                    {name}
-                  </th>
-                  <td className="text-right p-2 tabular-nums">{player?.cardCount ?? 0}</td>
-                  <td className="text-right p-2 tabular-nums">{player?.trickCount ?? 0}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="put-trick"
-          winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
-          winnerLabel={t('trickWinnerBadge')}
-        />
-
-        {resultBanner && (
-          <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
-            {resultBanner}
-          </div>
-        )}
-
-        {isMobile && messageBox}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-            {t('actions.reset')}
-          </button>
-          <label
-            className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
-            data-testid="put-hint-toggle"
-          >
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('button.hint')}
-          </label>
-        </div>
-      </div>
-
-      <GameFooter
-        className={`${gameTheme.put.footer} px-4 py-2.5`}
-        message={!isMobile && messageBox}
-        actions={
-          <>
-            <div className="flex flex-wrap gap-2" data-testid="put-primary-actions">
-              {isHumanPlayTurn && state.canDeclarePut && (
-                <button
-                  type="button"
-                  className={btnWarning}
-                  onClick={handlePut}
-                  disabled={loading}
-                  data-tutorial="put-call"
-                >
-                  {t('actions.put')}
-                </button>
-              )}
-              {isHumanRespond && (
-                <>
-                  <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
-                    {t('actions.accept')}
-                  </button>
-                  <p className="self-center text-ds-text-muted text-sm">
-                    {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
-                  </p>
-                  <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
-                    {t('actions.decline')}
-                  </button>
-                  <p className="self-center text-ds-text-muted text-sm">
-                    {t('respondOutcome.decline', { stake: state.handStake })}
-                  </p>
-                  {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
+          <GameFooter
+            className={`${gameTheme.put.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
+            actions={
+              <>
+                <div className="flex flex-wrap gap-2" data-testid="put-primary-actions">
+                  {isHumanPlayTurn && state.canDeclarePut && (
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={handlePut}
+                      disabled={loading}
+                      data-tutorial="put-call"
+                    >
+                      {t('actions.put')}
+                    </button>
+                  )}
+                  {isHumanRespond && (
+                    <>
+                      <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
+                        {t('actions.accept')}
+                      </button>
+                      <p className="self-center text-ds-text-muted text-sm">
+                        {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
+                      </p>
+                      <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
+                        {t('actions.decline')}
+                      </button>
+                      <p className="self-center text-ds-text-muted text-sm">
+                        {t('respondOutcome.decline', { stake: state.handStake })}
+                      </p>
+                      {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
                       1 段だけで、言われた側は受諾か降参かの二択。クローン元の
                       トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
                       「引き上げる」があったが、PutMaxLevel を絞った時点で
                       canDeclarePut は必ず false になり、押せないボタンが残る。 */}
-                </>
+                    </>
+                  )}
+                </div>
+                {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+                <ErrorAlert message={error} onRetry={retry} />
+                <div className="flex flex-wrap gap-2">
+                  {(isTrickEnd || isHandEnd) && (
+                    <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                      {t('actions.next')}
+                    </button>
+                  )}
+                </div>
+              </>
+            }
+          >
+            <div className="mt-4" data-tutorial="put-hand">
+              {human && human.cards.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => (
+                    <button
+                      key={`${card.design}-${card.value}-${idx}`}
+                      type="button"
+                      onClick={() => handlePlay(idx)}
+                      disabled={loading || !isHumanPlayTurn}
+                      aria-label={tc('card.play', { card: cardAlt(card) })}
+                      className="disabled:opacity-50"
+                    >
+                      <CardImage card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex flex-wrap gap-2">
-              {(isTrickEnd || isHandEnd) && (
-                <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-                  {t('actions.next')}
-                </button>
-              )}
-            </div>
-          </>
-        }
-      >
-        <div className="mt-4" data-tutorial="put-hand">
-          {human && human.cards.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {human.cards.map((card, idx) => (
-                <button
-                  key={`${card.design}-${card.value}-${idx}`}
-                  type="button"
-                  onClick={() => handlePlay(idx)}
-                  disabled={loading || !isHumanPlayTurn}
-                  aria-label={tc('card.play', { card: cardAlt(card) })}
-                  className="disabled:opacity-50"
-                >
-                  <CardImage card={card} width={cardWidth} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </GameFooter>
+          </GameFooter>
 
-      <ActionLogSection
-        isEndPhase={isGameEnd}
-        actionLog={actionLog}
-        showActionLog={showActionLog}
-        hideActionLog={hideActionLog}
-      />
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+          <ActionLogSection
+            isEndPhase={isGameEnd}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'matchTarget',
-                label: t('settings.matchTarget'),
-                value: matchTarget,
-                options: PUT_MATCH_TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => setMatchTarget(Number(v)),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'matchTarget',
+                    label: t('settings.matchTarget'),
+                    value: matchTarget,
+                    options: PUT_MATCH_TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => setMatchTarget(Number(v)),
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      />
-      <ActionShortcutsPanel bindings={actionBindings} data-testid="put-kbd-shortcuts" />
+            ]}
+          />
+          <ActionShortcutsPanel bindings={actionBindings} data-testid="put-kbd-shortcuts" />
+        </>
+      )}
     </GamePageShell>
   );
 }

@@ -2281,6 +2281,8 @@
     "euchre.discardPhase": "カードを1枚捨てるか、上がってください",
     "euchre.hintRequested": "ヒントがあります",
     "euchre.noHint": "ヒントはありません",
+    "put.hintRequested": "ヒントがあります",
+    "put.noHint": "ヒントはありません",
     "euchre.pickUpPhase": "ターンアップを切り札として取るか、パスしてください。",
     "euchre.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
     "euchre.playPhase.lead": "あなたの番です — リードするカードを選んでください。",

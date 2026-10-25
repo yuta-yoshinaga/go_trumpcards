@@ -3,6 +3,8 @@
   "trickWinnerBadge": "勝者",
   "playerCountsTable": "プレイヤー別の手札枚数と獲得トリック数",
   "title": "Put (プット)",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません",
   "subtitle": "南米・スペインの心理戦トリックテイキング — 賭け点を釣り上げるブラフ",
   "header": {
     "hand": "ハンド",
