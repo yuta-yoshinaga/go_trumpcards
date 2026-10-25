@@ -437,4 +437,10 @@ describe('MinchiatePage', () => {
     // On one line, not two footer rows: the shared parent is the prompt line, not the footer content.
     expect(progress.parentElement).not.toBe(screen.getByTestId('game-footer-content'));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MinchiatePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
