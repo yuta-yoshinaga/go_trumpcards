@@ -57,9 +57,19 @@ beforeEach(() => {
 
 afterEach(async () => {
   await i18n.changeLanguage('ja');
+  localStorage.removeItem('cli-mode-briscola');
 });
 
 describe('BriscolaPage', () => {
+  it('toggles to CLI and submits the same play argument as a card button', async () => {
+    renderWithProviders(<BriscolaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    expect(screen.queryByTestId('game-footer-content')).not.toBeInTheDocument();
+    fireEvent.change(input, { target: { value: 'p 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
   it('keeps the hand in the footer content and turn actions in its action row', async () => {
     renderWithProviders(<BriscolaPage />);
     const content = await screen.findByTestId('game-footer-content');

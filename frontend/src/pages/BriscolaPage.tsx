@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,6 +18,8 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -26,6 +30,9 @@ import type { BriscolaResponse } from '../types/card';
 import { BriscolaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { BRISCOLA_HELP, parseBriscolaCommand } from '../utils/cli/commands/briscolaCommands';
+import { formatBriscolaState } from '../utils/cli/formatters/briscolaFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -66,6 +73,17 @@ function BriscolaPageContent() {
     retry,
   } = useGameApi<BriscolaResponse, Parameters<typeof briscolaApi.exec>>(briscolaApi.exec);
   const { cardWidth, isMobile } = useCardDimensions();
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('briscola');
+  const cliConfig: CliGameConfig<BriscolaResponse, Parameters<typeof briscolaApi.exec>> = useMemo(
+    () => ({
+      gameName: 'briscola',
+      parseCommand: parseBriscolaCommand,
+      formatResponse: formatBriscolaState,
+      helpText: BRISCOLA_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Initial reset on mount.
   useMountReset(dispatch);
@@ -172,179 +190,190 @@ function BriscolaPageContent() {
       winShow={isGameEnd && state.winnerIdx === 0}
       loading={loading}
       confirmOpen={confirmOpen}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3" data-tutorial="briscola-score">
-          <span className="mr-4">
-            {t('header.trick')}: {state.trickNumber}
-          </span>
-          <span className="mr-4">
-            {t('header.stock')}: {state.stockRemaining}
-          </span>
-          <span>
-            {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
-          </span>
-        </div>
-        <section aria-label={t('header.scoreProgress')} className="flex justify-center gap-6 mb-4">
-          {state.players.map(({ isHuman: playerIsHuman, points }) => {
-            const label = playerIsHuman ? t('header.you') : t('header.cpu');
-            return (
-              <div key={label} className="flex items-center gap-2">
-                <span className="text-ds-text-muted text-sm">{label}</span>
-                <progress
-                  aria-label={t('header.scoreProgressLabel', { player: label, points, target: 61 })}
-                  className="w-24 accent-ds-accent"
-                  max={61}
-                  value={Math.min(points, 61)}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div className="text-ds-text-primary text-center mb-3" data-tutorial="briscola-score">
+              <span className="mr-4">
+                {t('header.trick')}: {state.trickNumber}
+              </span>
+              <span className="mr-4">
+                {t('header.stock')}: {state.stockRemaining}
+              </span>
+              <span>
+                {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
+              </span>
+            </div>
+            <section aria-label={t('header.scoreProgress')} className="flex justify-center gap-6 mb-4">
+              {state.players.map(({ isHuman: playerIsHuman, points }) => {
+                const label = playerIsHuman ? t('header.you') : t('header.cpu');
+                return (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="text-ds-text-muted text-sm">{label}</span>
+                    <progress
+                      aria-label={t('header.scoreProgressLabel', { player: label, points, target: 61 })}
+                      className="w-24 accent-ds-accent"
+                      max={61}
+                      value={Math.min(points, 61)}
+                    />
+                  </div>
+                );
+              })}
+            </section>
+
+            {/* CPU info + trump card */}
+            <div className="flex flex-wrap items-start gap-4 mb-4">
+              <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
+              </div>
+              <div
+                className="flex items-center gap-2 rounded bg-black/30 p-2"
+                data-testid="briscola-stock"
+                data-tutorial="briscola-trump"
+              >
+                {state.trumpCard ? (
+                  <RotatedTrumpStock
+                    label={trumpLabel}
+                    trumpCard={<AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
+                    stockRemaining={state.stockRemaining}
+                    cardWidth={cardWidth}
+                    deckTestId="briscola-stock-deck"
+                  />
+                ) : (
+                  trumpLabel
+                )}
+              </div>
+            </div>
+
+            {/* Current trick */}
+            <TrickDisplay
+              currentTrick={state.currentTrick}
+              players={state.players}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="briscola-trick"
+            />
+
+            {/* Result banner */}
+            {resultBanner && (
+              <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+                {resultBanner}
+              </div>
+            )}
+
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Server hint text (populated by the hint command). */}
+            {serverHint && (
+              <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
+                {t('hint.available')}: {t(`hint.${serverHint.reason}`)}
+                {serverHint.cardIndex !== undefined &&
+                  suggestedCard &&
+                  ` ${t('hint.card', { index: serverHint.cardIndex, name: cardAlt(suggestedCard) })}`}
+              </p>
+            )}
+          </div>
+
+          <GameFooter
+            message={
+              isMobile ? undefined : (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              )
+            }
+            className={`${gameTheme.briscola.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2">
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                    {t('actions.next')}
+                  </button>
+                )}
+                {isHumanTurn && (
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                    {t('actions.hint')}
+                  </button>
+                )}
+                {/* 決着後は失うものが無いので確認を挟まない ── 共通ボタンに任せる (#5608)。 */}
+                <GameResetButton
+                  isGameEnd={isGameEnd}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
                 />
               </div>
-            );
-          })}
-        </section>
-
-        {/* CPU info + trump card */}
-        <div className="flex flex-wrap items-start gap-4 mb-4">
-          <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-            {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
-          </div>
-          <div
-            className="flex items-center gap-2 rounded bg-black/30 p-2"
-            data-testid="briscola-stock"
-            data-tutorial="briscola-trump"
+            }
           >
-            {state.trumpCard ? (
-              <RotatedTrumpStock
-                label={trumpLabel}
-                trumpCard={<AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
-                stockRemaining={state.stockRemaining}
-                cardWidth={cardWidth}
-                deckTestId="briscola-stock-deck"
-              />
-            ) : (
-              trumpLabel
+            {human && human.cards.length > 0 && (
+              <div data-tutorial="briscola-hand">
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => (
+                    <button
+                      key={`${card.design}-${card.value}-${idx}`}
+                      type="button"
+                      onClick={() => handlePlay(idx)}
+                      disabled={loading || !isHumanTurn}
+                      aria-label={t('actions.playCardAria', {
+                        card: cardAlt(card),
+                        points: briscolaCardPoints(card.value),
+                      })}
+                      aria-pressed={selectedIdx === idx}
+                      className={`rounded disabled:opacity-50 ${
+                        selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
+                      }`}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-        </div>
+          </GameFooter>
 
-        {/* Current trick */}
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="briscola-trick"
-        />
+          {/*
+           * Single hint surface: the server hint (requested with the `hint` command and
+           * evaluated against the real game state) and the frontend heuristic tooltip are
+           * mutually exclusive. When the player has explicitly asked the backend, that
+           * answer supersedes the local approximation so the two can never contradict
+           * each other on screen (#4753 -- CassinoPage.tsx uses the same pattern).
+           */}
+          {!serverHint && <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />}
 
-        {/* Result banner */}
-        {resultBanner && (
-          <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
-            {resultBanner}
-          </div>
-        )}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+          />
 
-        {isMobile && (
-          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        )}
-        <ErrorAlert message={error} onRetry={retry} />
-
-        {/* Server hint text (populated by the hint command). */}
-        {serverHint && (
-          <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
-            {t('hint.available')}: {t(`hint.${serverHint.reason}`)}
-            {serverHint.cardIndex !== undefined &&
-              suggestedCard &&
-              ` ${t('hint.card', { index: serverHint.cardIndex, name: cardAlt(suggestedCard) })}`}
-          </p>
-        )}
-      </div>
-
-      <GameFooter
-        message={
-          isMobile ? undefined : (
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-          )
-        }
-        className={`${gameTheme.briscola.footer} px-4 py-2.5`}
-        actions={
-          <div className="flex flex-wrap gap-2">
-            {isTrickEnd && (
-              <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-                {t('actions.next')}
-              </button>
-            )}
-            {isHumanTurn && (
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
-                {t('actions.hint')}
-              </button>
-            )}
-            {/* 決着後は失うものが無いので確認を挟まない ── 共通ボタンに任せる (#5608)。 */}
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-          </div>
-        }
-      >
-        {human && human.cards.length > 0 && (
-          <div data-tutorial="briscola-hand">
-            <div className="text-ds-text-muted text-sm mb-1">
-              {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {human.cards.map((card, idx) => (
-                <button
-                  key={`${card.design}-${card.value}-${idx}`}
-                  type="button"
-                  onClick={() => handlePlay(idx)}
-                  disabled={loading || !isHumanTurn}
-                  aria-label={t('actions.playCardAria', {
-                    card: cardAlt(card),
-                    points: briscolaCardPoints(card.value),
-                  })}
-                  aria-pressed={selectedIdx === idx}
-                  className={`rounded disabled:opacity-50 ${
-                    selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
-                  }`}
-                >
-                  <AnimatedCard card={card} width={cardWidth} />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </GameFooter>
-
-      {/*
-       * Single hint surface: the server hint (requested with the `hint` command and
-       * evaluated against the real game state) and the frontend heuristic tooltip are
-       * mutually exclusive. When the player has explicitly asked the backend, that
-       * answer supersedes the local approximation so the two can never contradict
-       * each other on screen (#4753 -- CassinoPage.tsx uses the same pattern).
-       */}
-      {!serverHint && <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />}
-
-      <SettingsPanel
-        title={tc('settings.title')}
-        groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-      />
-
-      <ActionLogSection
-        isEndPhase={isGameEnd}
-        availableDuringPlay
-        actionLog={actionLog}
-        showActionLog={showActionLog}
-        hideActionLog={hideActionLog}
-      />
-      {/* Keep the keyboard help after the action log so it remains last on the page. */}
-      <CardNavShortcutsPanel data-testid="briscola-kbd-shortcuts" />
+          <ActionLogSection
+            isEndPhase={isGameEnd}
+            availableDuringPlay
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
+          {/* Keep the keyboard help after the action log so it remains last on the page. */}
+          <CardNavShortcutsPanel data-testid="briscola-kbd-shortcuts" />
+        </>
+      )}
     </GamePageShell>
   );
 }
