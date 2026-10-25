@@ -244,6 +244,7 @@ describe('createGamePage', () => {
   });
 
   it('omits settings in GUI and CLI mode when settingsPlacement is none', async () => {
+    const settings = vi.fn(() => [{ items: [] }]);
     const Page = createGamePage({
       key: 'acesup',
       useGame: useFakeGame,
@@ -252,9 +253,13 @@ describe('createGamePage', () => {
       cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
       phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
       settingsPlacement: 'none',
+      // Ignored with 'none': neither the CLI-mode path nor the page's own settings are rendered.
+      settingsInCliMode: true,
+      settings,
       Board,
     });
     const view = renderWithProviders(<Page />);
+    expect(settings).not.toHaveBeenCalled();
 
     expect(view.container.querySelector('details')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('ヒント表示')).not.toBeInTheDocument();

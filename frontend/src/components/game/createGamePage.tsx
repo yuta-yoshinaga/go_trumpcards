@@ -135,7 +135,11 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   cardNav?: (ctx: GamePageContext<S, G, V>) => UseCardKeyboardNavOptions;
   /** Plain function returning settings groups. Must not call hooks. */
   settings?: (ctx: GamePageContext<S, G, V>) => SettingsGroup[];
-  /** Controls where settings appear. Defaults to bottom; use 'none' when the page has its own settings UI and the factory should not render a settings panel. */
+  /**
+   * Controls where settings appear. Defaults to bottom. Use 'none' when the page has its own settings UI: the factory
+   * then renders no settings panel and ignores `settings`, so the page must also render its own hint toggle from
+   * `ctx.frontendHint` if it offers hints.
+   */
   settingsPlacement?: 'top' | 'bottom' | 'none';
   /** Whether to render the landscape recommendation banner. Defaults to false. */
   landscapeBanner?: boolean;
