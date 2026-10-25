@@ -447,4 +447,10 @@ describe('OmbrePage', () => {
     expect(screen.getByText('CPU 1: +2')).toBeInTheDocument();
     expect(screen.getByText('CPU 2: +2')).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<OmbrePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

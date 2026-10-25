@@ -1,37 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ombreApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useOmbreGame } from '../hooks/useOmbreGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { OmbreResponse } from '../types/card';
 import { OmbrePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { OMBRE_HELP, parseOmbreCommand } from '../utils/cli/commands/ombreCommands';
 import { formatOmbreState } from '../utils/cli/formatters/ombreFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/ombreMatadors';
@@ -98,30 +83,11 @@ const TRUMP_CHOICES = [
   { code: 4, symbol: '♦' },
 ] as const;
 
-/** Renders the Ombre (Hombre) game page: a 3-player soloist-vs-coalition 40-card Spanish-deck trick-taker with a bid + trump auction. */
-export const OmbrePage = withTutorial(OmbrePageContent, 'ombre', OMBRE_TUTORIAL_STEPS);
+type OmbreGame = ReturnType<typeof useOmbreGame>;
+type OmbreView = ReturnType<typeof useOmbreView>;
+type OmbreContext = GamePageContext<OmbreResponse, OmbreGame, OmbreView>;
 
-/** Inner content of the Ombre page, wrapped by TutorialProvider. */
-function OmbrePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('ombre');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    ombreConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handleBid,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useOmbreGame();
-
+function useOmbreView({ game }: { game: OmbreGame }) {
   // Two-stage bid flow. Stage 1 picks the bid type (entrar/solo/pass); choosing
   // entrar or solo sets `pendingBid` (1 or 2) and advances to stage 2, where a
   // trump suit is picked and the declaration is confirmed. `null` = stage 1.
@@ -132,69 +98,18 @@ function OmbrePageContent() {
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ombre');
-  const ombreCliConfig: CliGameConfig<OmbreResponse, Parameters<typeof ombreApi.exec>> = useMemo(
-    () => ({
-      gameName: 'ombre',
-      parseCommand: parseOmbreCommand,
-      formatResponse: formatOmbreState,
-      helpText: OMBRE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, ombreCliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('ombre', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('ombre', OMBRE_PHASE_KEYS);
 
-  if (!state)
-    return <GameSkeleton gameKey="ombre" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
-
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanTurn = state.isHumanTurn;
-
-  const isBidPhase = state.phase === OmbrePhase.BID;
-  const isPlayPhase = state.phase === OmbrePhase.PLAY;
-  const isTrickEnd = state.phase === OmbrePhase.TRICK_END;
-  const isRoundEnd = state.phase === OmbrePhase.ROUND_END;
-  const isGameEnd = state.phase === OmbrePhase.GAME_END || state.gameEndFlag;
-
-  const canBid = isBidPhase && state.isHumanBidTurn;
-  const canPlay = isPlayPhase && isHumanTurn;
-  const highestBidder = state.players.find((player) => player.id === state.highestBidderIdx);
-
-  const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit]) : t('suitNone');
-
-  // Badge the three matadors (Spadille ♠A / Manille = trump 7 / Basto ♣A) in
-  // the human's hand once trump is decided. Ring only — never blocks clicks.
-  const matadorBadgeFor = (idx: number): { glyph: string; title: string } | null => {
-    const card = humanPlayer?.cards[idx];
-    if (!card) return null;
-    const rank = matadorRank(card, state.trumpSuit);
-    if (rank === null) return null;
-    return { glyph: String(rank), title: t(MATADOR_NAME_KEY[rank]) };
-  };
-
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
   // Stage 1 → pass immediately, or stage into trump selection for entrar/solo.
   const chooseBid = (bid: number) => {
-    if (bid > 0 && bid <= state.highestBid) return;
+    const highestBid = game.state?.highestBid ?? 0;
+    if (bid > 0 && bid <= highestBid) return;
     if (bid === 0) {
-      handleBid(0);
+      game.handleBid(0);
       return;
     }
     setPendingBid(bid);
@@ -210,365 +125,408 @@ function OmbrePageContent() {
   // Stage 2 → confirm the pending declaration with the chosen trump suit.
   const confirmBid = () => {
     if (pendingBid === null || selectedTrump === null) return;
-    handleBid(pendingBid, selectedTrump);
+    game.handleBid(pendingBid, selectedTrump);
     setPendingBid(null);
     setSelectedTrump(null);
   };
 
+  return {
+    cardWidth,
+    isMobile,
+    phaseNames,
+    pendingBid,
+    selectedTrump,
+    setSelectedTrump,
+    chooseBid,
+    cancelBid,
+    confirmBid,
+  };
+}
+
+function Board({ state, t, view }: OmbreContext) {
+  const { cardWidth, isMobile } = view;
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isBidPhase = state.phase === OmbrePhase.BID;
+  const isTrickEnd = state.phase === OmbrePhase.TRICK_END;
+  const isRoundEnd = state.phase === OmbrePhase.ROUND_END;
+  const isGameEnd = state.phase === OmbrePhase.GAME_END || state.gameEndFlag;
+  const highestBidder = state.players.find((player) => player.id === state.highestBidderIdx);
+  const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit]) : t('suitNone');
+
   return (
-    <GamePageShell
-      title={tc('nav.ombre')}
-      gameThemeBg={gameTheme.ombre.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/ombre"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerPlayer === humanIdx}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: ombreConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetRounds',
-                    label: t('settings.targetRounds'),
-                    value: ombreConfig.targetRounds,
-                    options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetRounds', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span className="mr-4">{t('winningBid', { bid: t(BID_KEYS[state.winningBid]) })}</span>
+        <span>{t('trump', { suit: trumpLabel })}</span>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+            winnerLabel={
+              isTrickEnd
+                ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                : undefined
+            }
+            dataTutorial="ombre-trick-display"
           />
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('winningBid', { bid: t(BID_KEYS[state.winningBid]) })}</span>
-              <span>{t('trump', { suit: trumpLabel })}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
-                  winnerLabel={
-                    isTrickEnd
-                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
-                      : undefined
-                  }
-                  dataTutorial="ombre-trick-display"
-                />
+        {/* Right: info sidebar */}
+        <div data-tutorial="ombre-info">
+          <section aria-label={t('bidHistory')} className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm">
+            <div className="text-ds-text-primary font-semibold">{t('bidHistory')}</div>
+            {state.players.map((p) => (
+              <div key={p.id} className="py-0.5">
+                {t('bidDeclaration', {
+                  name: playerName(p.id, p.isHuman),
+                  bid: state.bidActed[p.id]
+                    ? t(state.bids[p.id] === 0 ? 'bidPass' : BID_KEYS[state.bids[p.id]])
+                    : t('bidWaiting'),
+                  trump:
+                    state.bidActed[p.id] && state.bids[p.id] > 0
+                      ? t('bidTrumpSuffix', { suit: t(SUIT_KEYS[state.bidTrump[p.id]]) })
+                      : '',
+                  highest: state.highestBidderIdx === p.id ? t('highestBidderSuffix') : '',
+                })}
               </div>
-
-              {/* Right: info sidebar */}
-              <div data-tutorial="ombre-info">
-                <section
-                  aria-label={t('bidHistory')}
-                  className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
-                >
-                  <div className="text-ds-text-primary font-semibold">{t('bidHistory')}</div>
-                  {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5">
-                      {t('bidDeclaration', {
-                        name: playerName(p.id, p.isHuman),
-                        bid: state.bidActed[p.id]
-                          ? t(state.bids[p.id] === 0 ? 'bidPass' : BID_KEYS[state.bids[p.id]])
-                          : t('bidWaiting'),
-                        trump:
-                          state.bidActed[p.id] && state.bids[p.id] > 0
-                            ? t('bidTrumpSuffix', { suit: t(SUIT_KEYS[state.bidTrump[p.id]]) })
-                            : '',
-                        highest: state.highestBidderIdx === p.id ? t('highestBidderSuffix') : '',
-                      })}
-                    </div>
-                  ))}
-                  {isBidPhase && highestBidder && (
-                    <div className="text-ds-text-primary">
-                      {t('currentHighestBid', {
-                        name: playerName(highestBidder.id, highestBidder.isHuman),
-                        bid: t(BID_KEYS[state.highestBid]),
-                      })}
-                    </div>
-                  )}
-                </section>
-                {/* Per-player match scores with Ombre badge */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5 flex items-center gap-2">
-                      <span className={p.isOmbre ? 'text-ds-warning font-semibold' : ''}>
-                        {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
-                      </span>
-                      {p.isOmbre && (
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('ombreBadge')}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Players: cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Round result: the deal outcome (Sacar / Puesta / Codille) */}
-                {(isRoundEnd || isGameEnd) && state.outcome > 0 && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>{t('roundResult.outcome', { outcome: t(OUTCOME_KEYS[state.outcome] ?? 'outcomeNone') })}</div>
-                    {state.ombreIdx >= 0 && (
-                      <div>
-                        {t('roundResult.ombre', { name: playerName(state.ombreIdx, state.ombreIdx === humanIdx) })}
-                      </div>
-                    )}
-                    <div className="mt-2">
-                      <div className="text-ds-text-primary">{t('roundResult.scoreChanges')}</div>
-                      {state.players.map((p) => {
-                        const delta = state.playerScoreDeltas[p.id];
-                        return (
-                          <div key={p.id}>
-                            {t('roundResult.scoreChange', {
-                              name: playerName(p.id, p.isHuman),
-                              delta: formatSignedDelta(delta),
-                            })}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+            ))}
+            {isBidPhase && highestBidder && (
+              <div className="text-ds-text-primary">
+                {t('currentHighestBid', {
+                  name: playerName(highestBidder.id, highestBidder.isHuman),
+                  bid: t(BID_KEYS[state.highestBid]),
+                })}
+              </div>
+            )}
+          </section>
+          {/* Per-player match scores with Ombre badge */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+            {state.players.map((p) => (
+              <div key={p.id} className="py-0.5 flex items-center gap-2">
+                <span className={p.isOmbre ? 'text-ds-warning font-semibold' : ''}>
+                  {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
+                </span>
+                {p.isOmbre && (
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('ombreBadge')}</span>
                 )}
               </div>
-            </div>
-
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="ombre-hint-live" role="status" aria-live="polite">
-              {humanPlayer && state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintMessage', {
-                    cards: state.hint.cardIndices
-                      .map((i) => cardAlt(humanPlayer.cards[i] as NonNullable<(typeof humanPlayer.cards)[number]>))
-                      .join(t('listSeparator')),
-                    reason: t(`hint.${state.hint.reason}`),
-                  })}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ombre-reset-button"
-              />
-            </div>
+            ))}
           </div>
 
-          {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.ombre.footer} px-4 py-2.5`}
-            actions={
-              canBid || canPlay || isTrickEnd || isRoundEnd ? (
-                <div className="flex flex-wrap gap-2 items-center" data-tutorial="ombre-action-buttons">
-                  {canBid && pendingBid === null && (
-                    <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
-                      <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
-                      {([1, 2] as const).map((bid) => {
-                        const unavailable = bid <= state.highestBid;
-                        const reasonId = `ombre-bid-unavailable-${bid}`;
-                        return (
-                          <span key={bid}>
-                            <button
-                              type="button"
-                              className={btnPrimary}
-                              onClick={() => chooseBid(bid)}
-                              disabled={loading}
-                              aria-disabled={unavailable || undefined}
-                              aria-describedby={unavailable ? reasonId : undefined}
-                            >
-                              {t(BID_KEYS[bid])}
-                            </button>
-                            {unavailable && (
-                              <span id={reasonId} className="sr-only">
-                                {t('bidMustExceedWinningBid')}
-                              </span>
-                            )}
-                          </span>
-                        );
-                      })}
-                      <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
-                        {t('bidPass')}
-                      </button>
-                    </div>
-                  )}
-                  {canBid && pendingBid !== null && (
-                    <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage2">
-                      <span className="text-ds-text-muted text-sm">
-                        {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}:
-                      </span>
-                      {TRUMP_CHOICES.map((c) => (
-                        <button
-                          key={c.code}
-                          type="button"
-                          className={selectedTrump === c.code ? btnPrimary : btnSecondary}
-                          onClick={() => setSelectedTrump(c.code)}
-                          disabled={loading}
-                          aria-label={t(SUIT_KEYS[c.code])}
-                          aria-pressed={selectedTrump === c.code}
-                        >
-                          {c.symbol}
-                        </button>
-                      ))}
-                      <button
-                        type="button"
-                        className={btnSuccess}
-                        onClick={confirmBid}
-                        disabled={loading || selectedTrump === null}
-                        data-testid="ombre-bid-confirm"
-                      >
-                        {t('confirmBid')}
-                      </button>
-                      <button
-                        type="button"
-                        className={btnSecondary}
-                        onClick={cancelBid}
-                        disabled={loading}
-                        data-testid="ombre-bid-back"
-                      >
-                        {t('bidBack')}
-                      </button>
-                    </div>
-                  )}
-                  {canPlay && (
-                    <>
-                      <button
-                        type="button"
-                        className={btnSecondary}
-                        onClick={() => void exec('hint')}
-                        disabled={loading}
-                      >
-                        {t('requestHint')}
-                      </button>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={handlePlay}
-                        disabled={loading || selectedCardIndices.length !== 1}
-                      >
-                        {t('playButton')}
-                      </button>
-                    </>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
+          {/* Players: cards / tricks */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                  {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                  {t('tricks', { count: p.trickCount })}
                 </div>
-              ) : null
-            }
-          >
-            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
-                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
-            <div data-testid="ombre-prompt-live" role="status" aria-live="polite">
-              {canBid && (
-                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ombre-bid-prompt">
-                  {t('bidPhase')}
-                </div>
-              )}
+              ))}
             </div>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="ombre"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                highlightIndices={canPlay && isRequestedHint(state) ? state.hint?.cardIndices : undefined}
-                restrictedTooltip={t('playButton')}
-                cardBadgeFor={matadorBadgeFor}
-              />
-            )}
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+          )}
+
+          {/* Round result: the deal outcome (Sacar / Puesta / Codille) */}
+          {(isRoundEnd || isGameEnd) && state.outcome > 0 && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              <div>{t('roundResult.outcome', { outcome: t(OUTCOME_KEYS[state.outcome] ?? 'outcomeNone') })}</div>
+              {state.ombreIdx >= 0 && (
+                <div>{t('roundResult.ombre', { name: playerName(state.ombreIdx, state.ombreIdx === humanIdx) })}</div>
+              )}
+              <div className="mt-2">
+                <div className="text-ds-text-primary">{t('roundResult.scoreChanges')}</div>
+                {state.players.map((p) => {
+                  const delta = state.playerScoreDeltas[p.id];
+                  return (
+                    <div key={p.id}>
+                      {t('roundResult.scoreChange', {
+                        name: playerName(p.id, p.isHuman),
+                        delta: formatSignedDelta(delta),
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Message */}
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterStatus({ state, t, frontendHint }: OmbreContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="ombre-hint-live" role="status" aria-live="polite">
+        {humanPlayer && state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintMessage', {
+              cards: state.hint.cardIndices
+                .map((i) => cardAlt(humanPlayer.cards[i] as NonNullable<(typeof humanPlayer.cards)[number]>))
+                .join(t('listSeparator')),
+              reason: t(`hint.${state.hint.reason}`),
+            })}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterHand({ state, game, t, view }: OmbreContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isBidPhase = state.phase === OmbrePhase.BID;
+  const isPlayPhase = state.phase === OmbrePhase.PLAY;
+  const canBid = isBidPhase && state.isHumanBidTurn;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+
+  // Badge the three matadors (Spadille ♠A / Manille = trump 7 / Basto ♣A) in
+  // the human's hand once trump is decided. Ring only — never blocks clicks.
+  const matadorBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return null;
+    const rank = matadorRank(card, state.trumpSuit);
+    if (rank === null) return null;
+    return { glyph: String(rank), title: t(MATADOR_NAME_KEY[rank]) };
+  };
+
+  return (
+    <>
+      {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+          変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+      <div data-testid="ombre-prompt-live" role="status" aria-live="polite">
+        {canBid && (
+          <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ombre-bid-prompt">
+            {t('bidPhase')}
+          </div>
+        )}
+      </div>
+      {humanPlayer && (
+        <PlayerHandSection
+          humanPlayer={humanPlayer}
+          selectedCardIndices={game.selectedCardIndices}
+          toggleCard={game.toggleCard}
+          cardWidth={view.cardWidth}
+          isMobile={view.isMobile}
+          dataTutorialPrefix="ombre"
+          validIndices={canPlay ? state.playableIndices : undefined}
+          highlightIndices={canPlay && isRequestedHint(state) ? state.hint?.cardIndices : undefined}
+          restrictedTooltip={t('playButton')}
+          cardBadgeFor={matadorBadgeFor}
+        />
+      )}
+    </>
+  );
+}
+
+function primaryActions({ game, state, t, busy, view }: OmbreContext) {
+  const isBidPhase = state.phase === OmbrePhase.BID;
+  const isPlayPhase = state.phase === OmbrePhase.PLAY;
+  const isTrickEnd = state.phase === OmbrePhase.TRICK_END;
+  const isRoundEnd = state.phase === OmbrePhase.ROUND_END;
+
+  const canBid = isBidPhase && state.isHumanBidTurn;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  const loading = busy;
+
+  if (!canBid && !canPlay && !isTrickEnd && !isRoundEnd) {
+    return null;
+  }
+
+  const { pendingBid, selectedTrump, setSelectedTrump, chooseBid, cancelBid, confirmBid } = view;
+
+  return (
+    <div className="flex flex-wrap gap-2 items-center" data-tutorial="ombre-action-buttons">
+      {canBid && pendingBid === null && (
+        <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
+          <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
+          {([1, 2] as const).map((bid) => {
+            const unavailable = bid <= state.highestBid;
+            const reasonId = `ombre-bid-unavailable-${bid}`;
+            return (
+              <span key={bid}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => chooseBid(bid)}
+                  disabled={loading}
+                  aria-disabled={unavailable || undefined}
+                  aria-describedby={unavailable ? reasonId : undefined}
+                >
+                  {t(BID_KEYS[bid])}
+                </button>
+                {unavailable && (
+                  <span id={reasonId} className="sr-only">
+                    {t('bidMustExceedWinningBid')}
+                  </span>
+                )}
+              </span>
+            );
+          })}
+          <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
+            {t('bidPass')}
+          </button>
+        </div>
+      )}
+      {canBid && pendingBid !== null && (
+        <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage2">
+          <span className="text-ds-text-muted text-sm">{t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}:</span>
+          {TRUMP_CHOICES.map((c) => (
+            <button
+              key={c.code}
+              type="button"
+              className={selectedTrump === c.code ? btnPrimary : btnSecondary}
+              onClick={() => setSelectedTrump(c.code)}
+              disabled={loading}
+              aria-label={t(SUIT_KEYS[c.code])}
+              aria-pressed={selectedTrump === c.code}
+            >
+              {c.symbol}
+            </button>
+          ))}
+          <button
+            type="button"
+            className={btnSuccess}
+            onClick={confirmBid}
+            disabled={loading || selectedTrump === null}
+            data-testid="ombre-bid-confirm"
+          >
+            {t('confirmBid')}
+          </button>
+          <button
+            type="button"
+            className={btnSecondary}
+            onClick={cancelBid}
+            disabled={loading}
+            data-testid="ombre-bid-back"
+          >
+            {t('bidBack')}
+          </button>
+        </div>
+      )}
+      {canPlay && (
+        <>
+          <button type="button" className={btnSecondary} onClick={() => void game.exec('hint')} disabled={loading}>
+            {t('requestHint')}
+          </button>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handlePlay}
+            disabled={loading || game.selectedCardIndices.length !== 1}
+          >
+            {t('playButton')}
+          </button>
+        </>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={loading}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={loading}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const ombreDefinition: GameDefinition<OmbreResponse, OmbreGame, Parameters<typeof ombreApi.exec>, OmbreView> = {
+  key: 'ombre',
+  useGame: useOmbreGame,
+  useView: useOmbreView,
+  tutorial: OMBRE_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 9 },
+  cli: () => ({
+    parseCommand: parseOmbreCommand,
+    formatResponse: formatOmbreState,
+    helpText: OMBRE_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === OmbrePhase.GAME_END || state.gameEndFlag;
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerPlayer === humanIdx,
+    };
+  },
+  shell: ({ state }) => ({
+    isHumanTurn: state.isHumanTurn,
+  }),
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.ombreConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetRounds',
+          label: t('settings.targetRounds'),
+          value: game.ombreConfig.targetRounds,
+          options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetRounds', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  resetTutorialId: 'ombre-reset-button',
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Ombre (Hombre) game page: a 3-player soloist-vs-coalition 40-card Spanish-deck trick-taker with a bid + trump auction. */
+export const OmbrePage = createGamePage(ombreDefinition);
