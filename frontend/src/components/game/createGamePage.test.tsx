@@ -717,6 +717,29 @@ describe('createGamePage', () => {
       expect(third.container.querySelector('[data-tutorial="cb-play-button"]')).toBeNull();
     });
 
+    it.each([false, true])('renders FooterLead before errors and status (primaryActions: %s)', (pinned) => {
+      const Page = makePage({
+        ...(pinned ? { primaryActions: () => <button type="button">Play</button> } : {}),
+        FooterLead: () => <div data-testid="footer-lead" />,
+        FooterStatus: () => <div data-testid="footer-status" />,
+      });
+      currentGame = { ...currentGame, error: 'failure' };
+      renderWithProviders(<Page />);
+
+      const lead = screen.getByTestId('footer-lead');
+      const error = screen.getByRole('alert');
+      const status = screen.getByTestId('footer-status');
+      expect(lead.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(lead.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('does not render FooterLead when it is omitted', () => {
+      const Page = makePage({ FooterStatus: () => <div data-testid="footer-status" /> });
+      currentGame = { ...currentGame, error: 'failure' };
+      const { container } = renderWithProviders(<Page />);
+      expect(container.querySelector('[data-testid="footer-lead"]')).toBeNull();
+    });
+
     it('renders AboveContent after top settings and outside the scrolling content', () => {
       const AboveContent = () => <div data-testid="above">above</div>;
       const Page = makePage({ AboveContent, settingsPlacement: 'top' });
