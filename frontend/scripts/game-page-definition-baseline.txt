@@ -67,7 +67,6 @@ ChemindeFerPage.tsx
 ChinchonPage.tsx
 ChinesePokerPage.tsx
 ChineseTenPage.tsx
-CinchPage.tsx
 CincinnatiPage.tsx
 CirullaPage.tsx
 CitadelPage.tsx
