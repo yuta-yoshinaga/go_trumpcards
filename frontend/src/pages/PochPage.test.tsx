@@ -99,6 +99,12 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<PochPage />);
+    expect(await screen.findByText('賭ける', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('pochen', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('sends a changed difficulty in the reset request', async () => {
     renderWithProviders(<PochPage />);
     await screen.findAllByTestId('poch-pool');
