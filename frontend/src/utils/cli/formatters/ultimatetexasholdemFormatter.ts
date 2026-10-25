@@ -1,12 +1,27 @@
 import type { UltimateTexasHoldemResponse } from '../../../types/card';
 import { isMaskedCard } from '../../../types/card';
-import { utHoldemBetBounds } from '../../utHoldemBet';
+import { UltimateTexasHoldemPhase } from '../../../types/phases';
+import {
+  anteMax,
+  canPlay,
+  UTH_ANTE_MIN,
+  UTH_ANTE_STEP,
+  UTH_HAND_RANK_NAMES,
+  UTH_TRIPS_MIN,
+  UTH_TRIPS_STEP,
+} from '../../utHoldemBet';
 import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
 
-const PHASES: Record<number, string> = { 1: 'Bet', 2: 'PreFlop', 3: 'Flop', 4: 'River', 5: 'End' };
+const PHASES: Record<number, string> = {
+  [UltimateTexasHoldemPhase.BET]: 'Bet',
+  [UltimateTexasHoldemPhase.PRE_FLOP]: 'PreFlop',
+  [UltimateTexasHoldemPhase.FLOP]: 'Flop',
+  [UltimateTexasHoldemPhase.RIVER]: 'River',
+  [UltimateTexasHoldemPhase.END]: 'End',
+};
 
 /** Format an Ultimate Texas Hold'em response for the terminal. */
-export function formatUltimateTexasHoldemState(state: UltimateTexasHoldemResponse, anteAmount = 10): string {
+export function formatUltimateTexasHoldemState(state: UltimateTexasHoldemResponse): string {
   const lines = [
     formatHeader('Ultimate Texas Holdem'),
     `phase: ${PHASES[state.phase] ?? state.phase}`,
@@ -18,32 +33,34 @@ export function formatUltimateTexasHoldemState(state: UltimateTexasHoldemRespons
   if (state.dealerHand.length)
     lines.push(`dealer: ${state.dealerHand.map((card) => (isMaskedCard(card) ? '??' : formatCard(card))).join(', ')}`);
   if (state.community.length) lines.push(`community: ${state.community.map(formatCard).join(', ')}`);
-  if (state.phase === 1) {
-    const maxAnte = Math.floor(state.chips / 2);
+  if (state.phase === UltimateTexasHoldemPhase.BET) {
+    const maxAnte = anteMax(state.chips);
     lines.push(
-      `bet range: ante 10–${maxAnte} (step 10); trips 0–${utHoldemBetBounds(anteAmount, 0, state.chips).maxTrips} (step 10)`,
+      `bet range: ante ${UTH_ANTE_MIN}–${maxAnte} (step ${UTH_ANTE_STEP}); trips ${UTH_TRIPS_MIN}–(chips − 2×ante) (step ${UTH_TRIPS_STEP}; depends on the ante you enter)`,
     );
     lines.push('action: bet <ante> [trips]');
-  } else if (state.phase === 2) {
+  } else if (state.phase === UltimateTexasHoldemPhase.PRE_FLOP) {
     const available = [
-      state.chips >= state.anteBet * 4 ? '4' : '',
-      state.chips >= state.anteBet * 3 ? '3' : '',
+      canPlay(4, state.chips, state.anteBet) ? '4' : '',
+      canPlay(3, state.chips, state.anteBet) ? '3' : '',
       'check',
     ].filter(Boolean);
     lines.push(`action: ${available.join(' / ')}`);
-  } else if (state.phase === 3) {
-    lines.push(`action: ${state.chips >= state.anteBet * 2 ? '2 / check' : 'check'}`);
-  } else if (state.phase === 4) {
-    lines.push(`action: ${state.chips >= state.anteBet ? '1 / fold' : 'fold'}`);
-  } else if (state.phase === 5) lines.push('action: reset');
+  } else if (state.phase === UltimateTexasHoldemPhase.FLOP) {
+    lines.push(`action: ${canPlay(2, state.chips, state.anteBet) ? '2 / check' : 'check'}`);
+  } else if (state.phase === UltimateTexasHoldemPhase.RIVER) {
+    lines.push(`action: ${canPlay(1, state.chips, state.anteBet) ? '1 / fold' : 'fold'}`);
+  } else if (state.phase === UltimateTexasHoldemPhase.END) lines.push('action: reset');
   if (state.message) lines.push(state.message);
-  if (state.phase === 5) {
+  if (state.phase === UltimateTexasHoldemPhase.END) {
     const result = state.result === 1 ? 'win' : state.result === 0 ? 'push' : 'lose';
     lines.push(`result: ${result} net=${state.netChange}`);
     lines.push(
       `payout: ante=${state.antePayout} blind=${state.blindPayout} play=${state.playPayout} trips=${state.tripsPayout} total=${state.totalPayout}`,
     );
-    lines.push(`hand: player=${state.playerHandRank} dealer=${state.dealerHandRank}`);
+    lines.push(
+      `hand: player=${UTH_HAND_RANK_NAMES[state.playerHandRank] ?? 'Unknown'} dealer=${UTH_HAND_RANK_NAMES[state.dealerHandRank] ?? 'Unknown'}`,
+    );
   }
   lines.push(formatSeparator());
   return lines.join('\n');

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { utHoldemBetBounds } from './utHoldemBet';
+import {
+  anteMax,
+  canPlay,
+  maxTrips,
+  UTH_ANTE_MIN,
+  UTH_ANTE_STEP,
+  UTH_TRIPS_STEP,
+  utHoldemBetBounds,
+} from './utHoldemBet';
 
 describe('utHoldemBetBounds', () => {
   it('counts the ante twice (ante + matching blind) plus trips in the total', () => {
@@ -27,5 +35,18 @@ describe('utHoldemBetBounds', () => {
 
   it('never returns a negative maxTrips when the ante alone exceeds chips', () => {
     expect(utHoldemBetBounds(600, 0, 1000).maxTrips).toBe(0);
+  });
+});
+
+describe('Ultimate Texas Hold’em shared rules', () => {
+  it('exports the Ante and Trips minimum increments and chip based limits', () => {
+    expect([UTH_ANTE_MIN, UTH_ANTE_STEP, UTH_TRIPS_STEP]).toEqual([10, 10, 10]);
+    expect(anteMax(999)).toBe(499);
+    expect(maxTrips(100, 500)).toBe(300);
+  });
+
+  it('checks affordability for each Play multiplier', () => {
+    expect(canPlay(3, 299, 100)).toBe(false);
+    expect(canPlay(3, 300, 100)).toBe(true);
   });
 });

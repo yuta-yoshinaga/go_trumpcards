@@ -33,7 +33,7 @@ describe('formatUltimateTexasHoldemState', () => {
     expect(text).toContain('action: bet <ante> [trips]');
     expect(text).toContain('chips: 500');
     expect(text).toContain('ante 10–250 (step 10)');
-    expect(text).toContain('trips 0–480 (step 10');
+    expect(text).toContain('trips 0–(chips − 2×ante) (step 10; depends on the ante you enter)');
   });
   it('numbers the player hand from zero and guides the current street', () => {
     const text = format({
@@ -66,9 +66,14 @@ describe('formatUltimateTexasHoldemState', () => {
     const text = format({ ...base, phase: 5, result: 1, netChange: 200, message: 'Won' });
     expect(text).toContain('result: win net=200');
     expect(text).toContain('payout: ante=0 blind=0 play=0 trips=0 total=0');
-    expect(text).toContain('hand: player=0 dealer=0');
+    expect(text).toContain('hand: player=High Card dealer=High Card');
     expect(text).toContain('Won');
     expect(format({ ...base, phase: 9 })).toContain('phase: 9');
+  });
+  it('renders English poker hand names', () => {
+    expect(format({ ...base, phase: 5, playerHandRank: 9, dealerHandRank: 8 })).toContain(
+      'hand: player=Royal Flush dealer=Straight Flush',
+    );
   });
   it('uses phase-specific actions and omits an empty notification message', () => {
     expect(format({ ...base, phase: 2 })).toContain('action: 4 / 3 / check');

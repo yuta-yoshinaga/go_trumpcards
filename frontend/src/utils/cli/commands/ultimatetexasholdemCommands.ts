@@ -1,17 +1,24 @@
 import type { ultimatetexasholdemApi } from '../../../api/gameApi';
+import { UltimateTexasHoldemPhase } from '../../../types/phases';
+import {
+  anteMax,
+  canPlay,
+  maxTrips,
+  UTH_ANTE_MIN,
+  UTH_ANTE_STEP,
+  UTH_TRIPS_MIN,
+  UTH_TRIPS_STEP,
+  utHoldemBetBounds,
+} from '../../utHoldemBet';
 import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 /** Page-derived constraints used to keep CLI actions aligned with enabled controls. */
 export interface UltimateTexasHoldemCliConstraints {
-  maxAnte: number;
-  maxTrips: number;
+  chips: number;
+  anteBet?: number;
   boundsForAnte?: (ante: number, trips: number) => { maxTrips: number; valid: boolean };
   phase?: number;
-  canPlay4x?: boolean;
-  canPlay3x?: boolean;
-  canPlay2x?: boolean;
-  canPlay1x?: boolean;
 }
 
 /** Args accepted by ultimatetexasholdemApi.exec. */
@@ -30,22 +37,26 @@ export function parseUltimateTexasHoldemCommand(
     case 'bet': {
       const ante = Number(args[0]);
       const trips = args[1] === undefined ? 0 : Number(args[1]);
-      if (!Number.isInteger(ante) || !Number.isInteger(trips) || ante <= 0 || trips < 0) {
+      if (!Number.isInteger(ante) || !Number.isInteger(trips) || ante <= 0 || trips < UTH_TRIPS_MIN) {
         return { error: 'Usage: bet <ante> [trips]' };
       }
-      if (ante < 10 || ante % 10 !== 0 || trips % 10 !== 0)
-        return { error: 'Bet is outside the allowed range (ante minimum 10, step 10; trips minimum 0, step 10).' };
-      const enteredBounds = constraints?.boundsForAnte?.(ante, trips);
+      if (ante < UTH_ANTE_MIN || ante % UTH_ANTE_STEP !== 0 || trips % UTH_TRIPS_STEP !== 0)
+        return {
+          error: `Bet is outside the allowed range (ante minimum ${UTH_ANTE_MIN}, step ${UTH_ANTE_STEP}; trips minimum ${UTH_TRIPS_MIN}, step ${UTH_TRIPS_STEP}).`,
+        };
+      const bounds =
+        constraints?.boundsForAnte?.(ante, trips) ??
+        (constraints ? utHoldemBetBounds(ante, trips, constraints.chips) : undefined);
       if (
         constraints &&
-        (ante > constraints.maxAnte ||
-          trips > (enteredBounds?.maxTrips ?? constraints.maxTrips) ||
-          enteredBounds?.valid === false)
+        (ante > anteMax(constraints.chips) ||
+          trips > (bounds?.maxTrips ?? maxTrips(ante, constraints.chips)) ||
+          bounds?.valid === false)
       )
         return {
-          error: `Bet is outside the allowed range (ante 10–${constraints.maxAnte}, trips 0–${enteredBounds?.maxTrips ?? constraints.maxTrips}, step 10).`,
+          error: `Bet is outside the allowed range (ante ${UTH_ANTE_MIN}–${anteMax(constraints.chips)}, trips ${UTH_TRIPS_MIN}–${bounds?.maxTrips ?? maxTrips(ante, constraints.chips)}, step ${UTH_TRIPS_STEP}).`,
         };
-      if (constraints?.phase !== undefined && constraints.phase !== 1)
+      if (constraints?.phase !== undefined && constraints.phase !== UltimateTexasHoldemPhase.BET)
         return { error: 'Bet is unavailable in this phase.' };
       return { args: ['bet', ante, trips] };
     }
@@ -65,17 +76,21 @@ export function parseUltimateTexasHoldemCommand(
       return { args: ['play', undefined, undefined, Number(cmd)] };
     case 'c':
     case 'check':
-      if (constraints?.phase !== undefined && constraints.phase !== 2 && constraints.phase !== 3)
+      if (
+        constraints?.phase !== undefined &&
+        constraints.phase !== UltimateTexasHoldemPhase.PRE_FLOP &&
+        constraints.phase !== UltimateTexasHoldemPhase.FLOP
+      )
         return { error: 'Check is unavailable in this phase.' };
       return { args: ['check'] };
     case 'f':
     case 'fold':
-      if (constraints?.phase !== undefined && constraints.phase !== 4)
+      if (constraints?.phase !== undefined && constraints.phase !== UltimateTexasHoldemPhase.RIVER)
         return { error: 'Fold is unavailable in this phase.' };
       return { args: ['fold'] };
     case 'r':
     case 'reset':
-      if (constraints?.phase !== undefined && constraints.phase !== 5)
+      if (constraints?.phase !== undefined && constraints.phase !== UltimateTexasHoldemPhase.END)
         return { error: 'Reset is unavailable in this phase.' };
       return { args: ['reset'] };
     default:
@@ -84,13 +99,13 @@ export function parseUltimateTexasHoldemCommand(
 }
 
 function playAllowed(multiplier: number, constraints: UltimateTexasHoldemCliConstraints): boolean {
-  return multiplier === 4
-    ? constraints.phase === 2 && constraints.canPlay4x !== false
-    : multiplier === 3
-      ? constraints.phase === 2 && constraints.canPlay3x !== false
+  const phase =
+    multiplier >= 3
+      ? UltimateTexasHoldemPhase.PRE_FLOP
       : multiplier === 2
-        ? constraints.phase === 3 && constraints.canPlay2x !== false
-        : constraints.phase === 4 && constraints.canPlay1x !== false;
+        ? UltimateTexasHoldemPhase.FLOP
+        : UltimateTexasHoldemPhase.RIVER;
+  return constraints.phase === phase && canPlay(multiplier, constraints.chips, constraints.anteBet ?? 0);
 }
 
 /** Help text shown in the Ultimate Texas Hold'em terminal. */

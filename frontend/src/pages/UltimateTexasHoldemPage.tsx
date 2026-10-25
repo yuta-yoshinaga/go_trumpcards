@@ -37,7 +37,16 @@ import {
 import { formatUltimateTexasHoldemState } from '../utils/cli/formatters/ultimatetexasholdemFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
-import { utHoldemBetBounds } from '../utils/utHoldemBet';
+import {
+  anteMax,
+  canPlay,
+  UTH_ANTE_MIN,
+  UTH_ANTE_STEP,
+  UTH_HAND_RANK_KEYS,
+  UTH_TRIPS_MIN,
+  UTH_TRIPS_STEP,
+  utHoldemBetBounds,
+} from '../utils/utHoldemBet';
 import { utHoldemPreflopStrength } from '../utils/utHoldemPreflop';
 
 /** Ultimate Texas Hold'em tutorial step definitions. */
@@ -74,23 +83,6 @@ const UTH_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/**
- * Hand rank display name lookup. Indices mirror Go's `PokerHandNames`
- * (sync: `internal/domain/PokerPlayer.go`), so 0 = High card, 9 = Royal flush.
- */
-const HAND_RANK_KEYS: Readonly<Record<number, string>> = {
-  0: 'handRank.0',
-  1: 'handRank.1',
-  2: 'handRank.2',
-  3: 'handRank.3',
-  4: 'handRank.4',
-  5: 'handRank.5',
-  6: 'handRank.6',
-  7: 'handRank.7',
-  8: 'handRank.8',
-  9: 'handRank.9',
-};
-
 /** Renders the Ultimate Texas Hold'em game page. */
 export const UltimateTexasHoldemPage = withTutorial(
   UltimateTexasHoldemPageContent,
@@ -113,10 +105,10 @@ function UltimateTexasHoldemPageContent() {
   const isFlopPhase = state?.phase === UltimateTexasHoldemPhase.FLOP;
   const isRiverPhase = state?.phase === UltimateTexasHoldemPhase.RIVER;
   const isEndPhase = state?.phase === UltimateTexasHoldemPhase.END;
-  const canPlay4x = !!state && state.chips >= state.anteBet * 4;
-  const canPlay3x = !!state && state.chips >= state.anteBet * 3;
-  const canPlay2x = !!state && state.chips >= state.anteBet * 2;
-  const canPlay1x = !!state && state.chips >= state.anteBet;
+  const canPlay4x = !!state && canPlay(4, state.chips, state.anteBet);
+  const canPlay3x = !!state && canPlay(3, state.chips, state.anteBet);
+  const canPlay2x = !!state && canPlay(2, state.chips, state.anteBet);
+  const canPlay1x = !!state && canPlay(1, state.chips, state.anteBet);
   const betBounds = utHoldemBetBounds(anteAmount, tripsAmount, state?.chips ?? 0);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } =
     useCliMode('ultimatetexasholdem');
@@ -130,20 +122,16 @@ function UltimateTexasHoldemPageContent() {
       gameName: 'ultimatetexasholdem',
       parseCommand: (input: string) =>
         parseUltimateTexasHoldemCommand(input, {
-          maxAnte: Math.floor((state?.chips ?? 0) / 2),
-          maxTrips: utHoldemBetBounds(anteAmount, 0, state?.chips ?? 0).maxTrips,
+          chips: state?.chips ?? 0,
+          anteBet: state?.anteBet ?? 0,
           boundsForAnte: (ante, trips) => utHoldemBetBounds(ante, trips, state?.chips ?? 0),
           phase: state?.phase,
-          canPlay4x,
-          canPlay3x,
-          canPlay2x,
-          canPlay1x,
         }),
-      formatResponse: (response: UltimateTexasHoldemResponse) => formatUltimateTexasHoldemState(response, anteAmount),
+      formatResponse: (response: UltimateTexasHoldemResponse) => formatUltimateTexasHoldemState(response),
       helpText: ULTIMATE_TEXAS_HOLDEM_HELP,
       localCommand: hintLocalCommand(frontendHint),
     }),
-    [frontendHint, state, anteAmount, canPlay4x, canPlay3x, canPlay2x, canPlay1x],
+    [frontendHint, state],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -153,7 +141,7 @@ function UltimateTexasHoldemPageContent() {
   // (e.g. after a losing round) so the UI cannot submit an out-of-range bet.
   useEffect(() => {
     if (!state) return;
-    const cap = Math.floor(state.chips / 2);
+    const cap = anteMax(state.chips);
     setAnteAmount((a) => (a > cap ? Math.max(cap, 0) : a));
   }, [state]);
 
@@ -164,9 +152,6 @@ function UltimateTexasHoldemPageContent() {
     const { maxTrips } = utHoldemBetBounds(anteAmount, 0, state.chips);
     setTripsAmount((tr) => (tr > maxTrips ? maxTrips : tr));
   }, [state, anteAmount]);
-
-  // Ante (×2 for the matched Blind) + Trips must fit within chips. Drives the
-  // trips cap, the combined-total readout, the over-balance alert, and submit gating.
 
   const actionBindings = useMemo(
     () => [
@@ -248,7 +233,7 @@ function UltimateTexasHoldemPageContent() {
 
   const hasMadeHand = (isFlopPhase || isRiverPhase) && state.playerHand.length + state.community.length >= 5;
   const madeHandText = hasMadeHand
-    ? t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })
+    ? t('madeHand', { hand: t(UTH_HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })
     : '';
 
   return (
@@ -394,7 +379,9 @@ function UltimateTexasHoldemPageContent() {
                 <div className="text-ds-error-text font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
+                    <span className="ml-2 text-sm">
+                      ({t(UTH_HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})
+                    </span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -414,7 +401,9 @@ function UltimateTexasHoldemPageContent() {
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
                   {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})</span>
+                    <span className="ml-2 text-sm">
+                      ({t(UTH_HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})
+                    </span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -488,9 +477,9 @@ function UltimateTexasHoldemPageContent() {
                     inputClassName="min-w-0"
                     value={anteAmount}
                     onChange={setAnteAmount}
-                    min={10}
-                    max={Math.floor(state.chips / 2)}
-                    step={10}
+                    min={UTH_ANTE_MIN}
+                    max={anteMax(state.chips)}
+                    step={UTH_ANTE_STEP}
                     disabled={loading}
                     showSteppers
                   />
@@ -501,9 +490,9 @@ function UltimateTexasHoldemPageContent() {
                   label={t('label.trips')}
                   value={tripsAmount}
                   onChange={setTripsAmount}
-                  min={0}
+                  min={UTH_TRIPS_MIN}
                   max={betBounds.maxTrips}
-                  step={10}
+                  step={UTH_TRIPS_STEP}
                   disabled={loading}
                   autoClamp={false}
                   invalid={!betBounds.valid}
