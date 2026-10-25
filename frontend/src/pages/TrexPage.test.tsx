@@ -461,4 +461,10 @@ describe('TrexPage', () => {
       expect(screen.queryByTestId('trex-hand-penalty-card')).not.toBeInTheDocument();
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<TrexPage />);
+    expect(await screen.findByText('契約選択', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('choose', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

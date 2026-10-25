@@ -298,7 +298,6 @@ TrappolaPage.tsx
 TrashPage.tsx
 TrenteEtQuarantePage.tsx
 TressettePage.tsx
-TrexPage.tsx
 TriPeaksPage.tsx
 TrogguPage.tsx
 TrucoPage.tsx
