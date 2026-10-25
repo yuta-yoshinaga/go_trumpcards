@@ -328,6 +328,12 @@ describe('BridgePage', () => {
     );
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BridgePage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('renders bid phase with bid controls when human turn', async () => {
     renderWithProviders(<BridgePage />);
     await waitFor(() => {
