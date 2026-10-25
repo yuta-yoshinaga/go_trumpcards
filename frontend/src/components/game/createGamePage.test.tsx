@@ -725,6 +725,44 @@ describe('createGamePage', () => {
     expect(bannerCount(disabledView.container)).toBe(0);
   });
 
+  it('orders LiveRegion, banner and settings ahead of the content when both CLI-mode options are set', async () => {
+    localStorage.removeItem('cli-mode-acesup');
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      settings: () => [{ items: [{ type: 'checkbox' as const, id: 'order-setting', label: 'Order', checked: false }] }],
+      settingsPlacement: 'top',
+      landscapeBanner: true,
+      landscapeBannerInCliMode: true,
+      settingsInCliMode: true,
+      LiveRegion: () => <div data-testid="live-region" />,
+      Board,
+    });
+    const view = renderWithProviders(<Page />);
+    const follows = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const banner = () =>
+      Array.from(view.container.querySelectorAll('[data-app-chrome]')).find((el) =>
+        el.classList.contains('portrait:flex'),
+      ) as Element;
+    const panel = () => view.container.querySelector('details') as Element;
+    const live = screen.getByTestId('live-region');
+    expect(follows(live, banner())).toBe(true);
+    expect(follows(banner(), panel())).toBe(true);
+    expect(follows(panel(), screen.getByTestId('board'))).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(follows(live, banner())).toBe(true);
+    expect(follows(banner(), panel())).toBe(true);
+    expect(follows(panel(), screen.getByRole('textbox'))).toBe(true);
+    view.unmount();
+    localStorage.removeItem('cli-mode-acesup');
+  });
+
   it('keeps top settings in CLI mode only when settingsInCliMode is enabled', async () => {
     const makeSettingsPage = (settingsInCliMode?: boolean) =>
       createGamePage({

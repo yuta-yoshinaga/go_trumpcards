@@ -61,8 +61,6 @@ Issue #11912。
 
 ## 追記 (2026-10-25): 系統移行 2 回目で見つかったファクトリの不足
 
-帯や上置きの設定パネルを CLI モードでも出していたページ (40 ページ) 用に `landscapeBannerInCliMode` / `settingsInCliMode` を追加。
-
 OldMaid、Ecarte、Jass、Belote を移した。監査を通ったのは Ecarte だけだった。残りの 3 ページは委譲の誤りではなく、ファクトリ側の不足で振る舞いが変わった。上の「CPU ログも分割サイドバーも `Board` に置ける」は正しかった（OldMaid の CPU ログは Board の中で同じ位置に出た）。ただし、`Board` だけでは表せない形が 4 つあった。そこで次の口を足した:
 
 - `cli` の引数に `frontendHint` を渡す。OldMaid の CLI `hint` はヒントの ON/OFF に従う必要があったが、`cli` からはヒントの状態が見えなかった。
@@ -83,3 +81,7 @@ CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する�
 プレイ中も棋譜を出すページ (`ActionLogSection availableDuringPlay`) 用に `actionLogDuringPlay` を追加。
 
 ラウンド終了で棋譜ボタンを出すページ (Loo など) 用に `actionLogEndPhase` を追加。
+
+## 追記 (2026-10-26): CLI モードでも出す帯と設定
+
+未移行の標準レイアウトのページのうち 40 余りは、横向き推奨の帯 (うち 13 は上置きの設定パネルも) を CLI モードの分岐の前に描いており、CLI モードでも表示される。ファクトリはどちらも GUI 側だけで描くので、移行すると CLI モードで消える。振る舞いを変えないために `landscapeBannerInCliMode` / `settingsInCliMode` を追加した (分岐の前に描き、モードを切り替えても同じ要素のまま)。CLI モードで出すべきかどうか自体は #12132 で決める。
