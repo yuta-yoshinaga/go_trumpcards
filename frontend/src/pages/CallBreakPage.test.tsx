@@ -524,6 +524,22 @@ describe('CallBreakPage', () => {
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
+  it('keeps the spades-broken and bid rows above the error alert, and the hint region below it', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    const alert = await screen.findByText(NETWORK_ERROR_MESSAGE());
+    const spadesBreak = screen.getByTestId('cb-spades-break-footer');
+    const hintLive = screen.getByTestId('callbreak-hint-live');
+    expect(spadesBreak.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(alert.compareDocumentPosition(hintLive) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('settings panel changes cpuDifficulty', async () => {
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByText('コールブレイク')).toBeInTheDocument());
@@ -649,5 +665,11 @@ describe('CallBreakPage', () => {
     } finally {
       innerWidthSpy.mockRestore();
     }
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CallBreakPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
   });
 });
