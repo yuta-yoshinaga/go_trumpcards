@@ -95,8 +95,13 @@ function GapsPageContent() {
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gaps');
   const cliConfig: CliGameConfig<GapsResponse, Parameters<typeof gapsApi.exec>> = useMemo(
-    () => ({ gameName: 'gaps', parseCommand: parseGapsCommand, formatResponse: formatGapsState, helpText: GAPS_HELP }),
-    [],
+    () => ({
+      gameName: 'gaps',
+      parseCommand: (input: string) => parseGapsCommand(input, state),
+      formatResponse: formatGapsState,
+      helpText: GAPS_HELP,
+    }),
+    [state],
   );
   const { handleCommand } = useCliGame(run, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

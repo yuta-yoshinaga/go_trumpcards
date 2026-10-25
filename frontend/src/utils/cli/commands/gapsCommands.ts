@@ -1,4 +1,5 @@
 import type { GapsMoveZone, gapsApi } from '../../../api/games/gaps';
+import type { GapsResponse } from '../../../types/card';
 import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
@@ -23,7 +24,7 @@ const VALID_COMMANDS = [
 ];
 
 /** Parse Gaps CLI input into arguments accepted by gapsApi.exec. */
-export function parseGapsCommand(input: string): CliParseResult<GapsCliArgs> {
+export function parseGapsCommand(input: string, state?: GapsResponse | null): CliParseResult<GapsCliArgs> {
   const { cmd, args } = splitCommand(input);
   switch (cmd) {
     case 'p':
@@ -44,6 +45,9 @@ export function parseGapsCommand(input: string): CliParseResult<GapsCliArgs> {
         return { error: 'Usage: p <idx> <row> <col> (idx 0-51, row 0-3, col 0-12)' };
       }
       const source: GapsMoveZone = { zone: 'grid', row: Math.floor(idx / 13), col: idx % 13 };
+      if (state && source.col < (state.lockedPrefixLengths[source.row] ?? 0)) {
+        return { error: 'Cannot move a locked card.' };
+      }
       const target: GapsMoveZone = { zone: 'grid', row, col };
       return { args: ['move', source, target] };
     }

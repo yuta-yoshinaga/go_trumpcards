@@ -49,4 +49,39 @@ describe('formatGapsState', () => {
     expect(formatGapsState(makeState({ phase: 2 })).toLowerCase()).toContain('game over');
     expect(formatGapsState(makeState({ isStalemate: true, undoToEscape: 4 }))).toContain('Undo 4 moves to escape');
   });
+
+  it('prints every gap by row and column with the page gap requirement', () => {
+    const state = makeState({
+      gapNeeds: [
+        [null, { kind: 'needed', design: 'SPADE', value: 7 }, { kind: 'anySuit', value: 8 }, { kind: 'blocked' }],
+      ],
+    });
+    const text = formatGapsState(state);
+    expect(text).toContain('[1] gap at 0,1 (needs ♠ 7)');
+    expect(text).toContain('[2] gap at 0,2 (needs any suit 8)');
+    expect(text).toContain('[3] gap at 0,3 (blocked)');
+  });
+
+  it('shows only available actions and concrete stalemate recovery', () => {
+    const text = formatGapsState(
+      makeState({ canUndo: false, redealsRemaining: 0, redealsUsed: 3, isStalemate: true, undoToEscape: 2 }),
+    );
+    expect(text).toContain('redeals: 3/3 (locked)');
+    expect(text).toContain('with un 2');
+    expect(text).not.toContain('Move a card to an empty cell with: p');
+    expect(text).not.toContain('Use u to undo');
+    expect(text).not.toContain('Use d to redeal');
+  });
+
+  it('prints no hint once and renders a requested hint as an executable indexed command', () => {
+    expect(formatGapsState(makeState({ messageCode: 'gaps.noHint' }))).toContain('No hint available.');
+    const hint = { fromRow: 1, fromCol: 2, toRow: 0, toCol: 12 };
+    expect(formatGapsState(makeState({ hint, messageCode: 'gaps.hintAvailable' }))).toContain('command: p 15 0 12');
+  });
+
+  it('uses reset in ended phases and avoids duplicating clear messages', () => {
+    const text = formatGapsState(makeState({ phase: 1, message: '日本語のクリア表示' }));
+    expect(text).toContain('Use r to reset.');
+    expect(text).not.toContain('日本語のクリア表示');
+  });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GapsMoveZone } from '../../../api/games/gaps';
+import type { GapsResponse } from '../../../types/card';
 import type { CliParseResult } from '../types';
 import type { GapsCliArgs } from './gapsCommands';
 import { GAPS_HELP, parseGapsCommand } from './gapsCommands';
@@ -36,6 +37,14 @@ describe('parseGapsCommand', () => {
       expect(errorOf(parseGapsCommand(input))).toMatch(/^Usage: p/);
     }
     for (const input of ['un', 'un 0', 'un x']) expect(errorOf(parseGapsCommand(input))).toBe('Usage: undo_n <count>');
+  });
+
+  it('rejects moving a card within the locked prefix', () => {
+    const state = { lockedPrefixLengths: [2, 1, 0, 0] } as GapsResponse;
+    expect(errorOf(parseGapsCommand('p 1 0 4', state))).toBe('Cannot move a locked card.');
+    expect(parseGapsCommand('p 2 0 4', state)).toEqual({
+      args: ['move', { zone: 'grid', row: 0, col: 2 }, { zone: 'grid', row: 0, col: 4 }],
+    });
   });
 
   it('rejects unknown commands and documents the available actions', () => {
