@@ -68,7 +68,6 @@ ColoradoPage.tsx
 ColourWhistPage.tsx
 CometPage.tsx
 CongressPage.tsx
-ConquianPage.tsx
 ContinentalRummyPage.tsx
 ContractRummyPage.tsx
 CostlyColoursPage.tsx

@@ -513,6 +513,19 @@ describe('ConquianPage', () => {
     );
   });
 
+  it('selects a hand card with its number key in the meld phase', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    const index = screen
+      .getAllByRole('button')
+      .filter((b) => b.hasAttribute('aria-pressed'))
+      .indexOf(cardBtn);
+    fireEvent.keyDown(document, { key: String(index + 1) });
+    await waitFor(() => expect(cardBtn).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('card selection toggle via aria-pressed', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<ConquianPage />);
@@ -719,5 +732,18 @@ describe('ConquianPage round winner', () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
     renderWithProviders(<ConquianPage />);
     await waitFor(() => expect(screen.queryByTestId('cq-discard-pile')).not.toBeInTheDocument());
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<ConquianPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the reset button in the pinned footer and adds no shortcuts panel, as the hand-wired page did', async () => {
+    renderWithProviders(<ConquianPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+    expect(footer.querySelector('details')).toBeNull();
   });
 });
