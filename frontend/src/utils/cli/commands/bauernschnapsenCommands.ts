@@ -35,7 +35,7 @@ export function parseBauernschnapsenCommand(input: string): CliParseResult<Bauer
     case 'c':
     case 'contract': {
       const contract = Number(args[0]);
-      const suit = args[1] === undefined ? 1 : Number(args[1]);
+      const suit = contract === 0 || contract === 3 ? 1 : args[1] === undefined ? 1 : Number(args[1]);
       if (
         !Number.isInteger(contract) ||
         contract < 0 ||
@@ -75,7 +75,7 @@ export function parseBauernschnapsenCommand(input: string): CliParseResult<Bauer
 /** Help text shown in the Bauernschnapsen CLI terminal. */
 export const BAUERNSCHNAPSEN_HELP = [
   'p <idx>            - Play a card from your hand (0-4)',
-  'c <contract> [suit] - Declare a contract (0=Pass, 1=Rufer, 2=Farbenzwang, 3=Bettel; suit 1-4)',
+  'c <0-3> [suit]     - Declare a contract (0=Pass, 1=Rufer, 2=Farbenzwang, 3=Bettel; suit 1-4)',
   'm <idx>            - Declare a marriage with a card (0-4)',
   'n / next           - Continue after a trick',
   'nr / nextround     - Start the next round',

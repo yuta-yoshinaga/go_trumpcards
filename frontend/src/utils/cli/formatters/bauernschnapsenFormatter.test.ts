@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BauernschnapsenResponse } from '../../../types/card';
+import { BauernschnapsenPhase } from '../../../types/phases';
 import { formatBauernschnapsenState } from './bauernschnapsenFormatter';
 
 const state = (overrides: Partial<BauernschnapsenResponse> = {}): BauernschnapsenResponse => ({
@@ -46,7 +47,10 @@ describe('formatBauernschnapsenState', () => {
     expect(text).toContain('Rufer');
     expect(text).toContain('[0]♠K');
     expect(text).toContain('[1]♥Q');
-    expect(text).toContain('use p <idx>');
+    expect(text).toContain('p <idx>');
+    expect(text).toContain('current player: あなた');
+    expect(text).toContain('declarer: あなた — Rufer');
+    expect(text).toContain('trump: Spades');
     expect(text).toContain('Team0=4');
   });
 
@@ -92,5 +96,29 @@ describe('formatBauernschnapsenState', () => {
     expect(text).toContain('contract: Unknown');
     expect(text).not.toContain('trump:');
     expect(formatBauernschnapsenState(state({ trumpSuit: 9 }))).toContain('trump: ?');
+  });
+
+  it('marks legal plays and marriage cards only on the human turn', () => {
+    const marked = formatBauernschnapsenState(state({ validPlayIndices: [1], marriageIndices: [0] }));
+    expect(marked).toContain('[0]♠K*x');
+    expect(marked).toContain('[1]♥Q');
+    const cpuTurn = formatBauernschnapsenState(state({ currentPlayerIdx: 1, marriageIndices: [0] }));
+    expect(cpuTurn).toContain('[0]♠K');
+    expect(cpuTurn).not.toContain('[0]♠K*');
+  });
+
+  it('shows phase-specific commands for the human turn', () => {
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.CONTRACT }))).toContain('c <0-3> [suit]');
+    expect(formatBauernschnapsenState(state({ marriageIndices: [0] }))).toContain('m <idx>');
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.TRICK_END }))).toContain('n');
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.ROUND_END }))).toContain('nr');
+    expect(formatBauernschnapsenState(state({ currentPlayerIdx: 1 }))).not.toContain('p <idx>');
+  });
+
+  it('prints a single friendly line for an unavailable hint', () => {
+    const text = formatBauernschnapsenState(state({ message: '', messageCode: 'bauernschnapsen.noHint' }));
+    expect(text).toContain('No hint available.');
+    expect(text).not.toContain('bauernschnapsen.noHint');
+    expect(text.match(/No hint available\./g)).toHaveLength(1);
   });
 });

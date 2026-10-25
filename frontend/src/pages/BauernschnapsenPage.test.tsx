@@ -97,6 +97,16 @@ describe('BauernschnapsenPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
   });
 
+  it('dispatches CLI play index zero to the play action', async () => {
+    renderWithProviders(<BauernschnapsenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /CLIモードに切り替え/ }));
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'p 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+  });
+
   it('opens the action log during play and shows its entry', async () => {
     renderWithProviders(<BauernschnapsenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
