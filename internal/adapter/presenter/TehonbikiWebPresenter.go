@@ -12,7 +12,15 @@ import (
 type TehonbikiWebPresenter struct{}
 
 func (*TehonbikiWebPresenter) Output(c interfaces.TehonbikiGame, e error) string {
-	o := &controller.TehonbikiWebOutput{Phase: int(c.GetPhase()), Numbers: c.GetNumbers(), BetType: c.GetBetType(), Bet: c.GetBet(), Result: int(c.GetResult()), Payout: c.GetPayout(), Chips: c.GetChips(), RoundNumber: c.GetRoundNumber(), RemainingCards: c.GetRemainingCards(), GameEndFlag: c.GetGameEndFlag(), MinBet: domain.TehonbikiMinBet, MaxBet: domain.TehonbikiMaxBet}
+	return marshalOrError(tehonbikiOutput(c, e))
+}
+
+func tehonbikiOutput(c interfaces.TehonbikiGame, e error) *controller.TehonbikiWebOutput {
+	numbers := c.GetNumbers()
+	if numbers == nil {
+		numbers = []int{}
+	}
+	o := &controller.TehonbikiWebOutput{Phase: int(c.GetPhase()), Numbers: numbers, BetType: c.GetBetType(), Bet: c.GetBet(), Result: int(c.GetResult()), Payout: c.GetPayout(), Chips: c.GetChips(), RoundNumber: c.GetRoundNumber(), RemainingCards: c.GetRemainingCards(), GameEndFlag: c.GetGameEndFlag(), MinBet: domain.TehonbikiMinBet, MaxBet: domain.TehonbikiMaxBet}
 	if c.GetPhase() == domain.TehonbikiPhaseResult || c.GetGameEndFlag() {
 		n := c.GetParentCard()
 		o.ParentCard = &n
@@ -31,14 +39,18 @@ func (*TehonbikiWebPresenter) Output(c interfaces.TehonbikiGame, e error) string
 			o.Message = e.Error()
 		}
 	}
-	return marshalOrError(o)
+	return o
 }
 func (*TehonbikiWebPresenter) ActionLogOutput(c interfaces.TehonbikiGame) string {
 	return actionLogOutputJSON(c)
 }
 func (*TehonbikiWebPresenter) HintOutput(c interfaces.TehonbikiGame) string {
+	o := tehonbikiOutput(c, nil)
 	if h := c.GetHint(); h != nil {
-		return marshalOrError(map[string]any{"reason": h.Reason})
+		o.Hint = &controller.TehonbikiWebOutputHint{Reason: h.Reason}
+		o.MessageCode = "tehonbiki.hintRequested"
+	} else {
+		o.MessageCode = "tehonbiki.noHint"
 	}
-	return marshalOrError(map[string]any{"hint": nil})
+	return marshalOrError(o)
 }

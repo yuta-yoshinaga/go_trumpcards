@@ -56,6 +56,47 @@ describe('TehonbikiPage', () => {
     for (let n = 1; n <= 6; n++) expect(screen.getByRole('button', { name: String(n) })).toBeInTheDocument();
   });
 
+  it('shows the CLI terminal when CLI mode is enabled', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+  });
+
+  it('renders full hint and reset CLI responses with empty numbers', async () => {
+    let current = state();
+    const hookResult = { state: current, loading: false, error: null, exec: mockExec, retry: vi.fn() };
+    mockUseGameApi.mockReturnValue(hookResult as never);
+    const { rerender } = renderWithProviders(<TehonbikiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = screen.getByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'hint' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await flushPendingDispatch();
+    current = {
+      ...state({ hint: { reason: '候補を選んでください' }, messageCode: 'tehonbiki.hintRequested' }),
+      numbers: [],
+    };
+    hookResult.state = current;
+    rerender(<TehonbikiPage />);
+    expect(screen.getByRole('log', { name: 'CLI 出力ログ' })).toBeInTheDocument();
+
+    current = state({ numbers: [], messageCode: 'tehonbiki.noHint' });
+    hookResult.state = current;
+    fireEvent.change(screen.getByRole('textbox', { name: 'コマンドを入力...' }), { target: { value: 'reset' } });
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'コマンドを入力...' }), { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await flushPendingDispatch();
+    current = state({ numbers: [], messageCode: 'tehonbiki.noHint' });
+    hookResult.state = current;
+    rerender(<TehonbikiPage />);
+    expect(screen.getByRole('log', { name: 'CLI 出力ログ' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+  });
+
   it('renders the translated phase name', () => {
     renderWithProviders(<TehonbikiPage />);
     expect(screen.getByText('予想')).toBeInTheDocument();

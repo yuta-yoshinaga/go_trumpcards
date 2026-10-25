@@ -28,6 +28,26 @@ describe('formatTehonbikiState', () => {
     expect(out).toContain('Wager: double 1,4');
     expect(out).not.toContain('Gate:');
   });
+  it('formats only an explicitly requested server hint', () => {
+    expect(formatTehonbikiState({ ...base, hint: { reason: 'Choose numbers 1, 2, and 3.' } })).not.toContain('HINT:');
+    expect(
+      formatTehonbikiState({
+        ...base,
+        hint: { reason: 'Choose numbers 1, 2, and 3.' },
+        messageCode: 'tehonbiki.hintRequested',
+      }),
+    ).toContain('HINT: Choose numbers 1, 2, and 3.');
+    expect(formatTehonbikiState({ ...base, messageCode: 'tehonbiki.noHint' })).not.toContain('HINT:');
+  });
+
+  it('prints server message text but never a raw message code', () => {
+    expect(formatTehonbikiState({ ...base, message: 'Bet must be at least 10.' })).toContain(
+      'Bet must be at least 10.',
+    );
+    expect(formatTehonbikiState({ ...base, message: '', messageCode: 'tehonbiki.noHint' })).not.toContain(
+      'tehonbiki.noHint',
+    );
+  });
 
   it('formats the revealed parent card and payout', () => {
     const out = formatTehonbikiState({ ...base, phase: 1, parentCard: 4, result: 1, payout: 90 });
