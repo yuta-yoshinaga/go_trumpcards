@@ -212,7 +212,6 @@ PontoonPage.tsx
 PopeJoanPage.tsx
 PreferencePage.tsx
 PresidentPage.tsx
-PrimeroPage.tsx
 PrsiPage.tsx
 PutPage.tsx
 PyramidPage.tsx

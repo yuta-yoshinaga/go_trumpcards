@@ -472,4 +472,10 @@ describe('PrimeroPage', () => {
       unmount();
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<PrimeroPage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('betting', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
