@@ -51,8 +51,29 @@ describe('formatBrusquembilleState', () => {
       'Game Over! Draw.',
     );
   });
+  it('names phases and marks only illegal cards during a human play turn', () => {
+    const output = formatBrusquembilleState(state({ followRequired: true, validIndices: [0] }));
+    expect(output).toContain('phase: Play');
+    expect(output).toContain('[0]♠A');
+    expect(output).toContain('[1]♥Jx');
+    expect(output).toContain('Press p <idx>');
+  });
+  it('does not mark cards or show the play prompt during a CPU turn', () => {
+    const output = formatBrusquembilleState(state({ currentPlayerIdx: 1, followRequired: true, validIndices: [0] }));
+    expect(output).not.toContain('♥Jx');
+    expect(output).not.toContain('Press p <idx>');
+  });
+  it('shows the trump suit after the face-up card has been drawn', () => {
+    expect(formatBrusquembilleState(state({ trumpCard: undefined, trumpSuit: 4 }))).toContain('trump: ♦');
+  });
+  it('shows next-trick guidance based on phase regardless of whose turn it is', () => {
+    const output = formatBrusquembilleState(state({ phase: 1, currentPlayerIdx: 1 }));
+    expect(output).toContain('phase: TrickEnd');
+    expect(output).toContain('Press n');
+    expect(output).not.toContain('Press p <idx>');
+  });
   it('shows only requested hints, including non-card instructions', () => {
-    const hint = { cardIndex: 1, reason: 'play_highest' };
+    const hint = { cardIndex: 1, reason: 'lead_low' };
     expect(formatBrusquembilleState(state({ hint }))).not.toContain('HINT');
     expect(formatBrusquembilleState(state({ hint, messageCode: 'brusquembille.hintRequested' }))).toContain(
       'HINT: play card [1]',
