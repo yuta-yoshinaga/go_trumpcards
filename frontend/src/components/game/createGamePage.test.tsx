@@ -243,6 +243,36 @@ describe('createGamePage', () => {
     expect(screen.getByLabelText('Custom')).toBeInTheDocument();
   });
 
+  it('omits settings in GUI and CLI mode when settingsPlacement is none', async () => {
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      settingsPlacement: 'none',
+      Board,
+    });
+    const view = renderWithProviders(<Page />);
+
+    expect(view.container.querySelector('details')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('ヒント表示')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(view.container.querySelector('details')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('ヒント表示')).not.toBeInTheDocument();
+
+    view.unmount();
+    localStorage.removeItem('cli-mode-acesup');
+    const DefaultPage = makeDefinition();
+    const defaultView = renderWithProviders(<DefaultPage />);
+    expect(defaultView.container.querySelectorAll('details')).toHaveLength(1);
+    fireEvent.click(screen.getByText('設定'));
+    expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument();
+  });
+
   it('give-up positive case: clicking Give up then confirming calls handleGiveUp once', () => {
     const Page = makeDefinition({ includeGiveUp: true });
     renderWithProviders(<Page />);
