@@ -135,8 +135,12 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   cardNav?: (ctx: GamePageContext<S, G, V>) => UseCardKeyboardNavOptions;
   /** Plain function returning settings groups. Must not call hooks. */
   settings?: (ctx: GamePageContext<S, G, V>) => SettingsGroup[];
-  /** Controls whether settings appear before or after the scrollable game content. Defaults to bottom. */
-  settingsPlacement?: 'top' | 'bottom';
+  /**
+   * Controls where settings appear. Defaults to bottom. Use 'none' when the page has its own settings UI: the factory
+   * then renders no settings panel and ignores `settings`, so the page must also render its own hint toggle from
+   * `ctx.frontendHint` if it offers hints.
+   */
+  settingsPlacement?: 'top' | 'bottom' | 'none';
   /** Whether to render the landscape recommendation banner. Defaults to false. */
   landscapeBanner?: boolean;
   /** Keeps the landscape recommendation banner visible in CLI mode; requires `landscapeBanner: true`. */
@@ -260,11 +264,14 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     if (!state || !context) return <GameSkeleton gameKey={def.key} layout={def.skeleton} />;
 
     const phase = def.phase(context);
-    const settings = def.settings?.(context) ?? [
-      {
-        items: [hintCheckboxItem(setup.tc, frontendHint.hintEnabled, frontendHint.setHintEnabled)],
-      },
-    ];
+    const settings =
+      def.settingsPlacement === 'none'
+        ? []
+        : (def.settings?.(context) ?? [
+            {
+              items: [hintCheckboxItem(setup.tc, frontendHint.hintEnabled, frontendHint.setHintEnabled)],
+            },
+          ]);
     const HeaderExtra = def.HeaderExtra;
     const LiveRegion = def.LiveRegion;
     const AboveContent = def.AboveContent;
@@ -359,7 +366,9 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
               />
               {def.primaryActions && !def.controlsInFooter && footerControls}
             </div>
-            {def.settingsPlacement !== 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
+            {def.settingsPlacement !== 'top' && def.settingsPlacement !== 'none' && (
+              <SettingsPanel title={setup.tc('settings.title')} groups={settings} />
+            )}
             {def.primaryActions ? (
               <GameFooter
                 className={`${gameTheme[def.key].footer} px-4 py-2.5`}
