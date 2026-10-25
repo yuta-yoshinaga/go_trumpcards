@@ -24,7 +24,7 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, footerTall?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
@@ -75,3 +75,5 @@ CLI モードの無いページは、移行の前に CLI を正式な機能と�
 CallBreak のチュートリアル対象は固定フッター自体なので、`primaryActions` と組み合わせて固定フッター (`<footer>` 要素そのもの、操作が無い手番でも存在する) に `data-tutorial` を付ける `footerTutorialId` を追加する。
 
 CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する。
+
+大きい手札で `<GameFooter tall>` を使うページ (タロット等、#11655) 用に `footerTall` を追加。

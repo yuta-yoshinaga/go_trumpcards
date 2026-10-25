@@ -684,6 +684,21 @@ describe('createGamePage', () => {
       });
     }
 
+    it.each([false, true])('sets the footer height cap with primaryActions: %s', (pinned) => {
+      const Page = makePage({
+        ...(pinned ? { primaryActions: () => <button type="button">Play</button> } : {}),
+        footerTall: true,
+      });
+      renderWithProviders(<Page />);
+      expect(screen.getByRole('contentinfo')).toHaveClass('max-h-[60vh]');
+    });
+
+    it.each([false, true])('keeps the default footer height cap with primaryActions: %s', (pinned) => {
+      const Page = makePage(pinned ? { primaryActions: () => <button type="button">Play</button> } : {});
+      renderWithProviders(<Page />);
+      expect(screen.getByRole('contentinfo')).toHaveClass('max-h-[45vh]');
+    });
+
     it('passes the frontend hint state to the cli definition', () => {
       const cli = vi.fn((_ctx: { frontendHint?: { hintEnabled: boolean } }) => ({
         parseCommand: () => ({ args: [] }),
