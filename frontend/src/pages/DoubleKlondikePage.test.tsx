@@ -89,7 +89,10 @@ describe('DoubleKlondikePage', () => {
     for (const command of ['p 1 0 2', 'p 0 0 1', 'p 0 0 99', 'u']) {
       fireEvent.change(input, { target: { value: command } });
       fireEvent.keyDown(input, { key: 'Enter' });
-      await waitFor(() => expect(mockExec).not.toHaveBeenCalled());
+      // Wait until the terminal has echoed the command, so the parser has run,
+      // before asserting nothing was dispatched.
+      await screen.findByText(`> ${command}`);
+      expect(mockExec).not.toHaveBeenCalled();
     }
   });
   it('renders skeleton when no state', () => {
