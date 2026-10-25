@@ -4035,6 +4035,8 @@
     "tripeaks.playing": "プレイ中",
     "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "troggu.result.scores": "ゲーム終了！ 得点: {{scores}}",
+    "truco.hintRequested": "ヒントがあります",
+    "truco.noHint": "ヒントはありません",
     "truco.handEnd.p0": "マノ終了 — あなたが {{stake}}点 獲得。",
     "truco.handEnd.p1": "マノ終了 — CPUが {{stake}}点 獲得。",
     "truco.playPhase.follow": "あなたの番です — フォローするカードを選んでください。",

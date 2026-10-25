@@ -117,6 +117,7 @@ func TestTrucoWebPresenter_HintOutput(t *testing.T) {
 
 	out := unmarshalTrucoOut(t, p.HintOutput(g))
 	assert.NotNil(t, out.Hint)
+	assert.Equal(t, "truco.hintRequested", out.MessageCode)
 }
 
 func TestTrucoWebPresenter_HintOutput_None(t *testing.T) {
@@ -125,6 +126,7 @@ func TestTrucoWebPresenter_HintOutput_None(t *testing.T) {
 	g.SetPhase(domain.TrucoPhaseTrickEnd)
 	out := unmarshalTrucoOut(t, p.HintOutput(g))
 	assert.Nil(t, out.Hint)
+	assert.Equal(t, "truco.noHint", out.MessageCode)
 }
 
 func TestTrucoWebPresenter_ActionLogOutput(t *testing.T) {

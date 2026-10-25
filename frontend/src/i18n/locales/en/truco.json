@@ -1,5 +1,7 @@
 {
   "currentTrick": "Current baza",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available",
   "listSeparator": ", ",
   "title": "Truco (トゥルコ)",
   "subtitle": "South American / Spanish bluffing trick-taking — raise the stakes",

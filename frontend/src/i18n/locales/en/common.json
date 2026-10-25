@@ -4035,6 +4035,8 @@
     "tripeaks.playing": "Playing",
     "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up.",
     "troggu.result.scores": "Game over! Scores: {{scores}}",
+    "truco.hintRequested": "Hint available",
+    "truco.noHint": "No hint available",
     "truco.handEnd.p0": "Hand over — you win {{stake}} pt.",
     "truco.handEnd.p1": "Hand over — CPU wins {{stake}} pt.",
     "truco.playPhase.follow": "Your turn — pick a card to follow.",
