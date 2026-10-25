@@ -42,7 +42,6 @@ BraidPage.tsx
 BriscolaPage.tsx
 BristolPage.tsx
 BrusquembillePage.tsx
-CalabresellaPage.tsx
 CalculationPage.tsx
 CanfieldPage.tsx
 CaribbeanDrawPage.tsx

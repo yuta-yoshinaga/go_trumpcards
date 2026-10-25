@@ -424,4 +424,25 @@ describe('CalabresellaPage', () => {
     expect(screen.queryByTestId('calabresella-bid-prompt')).not.toBeInTheDocument();
     expect(screen.queryByTestId('calabresella-discard-prompt')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CalabresellaPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('resets with the changed settings when the next-game button is pressed at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CalabresellaPage />);
+    await screen.findByText('ゲーム終了', { selector: 'strong' });
+    fireEvent.change(screen.getByLabelText('目標ポイント'), { target: { value: '31' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(gameEndState);
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetPoints: 31 },
+      }),
+    );
+  });
 });
