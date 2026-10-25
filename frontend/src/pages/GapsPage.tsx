@@ -2,6 +2,8 @@ import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useId, useMemo, 
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -18,6 +20,8 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -26,10 +30,14 @@ import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { GapsResponse } from '../types/card';
 import { GapsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
+import { GAPS_HELP, parseGapsCommand } from '../utils/cli/commands/gapsCommands';
+import { formatGapsState } from '../utils/cli/formatters/gapsFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -84,6 +92,13 @@ function GapsPageContent() {
   } = useGamePageSetup('gaps');
   const apiRun = gapsApi.exec;
   const { state, loading, error, exec: run, retry } = useGameApi(apiRun);
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gaps');
+  const cliConfig: CliGameConfig<GapsResponse, Parameters<typeof gapsApi.exec>> = useMemo(
+    () => ({ gameName: 'gaps', parseCommand: parseGapsCommand, formatResponse: formatGapsState, helpText: GAPS_HELP }),
+    [],
+  );
+  const { handleCommand } = useCliGame(run, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(run);
 
@@ -225,6 +240,36 @@ function GapsPageContent() {
   // Derive the total from the already-computed per-row lengths to avoid a second board pass.
   const lockedTotal = lockedPrefixLengths.reduce((sum, n) => sum + n, 0);
 
+  if (cliEnabled) {
+    return (
+      <GamePageShell
+        title={tc('nav.gaps')}
+        gameThemeBg={gameTheme.gaps.bg}
+        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+        gamePath="/gaps"
+        gameEndFlag={isEnded}
+        winShow={isGameClear}
+        loading={loading}
+        confirmOpen={confirmOpen}
+        confirmReset={confirmReset}
+        cancelReset={cancelReset}
+        giveUpConfirmOpen={giveUpConfirmOpen}
+        confirmGiveUp={confirmGiveUp}
+        cancelGiveUp={cancelGiveUp}
+        headerExtra={
+          <>
+            <span>
+              {t('moveCount')}: {state.moveCount}
+            </span>
+            <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+          </>
+        }
+      >
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      </GamePageShell>
+    );
+  }
+
   return (
     <GamePageShell
       title={tc('nav.gaps')}
@@ -241,9 +286,12 @@ function GapsPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
       headerExtra={
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
       }
     >
       <ConfirmDialog
