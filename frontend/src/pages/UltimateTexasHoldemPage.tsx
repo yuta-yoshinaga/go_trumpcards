@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ultimatetexasholdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -15,6 +17,8 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -25,6 +29,12 @@ import { gameTheme } from '../styles/gameTheme';
 import { isMaskedCard } from '../types/card';
 import { UltimateTexasHoldemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import {
+  parseUltimateTexasHoldemCommand,
+  ULTIMATE_TEXAS_HOLDEM_HELP,
+} from '../utils/cli/commands/ultimatetexasholdemCommands';
+import { formatUltimateTexasHoldemState } from '../utils/cli/formatters/ultimatetexasholdemFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { utHoldemBetBounds } from '../utils/utHoldemBet';
 import { utHoldemPreflopStrength } from '../utils/utHoldemPreflop';
@@ -97,11 +107,24 @@ function UltimateTexasHoldemPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(ultimatetexasholdemApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } =
+    useCliMode('ultimatetexasholdem');
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('ultimatetexasholdem', state);
+  const cliConfig = useMemo(
+    () => ({
+      gameName: 'ultimatetexasholdem',
+      parseCommand: parseUltimateTexasHoldemCommand,
+      formatResponse: formatUltimateTexasHoldemState,
+      helpText: ULTIMATE_TEXAS_HOLDEM_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
 
@@ -232,343 +255,369 @@ function UltimateTexasHoldemPageContent() {
       confirmReset={confirmReset}
       cancelReset={cancelReset}
       headerExtra={
-        <span>
-          {t('label.chips')}: {state.chips}
-        </span>
+        <>
+          <span>
+            {t('label.chips')}: {state.chips}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
       }
     >
-      <div
-        data-testid="card-area"
-        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
-          .filter(Boolean)
-          .join(' ')}
-      >
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        {(isPreFlopPhase || isFlopPhase || isRiverPhase) && (
-          <section className="mb-3" data-testid="uth-current-bets">
-            <h2 className="text-ds-text-primary text-center font-bold text-sm mb-1">{t('currentBets.title')}</h2>
-            <div className="flex flex-wrap justify-center gap-x-4 text-ds-text-muted text-sm tabular-nums">
-              {state.anteBet > 0 && (
-                <span className="whitespace-nowrap">
-                  {t('label.ante')}: {state.anteBet}
-                </span>
-              )}
-              {state.blindBet > 0 && (
-                <span className="whitespace-nowrap">
-                  {t('label.blind')}: {state.blindBet}
-                </span>
-              )}
-              {state.tripsBet > 0 && (
-                <span>
-                  {t('label.trips')}: {state.tripsBet}
-                </span>
-              )}
-              {state.playBet > 0 && (
-                <span>
-                  {t('label.playBet')}: {state.playBet}
-                </span>
-              )}
-            </div>
-          </section>
-        )}
-
-        <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
-          <input
-            type="checkbox"
-            checked={frontendHintEnabled}
-            onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-          />
-          {tc('hint.toggle', { ns: 'tutorial' })}
-        </label>
-
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        {isBetPhase && (
-          <div className="flex flex-col items-center justify-center py-4 gap-4">
-            <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-            <details className="bg-black/30 rounded-lg w-full max-w-sm">
-              <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
-                {t('payoutRef.title')}
-              </summary>
-              <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
-                <div>
-                  <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.blindHeader')}</div>
-                  <ul className="space-y-0.5">
-                    {(
-                      [
-                        'blindRoyalFlush',
-                        'blindStraightFlush',
-                        'blindFourOfAKind',
-                        'blindFullHouse',
-                        'blindFlush',
-                        'blindStraight',
-                      ] as const
-                    ).map((key) => (
-                      <li key={key}>{t(`payoutRef.${key}`)}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.tripsHeader')}</div>
-                  <ul className="space-y-0.5">
-                    {(
-                      [
-                        'tripsRoyalFlush',
-                        'tripsStraightFlush',
-                        'tripsFourOfAKind',
-                        'tripsFullHouse',
-                        'tripsFlush',
-                        'tripsStraight',
-                        'tripsThreeOfAKind',
-                      ] as const
-                    ).map((key) => (
-                      <li key={key}>{t(`payoutRef.${key}`)}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </details>
-          </div>
-        )}
-
-        {state.community.length > 0 && (
-          <div className="mb-4">
-            <div className="text-ds-text-primary font-bold text-center mb-1">
-              <span aria-hidden="true">🃏</span> {t('board')}
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap">
-              {state.community.map((card, i) => (
-                <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {state.dealerHand.length > 0 && (
-          <div className="mb-4">
-            <div className="text-ds-error-text font-bold text-center mb-1">
-              <span aria-hidden="true">🔴</span> {t('dealer')}
-              {isEndPhase && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap">
-              {state.dealerHand.map((card, i) =>
-                isMaskedCard(card) ? (
-                  <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
-                ) : (
-                  <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                ),
-              )}
-            </div>
-          </div>
-        )}
-
-        {state.playerHand.length > 0 && (
-          <div className="mb-4" data-tutorial="uth-results">
-            <div className="text-ds-warning font-bold text-center mb-1">
-              <span aria-hidden="true">🟡</span> {t('player')}
-              {isEndPhase && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})</span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap">
-              {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isEndPhase && (
-          <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-            <div>{state.dealerQualified ? t('result.dealerQualified') : t('result.dealerNotQualified')}</div>
-            {state.anteBet > 0 && (
-              <div>
-                {t('payout.ante')}: {state.antePayout} (
-                {t(
-                  `payout.${state.antePayout > state.anteBet ? 'win' : state.antePayout === state.anteBet ? 'push' : 'loss'}`,
-                )}
-                )
-              </div>
-            )}
-            {state.blindBet > 0 && (
-              <div>
-                {t('payout.blind')}: {state.blindPayout} (
-                {t(
-                  `payout.${state.blindPayout > state.blindBet ? 'win' : state.blindPayout === state.blindBet ? 'push' : 'loss'}`,
-                )}
-                )
-              </div>
-            )}
-            {state.playBet > 0 && (
-              <div>
-                {t('payout.play')}: {state.playPayout} (
-                {t(
-                  `payout.${state.playPayout > state.playBet ? 'win' : state.playPayout === state.playBet ? 'push' : 'loss'}`,
-                )}
-                )
-              </div>
-            )}
-            {state.tripsBet > 0 && (
-              <div>
-                {t('payout.trips')}: {state.tripsPayout} (
-                {t(
-                  `payout.${state.tripsPayout > state.tripsBet ? 'win' : state.tripsPayout === state.tripsBet ? 'push' : 'loss'}`,
-                )}
-                )
-              </div>
-            )}
-            <div className="font-bold mt-1">
-              {t('payout.total')}: {state.totalPayout}
-            </div>
-            <div className="font-bold">
-              {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
-            </div>
-          </div>
-        )}
-
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-      </div>
-
-      <GameFooter className={`${gameTheme.ultimatetexasholdem.footer} px-4 pt-3`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        {isBetPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="uth-bet-controls">
-            <div className="flex flex-wrap items-center gap-2">
-              <ChipBetInput
-                id="uth-ante-amount"
-                label={t('label.ante')}
-                labelClassName="shrink-0 whitespace-nowrap"
-                inputClassName="min-w-0"
-                value={anteAmount}
-                onChange={setAnteAmount}
-                min={10}
-                max={Math.floor(state.chips / 2)}
-                step={10}
-                disabled={loading}
-                showSteppers
-              />
-              <span className="shrink-0 whitespace-nowrap text-ds-text-muted text-xs">×2 ({t('label.blind')})</span>
-            </div>
-            <ChipBetInput
-              id="uth-trips-amount"
-              label={t('label.trips')}
-              value={tripsAmount}
-              onChange={setTripsAmount}
-              min={0}
-              max={betBounds.maxTrips}
-              step={10}
-              disabled={loading}
-              autoClamp={false}
-              invalid={!betBounds.valid}
-              describedBy={betBounds.valid ? undefined : 'uth-bet-error'}
-              showSteppers
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
             />
-            <div className="text-ds-text-muted text-sm" data-testid="uth-bet-total">
-              {t('betSummary.total')}: {betBounds.total} / {state.chips}
-            </div>
-            {!betBounds.valid && (
-              <p id="uth-bet-error" role="alert" className="text-ds-error-text text-sm" data-testid="uth-bet-error">
-                {t('betSummary.overBalance')}
-              </p>
+
+            {(isPreFlopPhase || isFlopPhase || isRiverPhase) && (
+              <section className="mb-3" data-testid="uth-current-bets">
+                <h2 className="text-ds-text-primary text-center font-bold text-sm mb-1">{t('currentBets.title')}</h2>
+                <div className="flex flex-wrap justify-center gap-x-4 text-ds-text-muted text-sm tabular-nums">
+                  {state.anteBet > 0 && (
+                    <span className="whitespace-nowrap">
+                      {t('label.ante')}: {state.anteBet}
+                    </span>
+                  )}
+                  {state.blindBet > 0 && (
+                    <span className="whitespace-nowrap">
+                      {t('label.blind')}: {state.blindBet}
+                    </span>
+                  )}
+                  {state.tripsBet > 0 && (
+                    <span>
+                      {t('label.trips')}: {state.tripsBet}
+                    </span>
+                  )}
+                  {state.playBet > 0 && (
+                    <span>
+                      {t('label.playBet')}: {state.playBet}
+                    </span>
+                  )}
+                </div>
+              </section>
             )}
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || !betBounds.valid}>
-              {t('button.bet')}
-            </button>
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isBetPhase && (
+              <div className="flex flex-col items-center justify-center py-4 gap-4">
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('payoutRef.title')}
+                  </summary>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+                    <div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.blindHeader')}</div>
+                      <ul className="space-y-0.5">
+                        {(
+                          [
+                            'blindRoyalFlush',
+                            'blindStraightFlush',
+                            'blindFourOfAKind',
+                            'blindFullHouse',
+                            'blindFlush',
+                            'blindStraight',
+                          ] as const
+                        ).map((key) => (
+                          <li key={key}>{t(`payoutRef.${key}`)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.tripsHeader')}</div>
+                      <ul className="space-y-0.5">
+                        {(
+                          [
+                            'tripsRoyalFlush',
+                            'tripsStraightFlush',
+                            'tripsFourOfAKind',
+                            'tripsFullHouse',
+                            'tripsFlush',
+                            'tripsStraight',
+                            'tripsThreeOfAKind',
+                          ] as const
+                        ).map((key) => (
+                          <li key={key}>{t(`payoutRef.${key}`)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </details>
+              </div>
+            )}
+
+            {state.community.length > 0 && (
+              <div className="mb-4">
+                <div className="text-ds-text-primary font-bold text-center mb-1">
+                  <span aria-hidden="true">🃏</span> {t('board')}
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {state.community.map((card, i) => (
+                    <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {state.dealerHand.length > 0 && (
+              <div className="mb-4">
+                <div className="text-ds-error-text font-bold text-center mb-1">
+                  <span aria-hidden="true">🔴</span> {t('dealer')}
+                  {isEndPhase && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
+                  )}
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {state.dealerHand.map((card, i) =>
+                    isMaskedCard(card) ? (
+                      <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
+                    ) : (
+                      <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+
+            {state.playerHand.length > 0 && (
+              <div className="mb-4" data-tutorial="uth-results">
+                <div className="text-ds-warning font-bold text-center mb-1">
+                  <span aria-hidden="true">🟡</span> {t('player')}
+                  {isEndPhase && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})</span>
+                  )}
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {state.playerHand.map((card, i) => (
+                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isEndPhase && (
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+                <div>{state.dealerQualified ? t('result.dealerQualified') : t('result.dealerNotQualified')}</div>
+                {state.anteBet > 0 && (
+                  <div>
+                    {t('payout.ante')}: {state.antePayout} (
+                    {t(
+                      `payout.${state.antePayout > state.anteBet ? 'win' : state.antePayout === state.anteBet ? 'push' : 'loss'}`,
+                    )}
+                    )
+                  </div>
+                )}
+                {state.blindBet > 0 && (
+                  <div>
+                    {t('payout.blind')}: {state.blindPayout} (
+                    {t(
+                      `payout.${state.blindPayout > state.blindBet ? 'win' : state.blindPayout === state.blindBet ? 'push' : 'loss'}`,
+                    )}
+                    )
+                  </div>
+                )}
+                {state.playBet > 0 && (
+                  <div>
+                    {t('payout.play')}: {state.playPayout} (
+                    {t(
+                      `payout.${state.playPayout > state.playBet ? 'win' : state.playPayout === state.playBet ? 'push' : 'loss'}`,
+                    )}
+                    )
+                  </div>
+                )}
+                {state.tripsBet > 0 && (
+                  <div>
+                    {t('payout.trips')}: {state.tripsPayout} (
+                    {t(
+                      `payout.${state.tripsPayout > state.tripsBet ? 'win' : state.tripsPayout === state.tripsBet ? 'push' : 'loss'}`,
+                    )}
+                    )
+                  </div>
+                )}
+                <div className="font-bold mt-1">
+                  {t('payout.total')}: {state.totalPayout}
+                </div>
+                <div className="font-bold">
+                  {t('payout.netChange')}: {formatSignedDelta(state.netChange)}
+                </div>
+              </div>
+            )}
+
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
-        )}
-        {/* 各ストリートで 4x/3x/2x/1x/チェック/フォールドを選ぶのに、今の役が
+
+          <GameFooter className={`${gameTheme.ultimatetexasholdem.footer} px-4 pt-3`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            {isBetPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="uth-bet-controls">
+                <div className="flex flex-wrap items-center gap-2">
+                  <ChipBetInput
+                    id="uth-ante-amount"
+                    label={t('label.ante')}
+                    labelClassName="shrink-0 whitespace-nowrap"
+                    inputClassName="min-w-0"
+                    value={anteAmount}
+                    onChange={setAnteAmount}
+                    min={10}
+                    max={Math.floor(state.chips / 2)}
+                    step={10}
+                    disabled={loading}
+                    showSteppers
+                  />
+                  <span className="shrink-0 whitespace-nowrap text-ds-text-muted text-xs">×2 ({t('label.blind')})</span>
+                </div>
+                <ChipBetInput
+                  id="uth-trips-amount"
+                  label={t('label.trips')}
+                  value={tripsAmount}
+                  onChange={setTripsAmount}
+                  min={0}
+                  max={betBounds.maxTrips}
+                  step={10}
+                  disabled={loading}
+                  autoClamp={false}
+                  invalid={!betBounds.valid}
+                  describedBy={betBounds.valid ? undefined : 'uth-bet-error'}
+                  showSteppers
+                />
+                <div className="text-ds-text-muted text-sm" data-testid="uth-bet-total">
+                  {t('betSummary.total')}: {betBounds.total} / {state.chips}
+                </div>
+                {!betBounds.valid && (
+                  <p id="uth-bet-error" role="alert" className="text-ds-error-text text-sm" data-testid="uth-bet-error">
+                    {t('betSummary.overBalance')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || !betBounds.valid}>
+                  {t('button.bet')}
+                </button>
+              </div>
+            )}
+            {/* 各ストリートで 4x/3x/2x/1x/チェック/フォールドを選ぶのに、今の役が
             どこにも出ていなかった。姉妹の Mississippi Stud は ms-made-hand として
             常時出している。ランクはサーバが updatePlayerCurrentRank で
             各ストリート更新するので、判定を2つ持たない。 */}
-        {madeHandText && (
-          <p className="text-center text-sm font-medium pb-1 text-ds-text-primary" data-testid="uth-made-hand">
-            {madeHandText}
-          </p>
-        )}
-        <div className="sr-only" role="status" aria-live="polite" data-testid="uth-made-hand-announcement">
-          {madeHandText}
-        </div>
-        {isPreFlopPhase &&
-          (() => {
-            const strength = utHoldemPreflopStrength(state.playerHand);
-            const strong = strength === 'strong';
-            const moderate = strength === 'moderate';
-            // Spell out *why* a raise size is recommended so beginners understand the
-            // ring/pulse affordance instead of guessing.
-            const strengthColor = strong ? 'text-ds-success' : moderate ? 'text-ds-warning' : 'text-ds-text-muted';
-            return (
-              <>
-                <p className={`text-center text-sm font-medium pb-1 ${strengthColor}`} data-testid="uth-preflop-eval">
-                  {t(`preflopEval.${strength}`)}
-                </p>
-                <div
-                  className="flex justify-center gap-2 pb-2"
-                  data-tutorial="uth-pre-flop-buttons"
-                  data-preflop-strength={strength}
+            {madeHandText && (
+              <p className="text-center text-sm font-medium pb-1 text-ds-text-primary" data-testid="uth-made-hand">
+                {madeHandText}
+              </p>
+            )}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="uth-made-hand-announcement">
+              {madeHandText}
+            </div>
+            {isPreFlopPhase &&
+              (() => {
+                const strength = utHoldemPreflopStrength(state.playerHand);
+                const strong = strength === 'strong';
+                const moderate = strength === 'moderate';
+                // Spell out *why* a raise size is recommended so beginners understand the
+                // ring/pulse affordance instead of guessing.
+                const strengthColor = strong ? 'text-ds-success' : moderate ? 'text-ds-warning' : 'text-ds-text-muted';
+                return (
+                  <>
+                    <p
+                      className={`text-center text-sm font-medium pb-1 ${strengthColor}`}
+                      data-testid="uth-preflop-eval"
+                    >
+                      {t(`preflopEval.${strength}`)}
+                    </p>
+                    <div
+                      className="flex justify-center gap-2 pb-2"
+                      data-tutorial="uth-pre-flop-buttons"
+                      data-preflop-strength={strength}
+                    >
+                      <button
+                        type="button"
+                        className={`${btnSuccess} ${strong ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                        onClick={() => handlePlay(4)}
+                        disabled={loading || !canPlay4x}
+                        data-testid="play-4x"
+                      >
+                        {t('button.play4x', { playBet: t('label.playBet'), amount: anteAmount * 4 })}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSuccess} ${moderate ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                        onClick={() => handlePlay(3)}
+                        disabled={loading || !canPlay3x}
+                        data-testid="play-3x"
+                      >
+                        {t('button.play3x', { playBet: t('label.playBet'), amount: anteAmount * 3 })}
+                      </button>
+                      <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
+                        {t('button.check')}
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            {isFlopPhase && (
+              <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-flop-buttons">
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={() => handlePlay(2)}
+                  disabled={loading || !canPlay2x}
                 >
-                  <button
-                    type="button"
-                    className={`${btnSuccess} ${strong ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
-                    onClick={() => handlePlay(4)}
-                    disabled={loading || !canPlay4x}
-                    data-testid="play-4x"
-                  >
-                    {t('button.play4x', { playBet: t('label.playBet'), amount: anteAmount * 4 })}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess} ${moderate ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
-                    onClick={() => handlePlay(3)}
-                    disabled={loading || !canPlay3x}
-                    data-testid="play-3x"
-                  >
-                    {t('button.play3x', { playBet: t('label.playBet'), amount: anteAmount * 3 })}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
-                    {t('button.check')}
-                  </button>
-                </div>
-              </>
-            );
-          })()}
-        {isFlopPhase && (
-          <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-flop-buttons">
-            <button type="button" className={btnWarning} onClick={() => handlePlay(2)} disabled={loading || !canPlay2x}>
-              {t('button.play2x', { playBet: t('label.playBet'), amount: anteAmount * 2 })}
-            </button>
-            <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
-              {t('button.check')}
-            </button>
-          </div>
-        )}
-        {isRiverPhase && (
-          <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-river-buttons">
-            <button type="button" className={btnWarning} onClick={() => handlePlay(1)} disabled={loading || !canPlay1x}>
-              {t('button.play1x', { playBet: t('label.playBet'), amount: anteAmount })}
-            </button>
-            <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
-              {t('button.fold')}
-            </button>
-          </div>
-        )}
-        {isEndPhase && (
-          <div className="flex justify-center gap-2 pb-2">
-            <GameResetButton
-              isGameEnd={isEndPhase}
-              onReset={handleReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        <ActionShortcutsPanel bindings={actionBindings} data-testid="ultimate-texas-holdem-kbd-shortcuts" />
-      </GameFooter>
+                  {t('button.play2x', { playBet: t('label.playBet'), amount: anteAmount * 2 })}
+                </button>
+                <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
+                  {t('button.check')}
+                </button>
+              </div>
+            )}
+            {isRiverPhase && (
+              <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-river-buttons">
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={() => handlePlay(1)}
+                  disabled={loading || !canPlay1x}
+                >
+                  {t('button.play1x', { playBet: t('label.playBet'), amount: anteAmount })}
+                </button>
+                <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
+                  {t('button.fold')}
+                </button>
+              </div>
+            )}
+            {isEndPhase && (
+              <div className="flex justify-center gap-2 pb-2">
+                <GameResetButton
+                  isGameEnd={isEndPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="ultimate-texas-holdem-kbd-shortcuts" />
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

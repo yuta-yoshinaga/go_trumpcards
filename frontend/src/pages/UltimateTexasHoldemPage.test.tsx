@@ -138,6 +138,14 @@ afterEach(() => {
 });
 
 describe('UltimateTexasHoldemPage', () => {
+  it('switches to the CLI terminal when the toggle is enabled', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(screen.getByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+  });
+
   it('renders bet phase on mount', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<UltimateTexasHoldemPage />);
