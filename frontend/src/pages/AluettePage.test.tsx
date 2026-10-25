@@ -290,4 +290,10 @@ describe('AluettePage', () => {
     const live = await screen.findByTestId('aluette-result-live');
     await waitFor(() => expect(live).toHaveTextContent('チーム0 3'));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<AluettePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

@@ -1,35 +1,20 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { aluetteApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useAluetteGame } from '../hooks/useAluetteGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import { ALUETTE_HAND_SIZE, type AluetteResponse, aluetteLuetteName } from '../types/card';
 import { AluettePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { ALUETTE_HELP, parseAluetteCommand } from '../utils/cli/commands/aluetteCommands';
 import { formatAluetteState } from '../utils/cli/formatters/aluetteFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -73,73 +58,40 @@ const ALUETTE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [AluettePhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Aluette game page: a Breton 4-player 2v2 trick-taker with no trump suit. */
-export const AluettePage = withTutorial(AluettePageContent, 'aluette', ALUETTE_TUTORIAL_STEPS);
+type AluetteGame = ReturnType<typeof useAluetteGame>;
+type AluetteView = ReturnType<typeof useAluetteView>;
+type AluetteContext = GamePageContext<AluetteResponse, AluetteGame, AluetteView>;
 
-/** Inner content of the Aluette page, wrapped by TutorialProvider. */
-function AluettePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('aluette');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    aluetteConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useAluetteGame();
-
+function useAluetteView({ game }: { game: AluetteGame }) {
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
-
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('aluette');
-  const cliConfig: CliGameConfig<AluetteResponse, Parameters<typeof aluetteApi.exec>> = useMemo(
-    () => ({
-      gameName: 'aluette',
-      parseCommand: parseAluetteCommand,
-      formatResponse: formatAluetteState,
-      helpText: ALUETTE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('aluette', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('aluette', ALUETTE_PHASE_KEYS);
+  return { cardWidth, isMobile, phaseNames };
+}
 
-  if (!state)
-    return (
-      <GameSkeleton
-        gameKey="aluette"
-        layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: ALUETTE_HAND_SIZE }}
-      />
-    );
+function LiveRegion({ state, t }: AluetteContext) {
+  const isTrickEnd = state.phase === AluettePhase.TRICK_END;
+  const lastTrickWinner = isTrickEnd ? state.players.find((player) => player.id === state.lastTrickWinner) : undefined;
+  return (
+    <span className="sr-only" role="status" aria-live="polite" data-testid="aluette-trick-winner-live">
+      {lastTrickWinner &&
+        t('trickWinnerAnnouncement', { name: playerName(lastTrickWinner.id, lastTrickWinner.isHuman) })}
+    </span>
+  );
+}
 
+function Board({ state, t, view }: AluetteContext) {
+  const { cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;
-  const isHumanTurn = state.isHumanTurn;
   const luettes = state.luettes ?? [];
-
-  const isPlayPhase = state.phase === AluettePhase.PLAY;
   const isTrickEnd = state.phase === AluettePhase.TRICK_END;
   const isRoundEnd = state.phase === AluettePhase.ROUND_END;
-  const lastTrickWinner = isTrickEnd ? state.players.find((player) => player.id === state.lastTrickWinner) : undefined;
+  const isGameEnd = state.phase === AluettePhase.GAME_END || state.gameEndFlag;
 
   // チーム分けはサーバが player.team として返しているので、席番号から
   // 計算し直さない (対面同士という規則が変わっても追随する)。
@@ -152,288 +104,299 @@ function AluettePageContent() {
   );
   const winnerIdx = meneTeamTricks.findIndex((n) => n >= ALUETTE_TRICKS_TO_WIN);
   const meneWinner = winnerIdx >= 0 ? winnerIdx : null;
-  const isGameEnd = state.phase === AluettePhase.GAME_END || state.gameEndFlag;
-
-  const canPlay = isPlayPhase && isHumanTurn;
-
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
 
   return (
-    <GamePageShell
-      title={tc('nav.aluette')}
-      gameThemeBg={gameTheme.aluette.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn && !isGameEnd}
-      gamePath="/aluette"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerTeam === humanTeam}
-      lossShow={isGameEnd && state.winnerTeam >= 0 && state.winnerTeam !== humanTeam}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      <span className="sr-only" role="status" aria-live="polite" data-testid="aluette-trick-winner-live">
-        {lastTrickWinner &&
-          t('trickWinnerAnnouncement', { name: playerName(lastTrickWinner.id, lastTrickWinner.isHuman) })}
-      </span>
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: aluetteConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetPoints',
-                    label: t('settings.targetPoints'),
-                    value: aluetteConfig.targetPoints,
-                    options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetPoints', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div className="text-ds-text-primary text-center mb-2" data-tutorial="aluette-info">
+        <span className="mr-4">{t('mene', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span>{t('target', { points: state.config.targetPoints })}</span>
+      </div>
+
+      {/*
+        **Strength is per card, not per value.** The 3 of coins is the best
+        card in the deck while the 3 of swords is ordinary, so the ranking
+        cannot be read off the hand — the table is permanent, not a tooltip.
+      */}
+      <div className="text-center mb-2 text-sm" data-tutorial="aluette-luettes" data-testid="aluette-luettes">
+        <span className="font-semibold text-ds-warning">{t('luetteLegend')}</span>
+        <p className="text-ds-text-muted">{t('luetteRankExplanation')}</p>
+        <ol aria-label={t('luetteLegend')} className="flex flex-wrap justify-center gap-x-3 text-ds-text-muted">
+          {luettes.map((l, index) => (
+            <li key={l.name}>
+              {t('luetteRankItem', {
+                rank: index + 1,
+                name: t(`luette.${l.name}`),
+                card: `${t(`suit.${l.design}`)}${l.value}`,
+              })}
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+            dataTutorial="aluette-trick-display"
           />
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="aluette-info">
-              <span className="mr-4">{t('mene', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('target', { points: state.config.targetPoints })}</span>
-            </div>
-
-            {/*
-              **Strength is per card, not per value.** The 3 of coins is the best
-              card in the deck while the 3 of swords is ordinary, so the ranking
-              cannot be read off the hand — the table is permanent, not a tooltip.
-            */}
-            <div className="text-center mb-2 text-sm" data-tutorial="aluette-luettes" data-testid="aluette-luettes">
-              <span className="font-semibold text-ds-warning">{t('luetteLegend')}</span>
-              <p className="text-ds-text-muted">{t('luetteRankExplanation')}</p>
-              <ol aria-label={t('luetteLegend')} className="flex flex-wrap justify-center gap-x-3 text-ds-text-muted">
-                {luettes.map((l, index) => (
-                  <li key={l.name}>
-                    {t('luetteRankItem', {
-                      rank: index + 1,
-                      name: t(`luette.${l.name}`),
-                      card: `${t(`suit.${l.design}`)}${l.value}`,
-                    })}
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
-                  dataTutorial="aluette-trick-display"
-                />
+        <div>
+          {/* Team scores — this is a team game, not an individual one. */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="aluette-team-scores">
+            {state.teamScores.map((score, team) => (
+              <div key={team} className={`py-0.5 ${team === humanTeam ? 'text-ds-text-primary font-semibold' : ''}`}>
+                {t('teamScore', { n: team, score })}
               </div>
+            ))}
+          </div>
 
-              <div>
-                {/* Team scores — this is a team game, not an individual one. */}
-                <div
-                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                  data-testid="aluette-team-scores"
-                >
-                  {state.teamScores.map((score, team) => (
-                    <div
-                      key={team}
-                      className={`py-0.5 ${team === humanTeam ? 'text-ds-text-primary font-semibold' : ''}`}
-                    >
-                      {t('teamScore', { n: team, score })}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
+                    {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                  {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
+                  {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
+                  {t('tricks', { count: p.trickCount })}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* **メーヌが決着した瞬間こそ読み上げが要る。**同じファイルの
+              aluette-hint-live は #5955 の教訓どおり常設のライブ領域なのに、
+              同格の精算結果には同じ扱いが無かった (#6511)。領域は常設のまま
+              中身だけを変える ── 領域ごと現れる live region は読み上げられない。 */}
+          <div data-testid="aluette-result-live" role="status" aria-live="polite">
+            {(isRoundEnd || isGameEnd) && (
+              <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                {state.players.map((p) => (
+                  <div key={p.id}>
+                    {t('roundResult.tricks', {
+                      name: playerName(p.id, p.isHuman),
+                      count: state.roundTricks[p.id] ?? 0,
+                    })}
+                  </div>
+                ))}
+                {/* 勝敗を決めるのは個人ではなく**チーム合計**なので、足し算を
+                  読者にさせない (バックエンドの settleRound と同じ条件)。 */}
+                <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
+                  {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
+                  {[0, 1].map((team) => (
+                    <div key={team}>
+                      {t('roundResult.tricksRemaining', {
+                        team,
+                        count: Math.max(0, ALUETTE_TRICKS_TO_WIN - meneTeamTricks[team]),
+                      })}
                     </div>
                   ))}
                 </div>
-
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
-                          {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
-                        {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
-                  </div>
+                {meneWinner !== null && (
+                  <div data-testid="aluette-meine-winner">{t('roundResult.meineWinner', { team: meneWinner })}</div>
                 )}
-
-                {/* **メーヌが決着した瞬間こそ読み上げが要る。**同じファイルの
-                    aluette-hint-live は #5955 の教訓どおり常設のライブ領域なのに、
-                    同格の精算結果には同じ扱いが無かった (#6511)。領域は常設のまま
-                    中身だけを変える ── 領域ごと現れる live region は読み上げられない。 */}
-                <div data-testid="aluette-result-live" role="status" aria-live="polite">
-                  {(isRoundEnd || isGameEnd) && (
-                    <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                      <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                      {state.players.map((p) => (
-                        <div key={p.id}>
-                          {t('roundResult.tricks', {
-                            name: playerName(p.id, p.isHuman),
-                            count: state.roundTricks[p.id] ?? 0,
-                          })}
-                        </div>
-                      ))}
-                      {/* 勝敗を決めるのは個人ではなく**チーム合計**なので、足し算を
-                        読者にさせない (バックエンドの settleRound と同じ条件)。 */}
-                      <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
-                        {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
-                        {[0, 1].map((team) => (
-                          <div key={team}>
-                            {t('roundResult.tricksRemaining', {
-                              team,
-                              count: Math.max(0, ALUETTE_TRICKS_TO_WIN - meneTeamTricks[team]),
-                            })}
-                          </div>
-                        ))}
-                      </div>
-                      {meneWinner !== null && (
-                        <div data-testid="aluette-meine-winner">
-                          {t('roundResult.meineWinner', { team: meneWinner })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.aluette.footer} px-4 py-2.5`}>
-            {/*
-              A luette in hand must announce itself. "♦3" alone does not tell the
-              player they are holding the strongest card in the deck.
-            */}
-            {humanPlayer && humanPlayer.cards.length > 0 && (
-              <div className="mb-1 text-center text-xs text-ds-text-muted" data-testid="aluette-hand-luettes">
-                {humanPlayer.cards
-                  .map((c, i) => ({ i, name: aluetteLuetteName(luettes, c) }))
-                  .filter((e) => e.name)
-                  .map((e) => `[${e.i}] ${t(`luette.${e.name}`)}`)
-                  .join('  ') || t('noLuetteInHand')}
-              </div>
-            )}
-
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="aluette"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-                cardStatusFor={(idx) => {
-                  const luetteName = aluetteLuetteName(luettes, humanPlayer.cards[idx]);
-                  return luetteName ? t(`luette.${luetteName}`) : undefined;
-                }}
-              />
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="aluette-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="aluette-action-buttons">
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="aluette-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterHand({ game, state, t, view }: AluetteContext) {
+  const { cardWidth, isMobile } = view;
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const luettes = state.luettes ?? [];
+  const isPlayPhase = state.phase === AluettePhase.PLAY;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+
+  return (
+    <>
+      {/*
+        A luette in hand must announce itself. "♦3" alone does not tell the
+        player they are holding the strongest card in the deck.
+      */}
+      {humanPlayer && humanPlayer.cards.length > 0 && (
+        <div className="mb-1 text-center text-xs text-ds-text-muted" data-testid="aluette-hand-luettes">
+          {humanPlayer.cards
+            .map((c, i) => ({ i, name: aluetteLuetteName(luettes, c) }))
+            .filter((e) => e.name)
+            .map((e) => `[${e.i}] ${t(`luette.${e.name}`)}`)
+            .join('  ') || t('noLuetteInHand')}
+        </div>
+      )}
+
+      {humanPlayer && (
+        <PlayerHandSection
+          humanPlayer={humanPlayer}
+          selectedCardIndices={game.selectedCardIndices}
+          toggleCard={game.toggleCard}
+          cardWidth={cardWidth}
+          isMobile={isMobile}
+          dataTutorialPrefix="aluette"
+          validIndices={canPlay ? state.playableIndices : undefined}
+          restrictedTooltip={t('playButton')}
+          cardStatusFor={(idx) => {
+            const luetteName = aluetteLuetteName(luettes, humanPlayer.cards[idx]);
+            return luetteName ? t(`luette.${luetteName}`) : undefined;
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: AluetteContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="aluette-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices &&
+              state.hint.cardIndices.length > 0 &&
+              ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ game, state, t, busy }: AluetteContext) {
+  const isPlayPhase = state.phase === AluettePhase.PLAY;
+  const isTrickEnd = state.phase === AluettePhase.TRICK_END;
+  const isRoundEnd = state.phase === AluettePhase.ROUND_END;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+
+  return (
+    <>
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const aluetteDefinition: GameDefinition<
+  AluetteResponse,
+  AluetteGame,
+  Parameters<typeof aluetteApi.exec>,
+  AluetteView
+> = {
+  key: 'aluette',
+  useGame: useAluetteGame,
+  useView: useAluetteView,
+  tutorial: ALUETTE_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: ALUETTE_HAND_SIZE },
+  cli: () => ({
+    parseCommand: parseAluetteCommand,
+    formatResponse: formatAluetteState,
+    helpText: ALUETTE_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const humanPlayer = state.players.find((p) => p.isHuman);
+    const humanTeam = humanPlayer?.team ?? 0;
+    const isGameEnd = state.phase === AluettePhase.GAME_END || state.gameEndFlag;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerTeam === humanTeam,
+    };
+  },
+  shell: ({ state }) => {
+    const humanPlayer = state.players.find((p) => p.isHuman);
+    const humanTeam = humanPlayer?.team ?? 0;
+    const isGameEnd = state.phase === AluettePhase.GAME_END || state.gameEndFlag;
+    return {
+      isHumanTurn: state.isHumanTurn && !isGameEnd,
+      lossShow: isGameEnd && state.winnerTeam >= 0 && state.winnerTeam !== humanTeam,
+    };
+  },
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.aluetteConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetPoints',
+          label: t('settings.targetPoints'),
+          value: game.aluetteConfig.targetPoints,
+          options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetPoints', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  actionsTutorialId: 'aluette-action-buttons',
+  resetTutorialId: 'aluette-reset-button',
+  LiveRegion,
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Aluette game page: a Breton 4-player 2v2 trick-taker with no trump suit. */
+export const AluettePage = createGamePage(aluetteDefinition);
