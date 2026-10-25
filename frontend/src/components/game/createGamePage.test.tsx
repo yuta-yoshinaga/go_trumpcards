@@ -769,6 +769,30 @@ describe('createGamePage', () => {
       expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
     });
 
+    it('uses actionLogEndPhase without changing game-end behavior', () => {
+      currentGame = { ...defaultBaseGame, state: { ended: false } };
+      const Page = makePage({ actionLogEndPhase: () => true });
+      renderWithProviders(<Page />);
+
+      expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+      expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+
+    it('defaults action log availability to phase.ended', () => {
+      const Ended = makePage({});
+      currentGame = { ...defaultBaseGame, state: { ended: true } };
+      const first = renderWithProviders(<Ended />);
+      expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+      first.unmount();
+
+      const Playing = makePage({});
+      currentGame = { ...defaultBaseGame, state: { ended: false } };
+      renderWithProviders(<Playing />);
+      expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+    });
+
     it('renders AboveContent after top settings and outside the scrolling content', () => {
       const AboveContent = () => <div data-testid="above">above</div>;
       const Page = makePage({ AboveContent, settingsPlacement: 'top' });
