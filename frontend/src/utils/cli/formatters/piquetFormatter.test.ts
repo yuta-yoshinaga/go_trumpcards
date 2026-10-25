@@ -166,4 +166,19 @@ describe('formatPiquetState', () => {
     const out = formatPiquetState(baseState({ message: 'hello world' }));
     expect(out).toContain('hello world');
   });
+
+  it('shows a requested hint with its discard cards', () => {
+    const out = formatPiquetState(
+      baseState({
+        messageCode: 'piquet.hintAvailable',
+        hint: { discardIndices: [1, 3], reason: 'improve the hand' },
+      }),
+    );
+    expect(out).toContain('HINT: discard cards [1, 3] (improve the hand)');
+  });
+
+  it('does not show a hint when no hint message code is present', () => {
+    const out = formatPiquetState(baseState({ hint: { discardIndices: [1], reason: 'improve the hand' } }));
+    expect(out).not.toContain('HINT:');
+  });
 });
