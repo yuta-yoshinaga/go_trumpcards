@@ -120,6 +120,8 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   primaryActions?: (ctx: GamePageContext<S, G, V>) => ReactNode;
   /** Expands the mobile footer cap from 45vh to 60vh for pages with large hands (#11655). */
   footerTall?: boolean;
+  /** With primaryActions, puts footerControls after FooterHand in the fixed footer; omitted keeps them at the end of the scroll area. */
+  controlsInFooter?: boolean;
   /** Plain function returning persistent footer guidance. Must not call hooks. */
   message?: (ctx: GamePageContext<S, G, V>) => ReactNode;
   /** Plain function returning whether shortcuts are enabled. Defaults to true. Must not call hooks. */
@@ -270,8 +272,9 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const primaryActions = def.primaryActions?.(context);
     const message = def.message?.(context);
     const shellProps = def.shell?.(context);
-    // The error alert, status, action row and shortcuts sit inside the footer in the legacy layout and
-    // at the end of the scrolling content when `primaryActions` pins the footer's action row.
+    // The error alert, status, action row and shortcuts sit inside the footer in the legacy layout. When
+    // `primaryActions` pins the footer's action row they go at the end of the scrolling content, unless
+    // `controlsInFooter` keeps them in the pinned footer after FooterHand.
     const footerControls = (
       <>
         {FooterLead && <FooterLead {...context} />}
@@ -339,7 +342,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                 showActionLog={setup.showActionLog}
                 hideActionLog={setup.hideActionLog}
               />
-              {def.primaryActions && footerControls}
+              {def.primaryActions && !def.controlsInFooter && footerControls}
             </div>
             {def.settingsPlacement !== 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
             {def.primaryActions ? (
@@ -351,6 +354,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                 tall={def.footerTall}
               >
                 {FooterHand && <FooterHand {...context} />}
+                {def.controlsInFooter && footerControls}
               </GameFooter>
             ) : (
               <GameFooter
