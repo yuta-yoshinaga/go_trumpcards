@@ -366,6 +366,10 @@ function FooterLead({ state, t, view }: WattenContext) {
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const canDeclare = state.phase === WattenPhase.DECLARE && state.dealerIdx === humanIdx;
 
+  // Effective Schlag/critical for the top-trump preview: the dealer's pending
+  // pick during the Declare phase, otherwise whatever the server has recorded.
+  // This drives both the in-hand ring and the explanatory panel, so the
+  // highlight stays consistent from declaration through the play phase.
   const effectiveRank = view.selectedRank ?? state.schlagRank;
   const effectiveSuit = view.selectedSuit ?? state.criticalSuit;
   const humanTrumps = humanPlayer ? wattenTrumpCards(humanPlayer.cards, effectiveRank, effectiveSuit) : [];
@@ -429,6 +433,10 @@ function FooterHand({ game, state, t, view }: WattenContext) {
   const canDeclare = isDeclarePhase && state.dealerIdx === humanIdx;
   const canPlay = isPlayPhase && state.currentPlayerIdx === humanIdx;
 
+  // Effective Schlag/critical for the top-trump preview: the dealer's pending
+  // pick during the Declare phase, otherwise whatever the server has recorded.
+  // This drives both the in-hand ring and the explanatory panel, so the
+  // highlight stays consistent from declaration through the play phase.
   const effectiveRank = view.selectedRank ?? state.schlagRank;
   const effectiveSuit = view.selectedSuit ?? state.criticalSuit;
   const humanTrumps = humanPlayer ? wattenTrumpCards(humanPlayer.cards, effectiveRank, effectiveSuit) : [];
