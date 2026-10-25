@@ -80,6 +80,15 @@ describe('BrusquembillePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 2 }));
   });
 
+  it('switches to the CLI terminal when enabled', async () => {
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('brusquembille-trump-label')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+  });
+
   it('renders header info (trick, stock, points)', async () => {
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => expect(screen.getByText(/トリック: 1/)).toBeInTheDocument());

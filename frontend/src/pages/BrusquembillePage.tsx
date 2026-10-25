@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { brusquembilleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -15,6 +17,8 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -24,6 +28,8 @@ import type { BrusquembilleResponse } from '../types/card';
 import { BrusquembillePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { BRUSQUEMBILLE_HELP, parseBrusquembilleCommand } from '../utils/cli/commands/brusquembilleCommands';
+import { formatBrusquembilleState } from '../utils/cli/formatters/brusquembilleFormatter';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -84,6 +90,7 @@ function BrusquembillePageContent() {
   } = useGameApi<BrusquembilleResponse, Parameters<typeof brusquembilleApi.exec>>(brusquembilleApi.exec);
   const { cardWidth } = useCardDimensions();
   const [playerCnt, setPlayerCnt] = useState(BRUSQUEMBILLE_DEFAULT_SEATS);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('brusquembille');
 
   // Initial reset on mount. **席数を必ず添える** —— 添えないと初回だけ
   // 既定の卓で始まり、リセットして初めて選んだ席数になる。
@@ -129,6 +136,17 @@ function BrusquembillePageContent() {
   const handleHint = useCallback(() => {
     void dispatch('hint');
   }, [dispatch]);
+
+  const cliConfig = useMemo(
+    () => ({
+      gameName: 'brusquembille',
+      parseCommand: parseBrusquembilleCommand,
+      formatResponse: formatBrusquembilleState,
+      helpText: BRUSQUEMBILLE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Keyboard hand selection: number keys highlight a card, Enter plays it,
   // Escape clears. Mouse/touch still plays a card directly on click.
@@ -198,6 +216,27 @@ function BrusquembillePageContent() {
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : isTrickEnd ? t('phase.trickEnd') : t('phase.play');
 
+  if (cliEnabled) {
+    return (
+      <GamePageShell
+        title={tc('nav.brusquembille')}
+        gameThemeBg={gameTheme.brusquembille.bg}
+        phaseName={phaseName}
+        isHumanTurn={isHumanTurn}
+        gamePath="/brusquembille"
+        gameEndFlag={!!state.gameEndFlag}
+        winShow={isGameEnd && state.winnerIdx === 0}
+        loading={loading}
+        confirmOpen={confirmOpen}
+        confirmReset={confirmReset}
+        cancelReset={cancelReset}
+        headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+      >
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      </GamePageShell>
+    );
+  }
+
   const resultBanner = (() => {
     if (!isGameEnd) return null;
     const scores =
@@ -234,6 +273,7 @@ function BrusquembillePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         <div className="text-ds-text-primary text-center mb-3" data-tutorial="brusquembille-score">
