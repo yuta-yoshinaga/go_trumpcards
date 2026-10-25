@@ -3,6 +3,8 @@ import { simplesimonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -15,6 +17,8 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -27,7 +31,11 @@ import type { Card, SimpleSimonResponse } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseSimpleSimonCommand, SIMPLESIMON_HELP } from '../utils/cli/commands/simplesimonCommands';
+import { formatSimpleSimonState } from '../utils/cli/formatters/simplesimonFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { canSimpleSimonPickUp, isSimpleSimonLegalDestination, isSimpleSimonRunStart } from '../utils/simpleSimonRules';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -80,6 +88,17 @@ function SimpleSimonPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('simplesimon');
   const { state, loading, error, exec, retry } = useGameApi(simplesimonApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('simplesimon');
+  const cliConfig: CliGameConfig<SimpleSimonResponse, Parameters<typeof simplesimonApi.exec>> = useMemo(
+    () => ({
+      gameName: 'simplesimon',
+      parseCommand: (input) => parseSimpleSimonCommand(input, state ?? undefined),
+      formatResponse: formatSimpleSimonState,
+      helpText: SIMPLESIMON_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
   // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
   // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
@@ -92,14 +111,7 @@ function SimpleSimonPageContent() {
   const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
   const isLegalDestination = useCallback(
-    (col: number) => {
-      if (!state || !selected || selected.col === col) return false;
-      const destination = state.columns[col];
-      if (destination.length === 0) return true;
-      const movingHead = state.columns[selected.col][selected.idx];
-      const destinationTop = destination[destination.length - 1];
-      return destinationTop.value === movingHead.value + 1;
-    },
+    (col: number) => Boolean(selected && isSimpleSimonLegalDestination(state, selected.col, selected.idx, col)),
     [selected, state],
   );
 
@@ -121,7 +133,7 @@ function SimpleSimonPageContent() {
   // guard in the card's onClick.
   const autoMoveCard = useCallback(
     (currentState: SimpleSimonResponse, col: number, idx: number) => {
-      if (!isPlayingForKbd || !currentState.runStarts[col].includes(idx)) return;
+      if (!isPlayingForKbd || !canSimpleSimonPickUp(currentState, col, idx)) return;
       const targets = currentState.legalTargets[`tableau-${col}-${idx}`];
       const toCol = targets ? targets.tableau[0] : null;
       if (toCol === null) {
@@ -267,7 +279,7 @@ function SimpleSimonPageContent() {
             const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
             // Grabbable = head of a valid movable run in this column. In a
             // destination column every card just forwards to the move.
-            const grabbable = state.runStarts[col].includes(i);
+            const grabbable = isSimpleSimonRunStart(state, col, i);
             const runStartLabel =
               i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
             const clickable = selected ? isDestination || (col === selected.col && grabbable) : grabbable;
@@ -329,101 +341,112 @@ function SimpleSimonPageContent() {
       giveUpConfirmOpen={giveUpConfirmOpen}
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
-        <div className="text-ds-text-muted text-xs mb-1">
-          {t('completedSuits', { count: state.completedSuits })} · {t('moveCount', { count: state.moveCount })}
-        </div>
-        <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="ss-columns">
-          {state.columns.map((column, i) => renderColumn(column, i))}
-        </div>
-        {canAct && (
-          <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
-            {selected === null ? t('selectSource') : t('selectDestination')}
-          </div>
-        )}
-        {selected !== null && (
-          <div className="sr-only">
-            {state.columns.map((_, col) =>
-              isLegalDestination(col) ? null : (
-                <span key={col} id={`ss-illegal-destination-${col}`}>
-                  {t('illegalDestination')}
-                </span>
-              ),
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
+            <div className="text-ds-text-muted text-xs mb-1">
+              {t('completedSuits', { count: state.completedSuits })} · {t('moveCount', { count: state.moveCount })}
+            </div>
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="ss-columns">
+              {state.columns.map((column, i) => renderColumn(column, i))}
+            </div>
+            {canAct && (
+              <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
+                {selected === null ? t('selectSource') : t('selectDestination')}
+              </div>
             )}
+            {selected !== null && (
+              <div className="sr-only">
+                {state.columns.map((_, col) =>
+                  isLegalDestination(col) ? null : (
+                    <span key={col} id={`ss-illegal-destination-${col}`}>
+                      {t('illegalDestination')}
+                    </span>
+                  ),
+                )}
+              </div>
+            )}
+            {canAct && autoMoveNotice && (
+              <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="ss-automove-notice">
+                {autoMoveNotice}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
-        {canAct && autoMoveNotice && (
-          <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="ss-automove-notice">
-            {autoMoveNotice}
-          </div>
-        )}
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.simplesimon.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center" data-tutorial="ss-controls">
-          {state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('u')}
-              disabled={loading}
-              aria-keyshortcuts="z"
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={() => exec('hint')}
-              disabled={loading}
-              aria-keyshortcuts="h"
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={confirmGiveUpAction}
-              disabled={loading}
-              aria-keyshortcuts="g"
-              data-testid="giveup-button"
-            >
-              {t('giveup')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="ss-reset-button"
-          />
-        </div>
-        <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="simple-simon-kbd-shortcuts" />
-      </GameFooter>
+          <GameFooter className={`${gameTheme.simplesimon.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center" data-tutorial="ss-controls">
+              {state.canUndo && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => exec('u')}
+                  disabled={loading}
+                  aria-keyshortcuts="z"
+                  data-testid="undo-button"
+                >
+                  {t('undo')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => exec('hint')}
+                  disabled={loading}
+                  aria-keyshortcuts="h"
+                  data-testid="hint-button"
+                >
+                  {t('hint')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={confirmGiveUpAction}
+                  disabled={loading}
+                  aria-keyshortcuts="g"
+                  data-testid="giveup-button"
+                >
+                  {t('giveup')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ss-reset-button"
+              />
+            </div>
+            <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="simple-simon-kbd-shortcuts" />
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

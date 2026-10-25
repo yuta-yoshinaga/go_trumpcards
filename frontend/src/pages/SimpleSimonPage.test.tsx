@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { simplesimonApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -47,6 +47,8 @@ function makeState(overrides: Partial<SimpleSimonResponse> = {}): SimpleSimonRes
     });
   return state;
 }
+
+afterEach(() => localStorage.removeItem('cli-mode-simplesimon'));
 
 beforeEach(() => {
   mockExec.mockReset();
@@ -629,5 +631,30 @@ describe('SimpleSimonPage', () => {
 
     await screen.findByTestId('column-0');
     expect(screen.queryByTestId('undo-button')).not.toBeInTheDocument();
+  });
+});
+
+describe('SimpleSimon CLI mode', () => {
+  it('does not execute a CLI move for an index outside runStarts', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 9), card('HEART', 8)];
+    mockExec.mockResolvedValue(makeState({ columns, runStarts: [[1], ...Array.from({ length: 9 }, () => [])] }));
+    renderWithProviders(<SimpleSimonPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /cli/i }));
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'm 0 0 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
+  });
+
+  it('switches to the terminal and executes a page-equivalent move', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    const toggle = await screen.findByRole('button', { name: /cli/i });
+    fireEvent.click(toggle);
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'm 1 0 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 });
