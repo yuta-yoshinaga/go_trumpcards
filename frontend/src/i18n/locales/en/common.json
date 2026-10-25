@@ -1409,8 +1409,6 @@
     "rummy500.errTargetPlayerInvalid": "The target player is invalid.",
     "rummy500.errTargetMeldInvalid": "The target meld is invalid.",
     "rummy500.errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
-    "rummy500.hintRequested": "Hint available",
-    "rummy500.noHint": "No hint available",
     "binokel.result.player1Win": "Game over! Player 1 wins!",
     "binokel.result.player2Win": "Game over! Player 2 wins!",
     "binokel.roundEndPhase": "Round ended",

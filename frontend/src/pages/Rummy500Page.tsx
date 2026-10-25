@@ -111,12 +111,13 @@ function Rummy500PageContent() {
   const cliConfig = useMemo(
     () => ({
       gameName: 'rummy500',
-      parseCommand: parseRummy500Command,
+      parseCommand: (input: string) =>
+        state ? parseRummy500Command(input, state) : { error: 'Game state is not ready.' },
       formatResponse: formatRummy500State,
       helpText: RUMMY500_HELP,
       localCommand: hintLocalCommand(frontendHint),
     }),
-    [frontendHint],
+    [frontendHint, state],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // The lay-off destination is chosen solely by clicking a meld on the board above; null

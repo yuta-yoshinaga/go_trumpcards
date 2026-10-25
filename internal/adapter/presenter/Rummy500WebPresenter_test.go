@@ -175,12 +175,6 @@ func TestRummy500WebPresenter_HintOutput(t *testing.T) {
 	m, players := setupRummy500WebMock()
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	p := new(presenter.Rummy500WebPresenter)
-	// HintOutput retains the whole state while marking that the server has no hint.
-	var out controller.Rummy500WebOutput
-	require.NoError(t, json.Unmarshal([]byte(p.HintOutput(m)), &out))
-	assert.Equal(t, "rummy500.noHint", out.MessageCode)
-	assert.Len(t, out.Players, 2)
-	assert.Len(t, out.Players[0].Cards, 1)
-	assert.NotNil(t, out.DiscardPile)
-	assert.NotNil(t, out.LayoffTargets)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
 }

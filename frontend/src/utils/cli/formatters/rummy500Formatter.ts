@@ -1,12 +1,5 @@
 import type { Rummy500Response } from '../../../types/card';
-import {
-  formatCard,
-  formatHeader,
-  formatIndexedCards,
-  formatPlayerName,
-  formatSeparator,
-  isRequestedHint,
-} from '../formatterBase';
+import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASES = ['Draw', 'Play', 'RoundEnd', 'GameEnd'];
 
@@ -32,14 +25,13 @@ export function formatRummy500State(state: Rummy500Response): string {
     state.phase === 0
       ? 'Use d to draw from stock or take <idx> from discard.'
       : state.phase === 1
-        ? 'Use meld <idx> ... or discard <idx>.'
+        ? `Use meld <idx> ... or discard <idx>.${state.layoffTargets?.some((targets) => targets.length > 0) ? ' Use layoff <hand-idx> <owner> <meld-idx> when available.' : ''}`
         : state.phase === 2
           ? 'Use nr to start the next round.'
           : 'Game complete.',
   );
-  if (isRequestedHint(state) && state.message) lines.push(`HINT: ${state.message}`);
   if (state.message) lines.push(state.message);
-  if (state.gameEndFlag)
+  if (state.gameEndFlag && state.winnerIdx >= 0 && state.winnerIdx < state.players.length)
     lines.push(
       `Game Over! ${formatPlayerName(state.winnerIdx, state.players[state.winnerIdx]?.isHuman ?? false)} wins!`,
     );

@@ -1409,8 +1409,6 @@
     "rummy500.errTargetPlayerInvalid": "対象プレイヤーが不正です",
     "rummy500.errTargetMeldInvalid": "対象メルドが不正です",
     "rummy500.errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
-    "rummy500.hintRequested": "ヒントがあります",
-    "rummy500.noHint": "ヒントはありません",
     "binokel.result.player1Win": "ゲーム終了！ プレイヤー1の勝ち！",
     "binokel.result.player2Win": "ゲーム終了！ プレイヤー2の勝ち！",
     "binokel.roundEndPhase": "ラウンド終了",

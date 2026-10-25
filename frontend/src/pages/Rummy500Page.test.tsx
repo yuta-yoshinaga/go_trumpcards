@@ -828,4 +828,17 @@ describe('Rummy500Page RoundScoreAnnouncement', () => {
     fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
     expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
   });
+
+  it('passes the same discard index argument as the page discard button', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 500 }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'take 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 1));
+  });
 });

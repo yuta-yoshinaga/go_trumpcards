@@ -43,15 +43,21 @@ describe('formatRummy500State', () => {
     expect(draw).toContain('phase: Draw');
     expect(draw).toContain('Use d to draw');
     expect(draw).toContain('Your turn');
-    expect(draw).toContain('wins!');
+    expect(draw).not.toContain('wins!');
     const unknown = formatRummy500State(makeRummy500State({ phase: 99 }));
     expect(unknown).toContain('phase: 99');
     expect(unknown).toContain('Game complete.');
   });
 
-  it('prints a hint only for a requested hint message code', () => {
-    const state = makeRummy500State({ message: 'Take the top discard card.', messageCode: 'rummy500.hintRequested' });
-    expect(formatRummy500State(state)).toContain('HINT: Take the top discard card.');
-    expect(formatRummy500State(makeRummy500State({ message: 'Passive message' }))).not.toContain('HINT');
+  it('shows layoff guidance only when a target exists and prints valid winners', () => {
+    const withTarget = makeRummy500State({
+      phase: 1,
+      layoffTargets: [[{ owner: 1, meldIdx: 0 }]],
+      gameEndFlag: true,
+      winnerIdx: 1,
+    });
+    expect(formatRummy500State(withTarget)).toContain('Use layoff <hand-idx> <owner> <meld-idx>');
+    expect(formatRummy500State(withTarget)).toContain('wins!');
+    expect(formatRummy500State(makeRummy500State({ phase: 1, layoffTargets: [[], []] }))).not.toContain('Use layoff');
   });
 });
