@@ -27,7 +27,5 @@
   "result.lose": "Miss",
   "result.payout": "Payout profit: {{amount}} chips",
   "result.lostBet": "Lost your {{amount}}-chip bet",
-  "frontendHint.tehonbiki": "Choose numbers and wager your chips",
-  "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "frontendHint.tehonbiki": "Choose numbers and wager your chips"
 }

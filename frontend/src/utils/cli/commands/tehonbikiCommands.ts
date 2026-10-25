@@ -3,13 +3,13 @@ import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase'
 import type { CliParseResult } from '../types';
 
 type Args = Parameters<typeof tehonbikiApi.exec>;
-const VALID_COMMANDS = ['bet', 'b', 'next', 'hint', 'h', 'log', 'reset', 'r'];
+const VALID_COMMANDS = ['bet', 'b', 'half', 'next', 'hint', 'h', 'log', 'reset', 'r'];
 const MIN_BET = 10;
 const MAX_BET = 500;
 /** CLI help for Tehonbiki. */
 export const TEHONBIKI_CLI_HELP = [
-  'bet <type> <numbers...> <amount> (10..500)',
-  'b (bet)',
+  'bet (b) <type> <numbers...> <amount> (10..500)',
+  'half <numbers...> <amount> (10..500)',
   'next',
   'hint (h)',
   'log',

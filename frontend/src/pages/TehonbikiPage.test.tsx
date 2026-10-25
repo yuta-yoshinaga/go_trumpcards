@@ -64,10 +64,15 @@ describe('TehonbikiPage', () => {
   });
 
   it('renders full hint and reset CLI responses with empty numbers', async () => {
-    let current = state();
-    const hookResult = { state: current, loading: false, error: null, exec: mockExec, retry: vi.fn() };
+    const hookResult = { state: state(), loading: false, error: null, exec: mockExec, retry: vi.fn() };
+    mockExec.mockImplementation(async (...args) => {
+      if (args[0] === 'hint')
+        hookResult.state = state({ hint: { reason: '候補を選んでください' }, messageCode: 'tehonbiki.hintRequested' });
+      if (args[0] === 'reset') hookResult.state = state({ messageCode: 'tehonbiki.noHint' });
+      return hookResult.state;
+    });
     mockUseGameApi.mockReturnValue(hookResult as never);
-    const { rerender } = renderWithProviders(<TehonbikiPage />);
+    renderWithProviders(<TehonbikiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
@@ -76,24 +81,22 @@ describe('TehonbikiPage', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
     await flushPendingDispatch();
-    current = {
-      ...state({ hint: { reason: '候補を選んでください' }, messageCode: 'tehonbiki.hintRequested' }),
-      numbers: [],
-    };
-    hookResult.state = current;
-    rerender(<TehonbikiPage />);
-    expect(screen.getByRole('log', { name: 'CLI 出力ログ' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() =>
+      expect(screen.getByRole('log', { name: 'CLI 出力ログ' })).toHaveTextContent('HINT: 候補を選んでください'),
+    );
 
-    current = state({ numbers: [], messageCode: 'tehonbiki.noHint' });
-    hookResult.state = current;
     fireEvent.change(screen.getByRole('textbox', { name: 'コマンドを入力...' }), { target: { value: 'reset' } });
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'コマンドを入力...' }), { key: 'Enter' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     await flushPendingDispatch();
-    current = state({ numbers: [], messageCode: 'tehonbiki.noHint' });
-    hookResult.state = current;
-    rerender(<TehonbikiPage />);
-    expect(screen.getByRole('log', { name: 'CLI 出力ログ' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => {
+      const entries = screen.getByRole('log', { name: 'CLI 出力ログ' }).querySelectorAll(':scope > div');
+      expect(entries[entries.length - 2]).not.toHaveTextContent('HINT:');
+    });
     fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
   });
 

@@ -20,6 +20,8 @@ type TehonbikiWebOutCfg struct {
 	InitialChips int `json:"initialChips"`
 	DefaultBet   int `json:"defaultBet"`
 }
+
+// TehonbikiWebOutputHint represents a hint returned by the Tehonbiki Web controller.
 type TehonbikiWebOutputHint struct {
 	Reason string `json:"reason"`
 }

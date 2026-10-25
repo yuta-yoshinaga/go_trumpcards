@@ -26,7 +26,5 @@
   "result.lose": "外れ",
   "result.payout": "払戻利益: {{amount}}チップ",
   "result.lostBet": "賭け金 {{amount}}チップを失いました",
-  "frontendHint.tehonbiki": "数字を選んでチップを張ります",
-  "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "frontendHint.tehonbiki": "数字を選んでチップを張ります"
 }
