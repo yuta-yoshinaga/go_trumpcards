@@ -291,7 +291,6 @@ TuSacPage.tsx
 TwoTenJackPage.tsx
 TysiacPage.tsx
 UltimateTexasHoldemPage.tsx
-UnsunKarutaPage.tsx
 VideoPokerPage.tsx
 VintPage.tsx
 WarPage.tsx
