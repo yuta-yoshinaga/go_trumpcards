@@ -77,6 +77,7 @@ const NAP_PHASE_KEYS: Readonly<Record<number, string>> = {
 type NapGame = ReturnType<typeof useNapGame>;
 
 function useNapView({ game }: { game: NapGame }) {
+  // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
     game.reset();

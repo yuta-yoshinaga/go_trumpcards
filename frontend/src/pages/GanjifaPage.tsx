@@ -344,6 +344,7 @@ const ganjifaDefinition: GameDefinition<
   settingsPlacement: 'top',
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   primaryActions,
+  // Tarot-size hands outgrow the 45vh cap on phones (#11655).
   footerTall: true,
   resetTutorialId: 'ganjifa-reset-button',
   actionsClassName: 'flex flex-wrap gap-2 items-center',

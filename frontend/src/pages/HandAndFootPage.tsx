@@ -586,6 +586,7 @@ const handAndFootDefinition: GameDefinition<
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   actionsClassName: '',
   primaryActions,
+  // Hand plus actions outgrow the 45vh cap on phones (#11655).
   footerTall: true,
   LiveRegion,
   Board,

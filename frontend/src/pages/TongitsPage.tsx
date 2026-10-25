@@ -118,6 +118,8 @@ function useTongitsView({ game, t }: { game: TongitsGame; t: TFunction; tc: TFun
 function LiveRegion({ state, t }: TongitsContext) {
   const isRoundEnd = state.phase === TongitsPhase.ROUND_END;
   const isGameEnd = state.phase === TongitsPhase.GAME_END || state.gameEndFlag;
+  // Tongits-on-deal sets winnerIdx >= 0; guard defensively so we never index
+  // players[-1] (which would surface as "CPU 0 wins" via playerName).
   const winner =
     state.winnerIdx >= 0 && state.winnerIdx < state.players.length ? state.players[state.winnerIdx] : undefined;
 

@@ -469,6 +469,9 @@ const schafkopfDefinition: GameDefinition<
   settingsPlacement: 'top',
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   primaryActions,
+  // Keyboard hand navigation: number keys toggle a card, Enter confirms,
+  // Escape clears. Only PLAY takes a card selection, and handlePlay
+  // self-guards on the selected count.
   cardNav: ({ game, state }) => {
     const humanIdx = state.players.findIndex((p) => p.isHuman);
     const canPlay = state.phase === SchafkopfPhase.PLAY && state.currentPlayerIdx === humanIdx;

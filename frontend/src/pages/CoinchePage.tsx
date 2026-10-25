@@ -466,6 +466,7 @@ function FooterHand({ game, state, view }: CoincheContext) {
   if (!humanPlayer) return null;
   const isPlayPhase = state.phase === CoinchePhase.PLAY;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // The server computes legality from internal/domain/Coinche.go (ADR-0045).
   const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
 
   return (
