@@ -9,8 +9,6 @@ describe('parseBrusquembilleCommand', () => {
     expect(parseBrusquembilleCommand('next')).toEqual({ args: ['next'] });
     expect(parseBrusquembilleCommand('h')).toEqual({ args: ['hint'] });
     expect(parseBrusquembilleCommand('hint')).toEqual({ args: ['hint'] });
-    expect(parseBrusquembilleCommand('l')).toEqual({ args: ['log'] });
-    expect(parseBrusquembilleCommand('log')).toEqual({ args: ['log'] });
     expect(parseBrusquembilleCommand('r')).toEqual({ args: ['reset'] });
     expect(parseBrusquembilleCommand('reset')).toEqual({ args: ['reset'] });
   });
@@ -20,5 +18,7 @@ describe('parseBrusquembilleCommand', () => {
   });
   it('rejects unknown commands', () => {
     expect(parseBrusquembilleCommand('bid')).toEqual({ error: 'Unknown command: bid' });
+    expect(parseBrusquembilleCommand('l')).toEqual({ error: 'Unknown command: l. Did you mean: p?' });
+    expect(parseBrusquembilleCommand('log')).toEqual({ error: 'Unknown command: log' });
   });
 });

@@ -3,7 +3,7 @@ import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 export type BrusquembilleCliArgs = Parameters<typeof brusquembilleApi.exec>;
-const VALID_COMMANDS = ['p', 'play', 'n', 'next', 'h', 'hint', 'l', 'log', 'r', 'reset'];
+const VALID_COMMANDS = ['p', 'play', 'n', 'next', 'h', 'hint', 'r', 'reset'];
 
 export function parseBrusquembilleCommand(input: string): CliParseResult<BrusquembilleCliArgs> {
   const { cmd, args } = splitCommand(input);
@@ -20,9 +20,6 @@ export function parseBrusquembilleCommand(input: string): CliParseResult<Brusque
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    case 'l':
-    case 'log':
-      return { args: ['log'] };
     case 'r':
     case 'reset':
       return { args: ['reset'] };
@@ -35,6 +32,5 @@ export const BRUSQUEMBILLE_HELP = [
   'p <idx>          - Play a card by its hand index (0-based)',
   'n / next         - Complete the current trick',
   'h / hint         - Request a hint',
-  'l / log          - Show action log',
   'r / reset        - Reset game',
 ];
