@@ -45,6 +45,11 @@ function useLaughAndLieDownView({ game, t }: { game: LaughAndLieDownGame; t: Lau
   const previousState = useRef<LaughAndLieDownResponse | null>(null);
   const [turnAnnouncement, setTurnAnnouncement] = useState('');
   const [announcementNonce, setAnnouncementNonce] = useState(0);
+  // Which hand card is armed for a three-card take. The take size is a real
+  // choice only when the server offered it, so it lives next to the card
+  // rather than as a mode toggle. It sits in the view, not in Board, so a trip
+  // through CLI mode (which unmounts Board) keeps the player's choice.
+  const [threeArmed, setThreeArmed] = useState<number | null>(null);
 
   useEffect(() => {
     if (!state) return;
@@ -80,6 +85,8 @@ function useLaughAndLieDownView({ game, t }: { game: LaughAndLieDownGame; t: Lau
   return {
     turnAnnouncement,
     announcementNonce,
+    threeArmed,
+    setThreeArmed,
     resetAnnouncement,
     cardWidth,
     cpuCardWidth,
@@ -108,11 +115,8 @@ function HeaderExtra({ state, t }: LaughAndLieDownContext) {
 }
 
 function Board({ game, state, t, frontendHint, view }: LaughAndLieDownContext) {
-  // Which hand card is armed for a three-card take. The take size is a real
-  // choice only when the server offered it, so it lives next to the card
-  // rather than as a mode toggle.
-  const [threeArmed, setThreeArmed] = useState<number | null>(null);
-  const { cardWidth, cpuCardWidth, isCardMobile, isLargeDesktop, handCardWidth, isMobile } = view;
+  const { cardWidth, cpuCardWidth, isCardMobile, isLargeDesktop, handCardWidth, isMobile, threeArmed, setThreeArmed } =
+    view;
   const { hint, hintEnabled: frontendHintEnabled } = frontendHint;
 
   const isHumanTurn = state.phase !== LaughAndLieDownPhase.GAME_END && state.currentPlayerIdx === 0;

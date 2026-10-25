@@ -268,6 +268,20 @@ describe('LaughAndLieDownPage', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('keeps the three-card take selected across CLI mode', async () => {
+    mockExec.mockResolvedValue(makeState({ validIndices: [0], threeTakeIndices: [0] }));
+    renderWithProviders(<LaughAndLieDownPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '7のランクで3枚取る' }));
+    expect(screen.getByRole('button', { name: '7のランクで3枚取る' })).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+    await screen.findByLabelText(/コマンドを入力/);
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+
+    expect(await screen.findByRole('button', { name: '7のランクで3枚取る' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   // **CUI は「1枚 or 3枚」を書いている。**Web はカードを光らせるだけで
   // takeCount を捨てており、さらにボタンを押す必要があることが伝わらなかった (#4884)。
   describe('three-take hint', () => {
