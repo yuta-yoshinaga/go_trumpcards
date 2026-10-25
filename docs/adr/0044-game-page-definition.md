@@ -76,4 +76,4 @@ CallBreak のチュートリアル対象は固定フッター自体なので、`
 
 CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する。
 
-固定フッター型のうちタロット等 9 ページ用に `footerTall` を追加。
+大きい手札で `<GameFooter tall>` を使うページ (タロット等、#11655) 用に `footerTall` を追加。
