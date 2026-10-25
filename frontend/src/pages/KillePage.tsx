@@ -344,8 +344,6 @@ function FooterStatus({ state, t, tc, frontendHint }: KilleContext) {
   const isGameEnd = state.phase === KillePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn =
     state.phase === KillePhase.EXCHANGE && state.currentPlayerIdx === 0 && !isGameEnd && !humanPlayer?.isOut;
-  // The dealer swaps with the stock rather than a neighbour, so its button says
-  // something different and it can never be challenged.
   const humanIsDealer = humanPlayer ? state.dealerIdx === humanPlayer.id : false;
   const humanIsOutForGood = isShowdown && !!humanPlayer?.isOut && !humanPlayer?.canReenter;
 
@@ -459,9 +457,6 @@ const killeDefinition: GameDefinition<KilleResponse, KilleGame, Parameters<typeo
       isHumanTurn:
         state.phase === KillePhase.EXCHANGE && state.currentPlayerIdx === 0 && !isGameEnd && !humanPlayer?.isOut,
     };
-  },
-  reset: ({ game }) => {
-    game.handleReset();
   },
   settings: ({ game, t }) => [
     {
