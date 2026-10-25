@@ -34,6 +34,13 @@ beforeEach(() => {
 });
 
 describe('MadrassoPage', () => {
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MadrassoPage />);
+
+    const translatedPhase = await screen.findByText('プレイ', { selector: 'strong' });
+    expect(translatedPhase).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
   it('keeps status labels intact and wraps between items', async () => {
     renderWithProviders(<MadrassoPage />);
     const row = await screen.findByTestId('madrasso-status-row');
@@ -294,5 +301,14 @@ describe('MadrassoPage', () => {
     const trumpUnset = await screen.findByTestId('madrasso-trump');
     expect(trumpUnset).toHaveTextContent('切り札: 切り札未確定');
     expect(trumpUnset.textContent).not.toContain('{{');
+  });
+
+  it('keeps the play controls and reset button in one tutorial action row', async () => {
+    renderWithProviders(<MadrassoPage />);
+
+    await screen.findByRole('button', { name: '出す' });
+    const actionRows = document.querySelectorAll('[data-tutorial="tr-play-button"]');
+    expect(actionRows).toHaveLength(1);
+    expect(actionRows[0].lastElementChild).toHaveAttribute('data-tutorial', 'tr-reset-button');
   });
 });
