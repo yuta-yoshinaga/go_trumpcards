@@ -285,4 +285,10 @@ describe('CirullaPage', () => {
     expect(layOffBtn).toHaveTextContent('場に置く');
     expect(layOffBtn).not.toHaveAttribute('aria-label');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CirullaPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

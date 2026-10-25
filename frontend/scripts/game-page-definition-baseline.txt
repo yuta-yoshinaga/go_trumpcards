@@ -58,7 +58,6 @@ ChinchonPage.tsx
 ChinesePokerPage.tsx
 ChineseTenPage.tsx
 CincinnatiPage.tsx
-CirullaPage.tsx
 CitadelPage.tsx
 ClockSolitairePage.tsx
 ColoradoPage.tsx
