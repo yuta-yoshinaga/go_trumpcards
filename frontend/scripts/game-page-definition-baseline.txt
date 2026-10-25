@@ -239,7 +239,6 @@ SirTommyPage.tsx
 SixBidSoloPage.tsx
 SixCardGolfPage.tsx
 SkatPage.tsx
-SkitgubbePage.tsx
 SlapjackPage.tsx
 SlobberhannesPage.tsx
 SlyFoxPage.tsx

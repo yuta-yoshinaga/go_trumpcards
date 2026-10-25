@@ -339,4 +339,10 @@ describe('SkitgubbePage', () => {
     expect(screen.queryByTestId('sg-duel-leader-0')).not.toBeInTheDocument();
     expect(screen.queryByTestId('sg-duel-leader-2')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SkitgubbePage />);
+    expect(await screen.findByText('進行中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('phase.play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
