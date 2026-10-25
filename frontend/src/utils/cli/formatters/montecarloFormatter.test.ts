@@ -49,7 +49,9 @@ describe('formatMonteCarloState', () => {
       stockCount: 0,
       canUndo: false,
     });
-    expect(unavailable).not.toContain('Available commands:');
+    // A stalemate still offers hint, give up and reset, but no pair, deal or undo.
+    expect(unavailable).toContain('Available commands: h (hint), g (give up), r (reset)');
+    expect(unavailable).not.toMatch(/\bp \d|d \(deal\)|u \(undo\)/);
     expect(formatMonteCarloState({ ...base, phase: 1 })).toContain('Available command: r (reset)');
     expect(formatMonteCarloState({ ...base, phase: 2 })).toContain('Available command: r (reset)');
   });

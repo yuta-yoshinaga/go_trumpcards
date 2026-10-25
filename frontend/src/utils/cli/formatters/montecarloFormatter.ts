@@ -33,15 +33,16 @@ export function formatMonteCarloState(state: MonteCarloResponse): string {
       ...pairs.map(([a, b]) => `p ${a} ${b}`),
       ...(canDeal ? ['d (deal)'] : []),
       ...(canUndo ? ['u (undo)'] : []),
+      'h (hint)',
+      'g (give up)',
+      'r (reset)',
     ];
-    if (actions.length) lines.push(`Available commands: ${actions.join(', ')}`);
-  } else if (state.phase === MonteCarloPhase.GAME_CLEAR) {
-    lines.push('All cards removed. Game clear!');
-  } else if (state.phase === MonteCarloPhase.GAME_OVER) {
-    lines.push('No more moves. Game over.');
+    lines.push(`Available commands: ${actions.join(', ')}`);
+  } else {
+    if (state.phase === MonteCarloPhase.GAME_CLEAR) lines.push('All cards removed. Game clear!');
+    if (state.phase === MonteCarloPhase.GAME_OVER) lines.push('No more moves. Game over.');
     lines.push('Available command: r (reset)');
   }
-  if (state.phase === MonteCarloPhase.GAME_CLEAR) lines.push('Available command: r (reset)');
   if (state.messageCode === 'montecarlo.noHint') lines.push('No hint available.');
   if (state.hint && isRequestedHint(state)) {
     if (state.hint.action === 'deal') {
