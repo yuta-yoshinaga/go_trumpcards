@@ -145,7 +145,6 @@ GongZhuPage.tsx
 GoofspielPage.tsx
 GrandfathersClockPage.tsx
 GuandanPage.tsx
-GutsPage.tsx
 HachiHachiPage.tsx
 HandAndFootPage.tsx
 HasenpfefferPage.tsx

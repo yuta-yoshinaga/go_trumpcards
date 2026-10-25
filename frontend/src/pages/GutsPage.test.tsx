@@ -395,4 +395,112 @@ describe('GutsPage', () => {
       expect(liveRegion).toHaveTextContent('敗北時の最大支払額: 40');
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<GutsPage />);
+    expect(await screen.findByText('コール', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('declare', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('renders out, in, and waiting player badges with and without hand names', async () => {
+    const state = makeGutsState({
+      phase: 0,
+      players: [
+        { ...declareState.players[0], in: true, handName: 'pair' },
+        { ...declareState.players[1], id: 1, isHuman: false, in: true, out: true, handName: undefined },
+        { ...declareState.players[2], id: 2, isHuman: false, in: true, out: false, handName: 'highcard' },
+        { ...declareState.players[3], id: 3, isHuman: false, in: false, out: false, handName: undefined },
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<GutsPage />);
+
+    const players = await screen.findByTestId('guts-player-list');
+    expect(players).toHaveTextContent('あなた — チップ: 200 · 賭け: 10 · [イン] · ペア');
+    expect(players).toHaveTextContent('CPU 1 — チップ: 200 · 賭け: 10 · [脱落]');
+    expect(players).toHaveTextContent('CPU 2 — チップ: 200 · 賭け: 10 · [イン] · ハイカード');
+    expect(players).toHaveTextContent('CPU 3 — チップ: 200 · 賭け: 10 · [待機]');
+  });
+
+  it('shows only the hand label when the human has no cards', async () => {
+    mockExec.mockResolvedValue(
+      makeGutsState({
+        players: [{ ...declareState.players[0], cards: [], handName: undefined }, ...declareState.players.slice(1)],
+      }),
+    );
+    renderWithProviders(<GutsPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(within(footer).getByText('あなたの手札')).toBeInTheDocument();
+    expect(within(footer).queryByText(/あなたの手札 —/)).not.toBeInTheDocument();
+  });
+
+  it('skips a matcher payment when its player index is missing', async () => {
+    mockExec.mockResolvedValue(makeGutsState({ phase: 1, winnerIdx: 0, matchers: [99] }));
+    renderWithProviders(<GutsPage />);
+    await screen.findByRole('button', { name: '次のラウンド' });
+    expect(screen.queryByTestId('guts-matcher-payment')).not.toBeInTheDocument();
+  });
+
+  it('suppresses round actions when the game has ended', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<GutsPage />);
+    await screen.findByText('ゲーム終了！ あなたの勝利です！');
+    expect(screen.queryByRole('button', { name: '次のラウンド' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'イン（残る）' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
+  });
+
+  it.each([
+    { name: 'human wins the match', matchWinnerIdx: 0, isHuman: true, result: 0, celebrates: true },
+    { name: 'human wins the round', matchWinnerIdx: -1, isHuman: false, result: 1, celebrates: true },
+    { name: 'human does not win', matchWinnerIdx: 1, isHuman: false, result: 0, celebrates: false },
+  ])('sets the win state when $name', async ({ matchWinnerIdx, isHuman, result, celebrates }) => {
+    const state = makeGutsState({
+      phase: 1,
+      gameEndFlag: true,
+      matchWinnerIdx,
+      result,
+      players: [
+        { ...declareState.players[0], isHuman: true },
+        { ...declareState.players[1], isHuman, id: 1 },
+        ...declareState.players.slice(2),
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<GutsPage />);
+    await screen.findByRole('button', { name: '次のゲーム' });
+    if (celebrates) expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+    else expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['playerCount', '6', { playerCount: 6 }],
+    ['ante', '20', { ante: 20 }],
+    ['startingChips', '500', { startingChips: 500 }],
+    ['targetRounds', '20', { targetRounds: 20 }],
+  ])('applies the selected %s when the game resets', async (id, value, expected) => {
+    renderWithProviders(<GutsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+    mockExec.mockClear();
+    fireEvent.change(document.getElementById(id as string) as HTMLSelectElement, { target: { value } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining(expected)));
+  });
+
+  it('executes reset after confirming the reset prompt', async () => {
+    renderWithProviders(<GutsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        playerCount: 4,
+        ante: 10,
+        startingChips: 200,
+        targetRounds: 10,
+      }),
+    );
+  });
 });
