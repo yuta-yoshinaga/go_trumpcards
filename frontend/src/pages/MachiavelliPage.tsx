@@ -1,33 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { machiavelliApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardFan } from '../components/CardFan';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { PLAYER_COUNT_OPTIONS, TARGET_ROUNDS_OPTIONS, useMachiavelliGame } from '../hooks/useMachiavelliGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { Card, MachiavelliResponse } from '../types/card';
 import { MachiavelliPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -37,7 +21,6 @@ import { valueName } from '../utils/cardUtils';
 import { MACHIAVELLI_HELP, parseMachiavelliCommand } from '../utils/cli/commands/machiavelliCommands';
 import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
-import type { CliGameConfig } from '../utils/cli/types';
 import { sortedHandForDisplay } from '../utils/handDisplaySort';
 import { findHandMeld } from '../utils/hints/machiavelliHint';
 import { designToNum, evaluateRearrange, isMachiavelliValidMeld } from '../utils/machiavelliRearrange';
@@ -84,34 +67,16 @@ const MV_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+type MachiavelliGame = ReturnType<typeof useMachiavelliGame>;
+type MachiavelliView = ReturnType<typeof useMachiavelliView>;
+type MachiavelliContext = GamePageContext<MachiavelliResponse, MachiavelliGame, MachiavelliView>;
 
-/** Renders the Machiavelli game page with a shared table, melding, and layoff. */
-export const MachiavelliPage = withTutorial(MachiavelliPageContent, 'machiavelli', MV_TUTORIAL_STEPS);
-/** Inner content of the Machiavelli page, wrapped by TutorialProvider. */
-function MachiavelliPageContent() {
+function useMachiavelliView({ game }: { game: MachiavelliGame }) {
   const isMobileViewport = useIsMobile();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('machiavelli');
-  const {
-    state,
-    loading,
-    error,
-    exec: gameExec,
-    retry,
-    machiavelliConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
-    handleDraw,
-    handleNewMeld,
-    handleLayoff,
-    handleRearrange,
-    handleNextRound,
-  } = useMachiavelliGame();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [handSorted, setHandSorted] = useState(false);
-  const humanHand = state?.players.find((p) => p.isHuman)?.cards ?? [];
+  const humanHand = game.state?.players.find((p) => p.isHuman)?.cards ?? [];
   const displayHand = sortedHandForDisplay(humanHand, handSorted ? 'rank' : 'original');
   // Rearrange composer: staged assignment of pool cards (flattened table cards +
   // selected hand cards) into proposed melds, previewed against the domain rules.
@@ -125,110 +90,57 @@ function MachiavelliPageContent() {
     setRearrangeOpen(false);
     setAssignments({});
   }, []);
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('machiavelli', state);
-  const { cardWidth, isMobile } = useCardDimensions();
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('machiavelli');
-  const cliConfig: CliGameConfig<MachiavelliResponse, Parameters<typeof machiavelliApi.exec>> = useMemo(
-    () => ({
-      gameName: 'machiavelli',
-      parseCommand: parseMachiavelliCommand,
-      formatResponse: formatMachiavelliState,
-      helpText: MACHIAVELLI_HELP,
-      localCommand: hintLocalCommand(frontendHint),
-    }),
-    [frontendHint],
-  );
-  const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const isTurnPhaseForKbd = state?.phase === MachiavelliPhase.TURN;
-  const isHumanTurnForKbd = isTurnPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-
-  const confirmAction = useCallback(() => {
-    if (selectedCardIndices.length >= 3) handleNewMeld();
-  }, [selectedCardIndices, handleNewMeld]);
-
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: (index) => toggleCard(displayHand[index].index),
-    onConfirm: confirmAction,
-    onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
-  });
-
   const phaseNames = usePhaseNames('machiavelli', MACHIAVELLI_PHASE_KEYS);
+  return {
+    isMobileViewport,
+    isLargeDesktop,
+    cardWidth,
+    isMobile,
+    handSorted,
+    setHandSorted,
+    displayHand,
+    rearrangeOpen,
+    setRearrangeOpen,
+    assignments,
+    setAssignments,
+    openRearrange,
+    closeRearrange,
+    phaseNames,
+  };
+}
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void gameExec('reset', undefined, {
-      playerCount: machiavelliConfig.playerCount,
-      targetRounds: machiavelliConfig.targetRounds,
-    });
-  }, [gameExec, hideActionLog, machiavelliConfig.playerCount, machiavelliConfig.targetRounds]);
+function isGameEndOf(state: MachiavelliResponse) {
+  return state.phase === MachiavelliPhase.GAME_END || state.gameEndFlag;
+}
 
-  // getMachiavelliHint already asks findHandMeld which cards form a meld and then
-  // throws the indices away, leaving the hint to say "make a meld" without saying
-  // which cards. Pan rings its candidates; this does the same (#4852).
-  // Derived from the tooltip's own verdict rather than re-deriving the rules, so
-  // the ring cannot disagree with it: getMachiavelliHint already requires the
-  // human's turn, the TURN phase and a live game before suggesting a meld.
-  // Above the early return: hooks must not be conditional.
-  const hintHand = state?.players.find((p) => p.isHuman)?.cards;
-  const meldHintIndices = useMemo(
-    () =>
-      new Set(
-        frontendHintEnabled && frontendHint?.targetAction === 'newMeld' && hintHand
-          ? (findHandMeld(hintHand) ?? [])
-          : [],
-      ),
-    [frontendHintEnabled, frontendHint, hintHand],
-  );
-  const renderHandCard = ({ card, index }: (typeof displayHand)[number]) => (
-    <button
-      type="button"
-      key={`${card.design}-${card.value}-${index}`}
-      onClick={() => toggleCard(index)}
-      aria-label={cardAlt(card)}
-      aria-pressed={selectedCardIndices.includes(index)}
-      data-meld-hint={meldHintIndices.has(index) || undefined}
-      className={`transition-transform ${focusRingCard} ${
-        meldHintIndices.has(index) && !selectedCardIndices.includes(index) ? 'ring-2 ring-ds-success rounded' : ''
-      }`}
-      style={{
-        background: 'none',
-        padding: 0,
-        borderRadius: 8,
-        ...selectedCardStyle(selectedCardIndices.includes(index)),
-        boxSizing: 'border-box',
-      }}
-    >
-      <AnimatedCard card={card} width={cardWidth} />
-    </button>
-  );
+function isHumanTurnOf(state: MachiavelliResponse) {
+  return state.phase === MachiavelliPhase.TURN && state.players[state.currentPlayerIdx]?.isHuman === true;
+}
 
-  if (!state)
-    return (
-      <GameSkeleton
-        gameKey="machiavelli"
-        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 13 }}
-      />
-    );
+function MachiavelliMessageBox({ state }: Pick<MachiavelliContext, 'state'>) {
+  return <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />;
+}
 
-  const messageBox = (
-    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
-  );
+function Board({ game, state, t, view }: MachiavelliContext) {
+  const { loading, selectedCardIndices, handleLayoff, handleRearrange } = game;
+  const {
+    isMobileViewport,
+    isLargeDesktop,
+    cardWidth,
+    isMobile,
+    rearrangeOpen,
+    setRearrangeOpen,
+    assignments,
+    setAssignments,
+    closeRearrange,
+  } = view;
+  const messageBox = <MachiavelliMessageBox state={state} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const isTurnPhase = state.phase === MachiavelliPhase.TURN;
   const isRoundEnd = state.phase === MachiavelliPhase.ROUND_END;
-  const isGameEnd = state.phase === MachiavelliPhase.GAME_END || state.gameEndFlag;
+  const isGameEnd = isGameEndOf(state);
   const revealCpu = isRoundEnd || isGameEnd;
-  const isHumanTurn = isTurnPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanTurn = isHumanTurnOf(state);
   // When exactly one hand card is selected it can be laid off onto any table
   // meld, so highlight the melds as drop targets and describe the layoff.
   const canLayoff = isHumanTurn && selectedCardIndices.length === 1;
@@ -305,470 +217,526 @@ function MachiavelliPageContent() {
     const { kind, rank } = meldDetails(meld);
     return t('meldSummary', { kind, rank });
   };
-
   return (
-    <GamePageShell
-      title={tc('nav.machiavelli')}
-      gameThemeBg={gameTheme.machiavelli.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/machiavelli"
-      gameEndFlag={isGameEnd}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'playerCount',
-                    label: t('settings.playerCount'),
-                    value: machiavelliConfig.playerCount,
-                    options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('playerCount', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetRounds',
-                    label: t('settings.targetRounds'),
-                    value: machiavelliConfig.targetRounds,
-                    options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetRounds', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
+        <span>{t('drawPile', { count: state.drawPileCount })}</span>
+      </div>
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="machiavelli-draw-pile-live"
+      >
+        {state.drawPileCount === 0 ? t('drawPileEmpty') : t('drawPileAnnouncement', { count: state.drawPileCount })}
+      </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
-              <span>{t('drawPile', { count: state.drawPileCount })}</span>
-            </div>
-            <div
-              className="sr-only"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-              data-testid="machiavelli-draw-pile-live"
-            >
-              {state.drawPileCount === 0
-                ? t('drawPileEmpty')
-                : t('drawPileAnnouncement', { count: state.drawPileCount })}
-            </div>
-
-            {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
+      {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
                 送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
                 自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
                 ドローかメルドかは、この数字を見て決めるもの。 */}
-            {humanPlayer && (
-              <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
-                {t('deadwoodShort', { score: humanPlayer.deadwood })}
-              </div>
-            )}
+      {humanPlayer && (
+        <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
+          {t('deadwoodShort', { score: humanPlayer.deadwood })}
+        </div>
+      )}
 
-            <div className={lgTwoColGrid}>
-              {/* Left: shared table melds */}
-              <div>
-                <div className="my-3 p-3 rounded bg-black/40" data-tutorial="mv-table" data-testid="machiavelli-table">
-                  <div className="text-ds-text-muted text-sm mb-2">{t('table')}</div>
-                  {state.table.length === 0 ? (
-                    <div className="text-ds-text-muted text-sm">{t('tableEmpty')}</div>
-                  ) : (
-                    <div
-                      className={`${isMobileViewport ? 'grid grid-cols-2 gap-2' : isLargeDesktop ? 'flex flex-wrap gap-x-4 gap-y-2' : 'flex flex-col gap-2'}`}
-                      data-testid="machiavelli-meld-list"
+      <div className={lgTwoColGrid}>
+        {/* Left: shared table melds */}
+        <div>
+          <div className="my-3 p-3 rounded bg-black/40" data-tutorial="mv-table" data-testid="machiavelli-table">
+            <div className="text-ds-text-muted text-sm mb-2">{t('table')}</div>
+            {state.table.length === 0 ? (
+              <div className="text-ds-text-muted text-sm">{t('tableEmpty')}</div>
+            ) : (
+              <div
+                className={`${isMobileViewport ? 'grid grid-cols-2 gap-2' : isLargeDesktop ? 'flex flex-wrap gap-x-4 gap-y-2' : 'flex flex-col gap-2'}`}
+                data-testid="machiavelli-meld-list"
+              >
+                {state.table.map((meld, meldIdx) => {
+                  // Five or more melds fit in two rows even at 1280×800.
+                  const meldCardWidth = cardWidth * (isLargeDesktop ? 0.6 : 0.8);
+                  const layoffButton = isHumanTurn ? (
+                    <button
+                      type="button"
+                      className={`${btnPrimary} ${isMobileViewport ? 'min-h-11 min-w-11 text-xs' : ''}`}
+                      onClick={() => handleLayoff(meldIdx)}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
                     >
-                      {state.table.map((meld, meldIdx) => {
-                        // Five or more melds fit in two rows even at 1280×800.
-                        const meldCardWidth = cardWidth * (isLargeDesktop ? 0.6 : 0.8);
-                        const layoffButton = isHumanTurn ? (
-                          <button
-                            type="button"
-                            className={`${btnPrimary} ${isMobileViewport ? 'min-h-11 min-w-11 text-xs' : ''}`}
-                            onClick={() => handleLayoff(meldIdx)}
-                            disabled={loading || selectedCardIndices.length !== 1}
-                            aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
-                          >
-                            {t('layoffButton')}
-                          </button>
-                        ) : null;
-                        return (
-                          // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
-                          <div
-                            key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                            role="group"
-                            aria-label={meldAria(meld)}
-                            className={`${isMobileViewport ? 'flex flex-col gap-1' : isLargeDesktop ? 'flex items-center gap-2' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
-                              canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
-                            }`}
-                          >
-                            {isMobileViewport ? (
-                              <div className="flex items-center justify-between gap-2">
-                                <span
-                                  className="text-ds-text-muted text-xs whitespace-nowrap min-w-16 truncate"
-                                  data-testid={`machiavelli-meld-label-${meldIdx}`}
-                                  title={meldVisualLabel(meld)}
-                                >
-                                  {meldVisualLabel(meld)}
-                                </span>
-                                {layoffButton}
-                              </div>
-                            ) : isLargeDesktop ? (
-                              // Label above the lay-off button keeps each set narrow enough for two per row.
-                              <div className="flex flex-col items-start gap-1" data-testid="machiavelli-meld-side">
-                                <span
-                                  className="text-ds-text-muted text-xs whitespace-nowrap"
-                                  data-testid={`machiavelli-meld-label-${meldIdx}`}
-                                  title={meldVisualLabel(meld)}
-                                >
-                                  {meldVisualLabel(meld)}
-                                </span>
-                                {layoffButton}
-                              </div>
-                            ) : (
-                              <span
-                                className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
-                                data-testid={`machiavelli-meld-label-${meldIdx}`}
-                                title={meldVisualLabel(meld)}
-                              >
-                                {meldVisualLabel(meld)}
-                              </span>
-                            )}
-                            <div
-                              className={`flex ${isMobileViewport ? 'flex-wrap min-w-0' : isLargeDesktop ? 'flex-nowrap' : 'flex-wrap gap-1'}`}
-                              style={isMobileViewport ? { paddingLeft: meldCardWidth * 0.55 } : undefined}
-                            >
-                              {meld.cards.map((card, idx) => {
-                                const key = `meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`;
-                                // On large desktop each card keeps its full size and only the wrapper overlaps,
-                                // leaving the rank-and-suit corner (DESKTOP_MIN_CARD_EXPOSURE_PX) visible.
-                                return isLargeDesktop ? (
-                                  <div
-                                    key={key}
-                                    className="shrink-0"
-                                    data-testid="machiavelli-meld-card"
-                                    style={
-                                      idx > 0
-                                        ? { marginLeft: -(meldCardWidth - DESKTOP_MIN_CARD_EXPOSURE_PX) }
-                                        : undefined
-                                    }
-                                  >
-                                    <AnimatedCard card={card} width={meldCardWidth} />
-                                  </div>
-                                ) : (
-                                  <AnimatedCard
-                                    key={key}
-                                    card={card}
-                                    width={meldCardWidth}
-                                    style={
-                                      isMobileViewport && idx > 0 ? { marginLeft: -(meldCardWidth * 0.55) } : undefined
-                                    }
-                                  />
-                                );
-                              })}
-                            </div>
-                            {!isMobileViewport && !isLargeDesktop && layoffButton}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* CPU players */}
-                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                  <div>
-                    {state.players
-                      .filter((p) => !p.isHuman)
-                      .map((p) => (
-                        <div key={p.id} className="mb-2 min-w-0 max-w-full p-2 rounded bg-black/30">
-                          <div className="text-ds-text-muted text-sm">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })}
-                            {revealCpu && <> | {t('deadwoodShort', { score: p.deadwood })}</>}
-                          </div>
-                          {revealCpu && p.cards.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {p.cards.map((card, idx) => (
-                                <AnimatedCard
-                                  key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                                  card={card}
-                                  width={cardWidth * 0.8}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                </CpuAccordion>
-
-                {/* Score table */}
-                <details
-                  className="my-3 p-2 rounded bg-black/30"
-                  data-tutorial="mv-score-table"
-                  data-testid="mv-score-table"
-                  open={!isMobileViewport || undefined}
-                >
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('scoresPlayer')}
-                        </th>
-                        <th scope="col">{t('scoresRound')}</th>
-                        <th scope="col">{t('scoresTotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {state.roundScoreHistory.length > 0 && (
-                    <table className="mt-3 w-full text-sm text-ds-text-muted" aria-label={t('roundScoreHistory')}>
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left">
-                            {t('scoresRound')}
-                          </th>
-                          {state.players.map((p) => (
-                            <th scope="col" key={p.id}>
-                              {playerName(p.id, p.isHuman)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.roundScoreHistory.map((round) => (
-                          <tr key={round.roundNumber}>
-                            <th scope="row" className="text-left">
-                              {round.roundNumber}
-                            </th>
-                            {round.scores.map((score, index) => (
-                              <td className="text-center" key={index}>
-                                {score}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </details>
-              </div>
-            </div>
-
-            {showRearrangePanel && (
-              <div className="my-3 p-3 rounded bg-black/40" data-testid="machiavelli-rearrange-panel">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-ds-text-primary font-medium">{t('rearrange.title')}</span>
-                  <button type="button" className={btnOutline} onClick={closeRearrange}>
-                    {t('rearrange.cancel')}
-                  </button>
-                </div>
-                <p className="text-ds-text-muted text-sm mb-3">{t('rearrange.help')}</p>
-
-                <div className="text-ds-text-muted text-xs mb-1">{t('rearrange.poolTitle')}</div>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {poolItems.map((item) => (
-                    <div key={item.id} className="flex flex-col items-center gap-1">
-                      <AnimatedCard card={item.card} width={cardWidth * 0.7} />
-                      <span className="text-ds-text-muted text-[10px]">
-                        {item.source === 'table' ? t('rearrange.sourceTable') : t('rearrange.sourceHand')}
-                      </span>
-                      <select
-                        className="text-xs rounded bg-ds-surface-elevated text-ds-text-primary px-1 py-0.5"
-                        data-testid={`machiavelli-assign-${item.id}`}
-                        aria-label={t('rearrange.assignLabel', { card: cardAlt(item.card) })}
-                        value={groupOf(item)}
-                        onChange={(e) => {
-                          const g = Number(e.target.value);
-                          setAssignments((prev) => ({ ...prev, [item.id]: g }));
-                        }}
-                      >
-                        <option value={-1}>{t('rearrange.unassigned')}</option>
-                        {Array.from({ length: maxGroupId + 1 }, (_, g) => (
-                          <option key={g} value={g}>
-                            {t('rearrange.group', { n: g + 1 })}
-                          </option>
-                        ))}
-                        <option value={maxGroupId + 1}>{t('rearrange.newGroup')}</option>
-                      </select>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="text-ds-text-muted text-xs mb-1">{t('rearrange.previewTitle')}</div>
-                {previewGroups.length === 0 ? (
-                  <div className="text-ds-text-muted text-sm">{t('rearrange.previewEmpty')}</div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    {previewGroups.map((x) => {
-                      const ok = isMachiavelliValidMeld(x.cards);
-                      return (
-                        <div
-                          key={x.g}
-                          className="flex items-center gap-2 flex-wrap"
-                          data-testid={`machiavelli-rearrange-group-${x.g}`}
-                        >
+                      {t('layoffButton')}
+                    </button>
+                  ) : null;
+                  return (
+                    // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
+                    <div
+                      key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
+                      role="group"
+                      aria-label={meldAria(meld)}
+                      className={`${isMobileViewport ? 'flex flex-col gap-1' : isLargeDesktop ? 'flex items-center gap-2' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
+                        canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
+                      }`}
+                    >
+                      {isMobileViewport ? (
+                        <div className="flex items-center justify-between gap-2">
                           <span
-                            className={`text-xs px-2 py-0.5 rounded ${
-                              ok ? 'bg-ds-success/30 text-ds-text-primary' : 'bg-ds-error/30 text-ds-text-primary'
-                            }`}
+                            className="text-ds-text-muted text-xs whitespace-nowrap min-w-16 truncate"
+                            data-testid={`machiavelli-meld-label-${meldIdx}`}
+                            title={meldVisualLabel(meld)}
                           >
-                            {ok ? t('rearrange.valid') : t('rearrange.invalid')}
+                            {meldVisualLabel(meld)}
                           </span>
-                          <div className="flex flex-wrap gap-1">
-                            {x.cards.map((card, ci) => (
-                              <AnimatedCard
-                                key={`rg-${x.g}-${card.design}-${card.value}-${ci}`}
-                                card={card}
-                                width={cardWidth * 0.6}
-                              />
-                            ))}
-                          </div>
+                          {layoffButton}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div className="mt-3 flex items-center gap-3 flex-wrap">
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={submitRearrange}
-                    disabled={loading || !rearrangeEval.canSubmit}
-                    data-testid="machiavelli-rearrange-submit"
-                  >
-                    {t('rearrange.submit')}
-                  </button>
-                  <span className="text-ds-text-muted text-sm" role="status" data-testid="machiavelli-rearrange-status">
-                    {t(rearrangeStatusKey)}
-                  </span>
-                </div>
+                      ) : isLargeDesktop ? (
+                        // Label above the lay-off button keeps each set narrow enough for two per row.
+                        <div className="flex flex-col items-start gap-1" data-testid="machiavelli-meld-side">
+                          <span
+                            className="text-ds-text-muted text-xs whitespace-nowrap"
+                            data-testid={`machiavelli-meld-label-${meldIdx}`}
+                            title={meldVisualLabel(meld)}
+                          >
+                            {meldVisualLabel(meld)}
+                          </span>
+                          {layoffButton}
+                        </div>
+                      ) : (
+                        <span
+                          className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
+                          data-testid={`machiavelli-meld-label-${meldIdx}`}
+                          title={meldVisualLabel(meld)}
+                        >
+                          {meldVisualLabel(meld)}
+                        </span>
+                      )}
+                      <div
+                        className={`flex ${isMobileViewport ? 'flex-wrap min-w-0' : isLargeDesktop ? 'flex-nowrap' : 'flex-wrap gap-1'}`}
+                        style={isMobileViewport ? { paddingLeft: meldCardWidth * 0.55 } : undefined}
+                      >
+                        {meld.cards.map((card, idx) => {
+                          const key = `meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`;
+                          // On large desktop each card keeps its full size and only the wrapper overlaps,
+                          // leaving the rank-and-suit corner (DESKTOP_MIN_CARD_EXPOSURE_PX) visible.
+                          return isLargeDesktop ? (
+                            <div
+                              key={key}
+                              className="shrink-0"
+                              data-testid="machiavelli-meld-card"
+                              style={
+                                idx > 0 ? { marginLeft: -(meldCardWidth - DESKTOP_MIN_CARD_EXPOSURE_PX) } : undefined
+                              }
+                            >
+                              <AnimatedCard card={card} width={meldCardWidth} />
+                            </div>
+                          ) : (
+                            <AnimatedCard
+                              key={key}
+                              card={card}
+                              width={meldCardWidth}
+                              style={isMobileViewport && idx > 0 ? { marginLeft: -(meldCardWidth * 0.55) } : undefined}
+                            />
+                          );
+                        })}
+                      </div>
+                      {!isMobileViewport && !isLargeDesktop && layoffButton}
+                    </div>
+                  );
+                })}
               </div>
             )}
+          </div>
+        </div>
 
-            {isMobile && messageBox}
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center flex-wrap">
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() => setHandSorted((sorted) => !sorted)}
-                  aria-pressed={handSorted}
-                >
-                  {t(handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mv-reset-button"
-              />
+        {/* Right: info sidebar */}
+        <div>
+          {/* CPU players */}
+          <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+            <div>
+              {state.players
+                .filter((p) => !p.isHuman)
+                .map((p) => (
+                  <div key={p.id} className="mb-2 min-w-0 max-w-full p-2 rounded bg-black/30">
+                    <div className="text-ds-text-muted text-sm">
+                      {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                      {t('cumulativeScore', { score: p.cumulativeScore })}
+                      {revealCpu && <> | {t('deadwoodShort', { score: p.deadwood })}</>}
+                    </div>
+                    {revealCpu && p.cards.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {p.cards.map((card, idx) => (
+                          <AnimatedCard
+                            key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                            card={card}
+                            width={cardWidth * 0.8}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
-            <CardNavShortcutsPanel data-testid="machiavelli-kbd-shortcuts" />
+          </CpuAccordion>
+
+          {/* Score table */}
+          <details
+            className="my-3 p-2 rounded bg-black/30"
+            data-tutorial="mv-score-table"
+            data-testid="mv-score-table"
+            open={!isMobileViewport || undefined}
+          >
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+            <table className="w-full text-sm text-ds-text-muted">
+              <thead>
+                <tr>
+                  <th scope="col" className="text-left">
+                    {t('scoresPlayer')}
+                  </th>
+                  <th scope="col">{t('scoresRound')}</th>
+                  <th scope="col">{t('scoresTotal')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {state.players.map((p) => (
+                  <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                    <td>{playerName(p.id, p.isHuman)}</td>
+                    <td className="text-center">{p.roundScore}</td>
+                    <td className="text-center">{p.cumulativeScore}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {state.roundScoreHistory.length > 0 && (
+              <table className="mt-3 w-full text-sm text-ds-text-muted" aria-label={t('roundScoreHistory')}>
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresRound')}
+                    </th>
+                    {state.players.map((p) => (
+                      <th scope="col" key={p.id}>
+                        {playerName(p.id, p.isHuman)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.roundScoreHistory.map((round) => (
+                    <tr key={round.roundNumber}>
+                      <th scope="row" className="text-left">
+                        {round.roundNumber}
+                      </th>
+                      {round.scores.map((score, index) => (
+                        <td className="text-center" key={index}>
+                          {score}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </details>
+        </div>
+      </div>
+
+      {showRearrangePanel && (
+        <div className="my-3 p-3 rounded bg-black/40" data-testid="machiavelli-rearrange-panel">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-ds-text-primary font-medium">{t('rearrange.title')}</span>
+            <button type="button" className={btnOutline} onClick={closeRearrange}>
+              {t('rearrange.cancel')}
+            </button>
+          </div>
+          <p className="text-ds-text-muted text-sm mb-3">{t('rearrange.help')}</p>
+
+          <div className="text-ds-text-muted text-xs mb-1">{t('rearrange.poolTitle')}</div>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {poolItems.map((item) => (
+              <div key={item.id} className="flex flex-col items-center gap-1">
+                <AnimatedCard card={item.card} width={cardWidth * 0.7} />
+                <span className="text-ds-text-muted text-[10px]">
+                  {item.source === 'table' ? t('rearrange.sourceTable') : t('rearrange.sourceHand')}
+                </span>
+                <select
+                  className="text-xs rounded bg-ds-surface-elevated text-ds-text-primary px-1 py-0.5"
+                  data-testid={`machiavelli-assign-${item.id}`}
+                  aria-label={t('rearrange.assignLabel', { card: cardAlt(item.card) })}
+                  value={groupOf(item)}
+                  onChange={(e) => {
+                    const g = Number(e.target.value);
+                    setAssignments((prev) => ({ ...prev, [item.id]: g }));
+                  }}
+                >
+                  <option value={-1}>{t('rearrange.unassigned')}</option>
+                  {Array.from({ length: maxGroupId + 1 }, (_, g) => (
+                    <option key={g} value={g}>
+                      {t('rearrange.group', { n: g + 1 })}
+                    </option>
+                  ))}
+                  <option value={maxGroupId + 1}>{t('rearrange.newGroup')}</option>
+                </select>
+              </div>
+            ))}
           </div>
 
-          <GameFooter
-            message={isMobile ? undefined : messageBox}
-            className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}
-            actions={
-              isHumanTurn ? (
-                <div className="flex gap-2 items-center flex-wrap">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDraw}
-                    disabled={loading}
-                    data-tutorial="mv-draw-button"
+          <div className="text-ds-text-muted text-xs mb-1">{t('rearrange.previewTitle')}</div>
+          {previewGroups.length === 0 ? (
+            <div className="text-ds-text-muted text-sm">{t('rearrange.previewEmpty')}</div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {previewGroups.map((x) => {
+                const ok = isMachiavelliValidMeld(x.cards);
+                return (
+                  <div
+                    key={x.g}
+                    className="flex items-center gap-2 flex-wrap"
+                    data-testid={`machiavelli-rearrange-group-${x.g}`}
                   >
-                    {t('drawButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleNewMeld}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    data-tutorial="mv-newmeld-button"
-                    data-testid="machiavelli-newmeld-button"
-                  >
-                    {t('newMeldButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={rearrangeOpen ? closeRearrange : openRearrange}
-                    disabled={loading || selectedCardIndices.length < 1}
-                    aria-pressed={rearrangeOpen}
-                    title={selectedCardIndices.length < 1 ? t('rearrange.selectPrompt') : undefined}
-                    data-testid="machiavelli-rearrange-toggle"
-                  >
-                    {t('rearrange.toggle')}
-                  </button>
-                </div>
-              ) : isRoundEnd ? (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              ) : null
-            }
-          >
-            {humanPlayer &&
-              (isLargeDesktop ? (
-                <CardFan
-                  itemWidth={cardWidth + 6}
-                  className="mb-2 min-w-0"
-                  dataTutorial="mv-player-hand"
-                  data-testid="machiavelli-hand-fan"
-                >
-                  {displayHand.map(renderHandCard)}
-                </CardFan>
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
-                  {displayHand.map(renderHandCard)}
-                </div>
-              ))}
-          </GameFooter>
-        </>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded ${
+                        ok ? 'bg-ds-success/30 text-ds-text-primary' : 'bg-ds-error/30 text-ds-text-primary'
+                      }`}
+                    >
+                      {ok ? t('rearrange.valid') : t('rearrange.invalid')}
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {x.cards.map((card, ci) => (
+                        <AnimatedCard
+                          key={`rg-${x.g}-${card.design}-${card.value}-${ci}`}
+                          card={card}
+                          width={cardWidth * 0.6}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-3 flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              className={btnSuccess}
+              onClick={submitRearrange}
+              disabled={loading || !rearrangeEval.canSubmit}
+              data-testid="machiavelli-rearrange-submit"
+            >
+              {t('rearrange.submit')}
+            </button>
+            <span className="text-ds-text-muted text-sm" role="status" data-testid="machiavelli-rearrange-status">
+              {t(rearrangeStatusKey)}
+            </span>
+          </div>
+        </div>
       )}
-    </GamePageShell>
+
+      {isMobile && messageBox}
+    </>
   );
 }
+
+function FooterStatus({ frontendHint, t }: MachiavelliContext) {
+  return <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />;
+}
+
+function FooterActions({ state, t, view }: MachiavelliContext) {
+  if (!isHumanTurnOf(state)) return null;
+  return (
+    <button
+      type="button"
+      className={btnOutline}
+      onClick={() => view.setHandSorted((sorted) => !sorted)}
+      aria-pressed={view.handSorted}
+    >
+      {t(view.handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
+    </button>
+  );
+}
+
+function primaryActions({ game, state, t, view }: MachiavelliContext) {
+  const { loading, selectedCardIndices, handleDraw, handleNewMeld, handleNextRound } = game;
+  const { rearrangeOpen, openRearrange, closeRearrange } = view;
+  if (isHumanTurnOf(state)) {
+    return (
+      <div className="flex gap-2 items-center flex-wrap">
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={handleDraw}
+          disabled={loading}
+          data-tutorial="mv-draw-button"
+        >
+          {t('drawButton')}
+        </button>
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={handleNewMeld}
+          disabled={loading || selectedCardIndices.length < 3}
+          data-tutorial="mv-newmeld-button"
+          data-testid="machiavelli-newmeld-button"
+        >
+          {t('newMeldButton')}
+        </button>
+        <button
+          type="button"
+          className={btnSecondary}
+          onClick={rearrangeOpen ? closeRearrange : openRearrange}
+          disabled={loading || selectedCardIndices.length < 1}
+          aria-pressed={rearrangeOpen}
+          title={selectedCardIndices.length < 1 ? t('rearrange.selectPrompt') : undefined}
+          data-testid="machiavelli-rearrange-toggle"
+        >
+          {t('rearrange.toggle')}
+        </button>
+      </div>
+    );
+  }
+  if (state.phase === MachiavelliPhase.ROUND_END) {
+    return (
+      <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+        {t('nextRound')}
+      </button>
+    );
+  }
+  return null;
+}
+
+function FooterHand({ game, state, frontendHint, view }: MachiavelliContext) {
+  const { selectedCardIndices, toggleCard } = game;
+  const { isLargeDesktop, cardWidth, displayHand } = view;
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  // getMachiavelliHint already asks findHandMeld which cards form a meld and then
+  // throws the indices away, leaving the hint to say "make a meld" without saying
+  // which cards. Pan rings its candidates; this does the same (#4852).
+  // Derived from the tooltip's own verdict rather than re-deriving the rules, so
+  // the ring cannot disagree with it: getMachiavelliHint already requires the
+  // human's turn, the TURN phase and a live game before suggesting a meld.
+  const hintHand = humanPlayer?.cards;
+  const meldHintIndices = useMemo(
+    () =>
+      new Set(
+        frontendHint.hintEnabled && frontendHint.hint?.targetAction === 'newMeld' && hintHand
+          ? (findHandMeld(hintHand) ?? [])
+          : [],
+      ),
+    [frontendHint.hintEnabled, frontendHint.hint, hintHand],
+  );
+  const renderHandCard = ({ card, index }: (typeof displayHand)[number]) => (
+    <button
+      type="button"
+      key={`${card.design}-${card.value}-${index}`}
+      onClick={() => toggleCard(index)}
+      aria-label={cardAlt(card)}
+      aria-pressed={selectedCardIndices.includes(index)}
+      data-meld-hint={meldHintIndices.has(index) || undefined}
+      className={`transition-transform ${focusRingCard} ${
+        meldHintIndices.has(index) && !selectedCardIndices.includes(index) ? 'ring-2 ring-ds-success rounded' : ''
+      }`}
+      style={{
+        background: 'none',
+        padding: 0,
+        borderRadius: 8,
+        ...selectedCardStyle(selectedCardIndices.includes(index)),
+        boxSizing: 'border-box',
+      }}
+    >
+      <AnimatedCard card={card} width={cardWidth} />
+    </button>
+  );
+  return (
+    humanPlayer &&
+    (isLargeDesktop ? (
+      <CardFan
+        itemWidth={cardWidth + 6}
+        className="mb-2 min-w-0"
+        dataTutorial="mv-player-hand"
+        data-testid="machiavelli-hand-fan"
+      >
+        {displayHand.map(renderHandCard)}
+      </CardFan>
+    ) : (
+      <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
+        {displayHand.map(renderHandCard)}
+      </div>
+    ))
+  );
+}
+
+const machiavelliDefinition: GameDefinition<
+  MachiavelliResponse,
+  MachiavelliGame,
+  Parameters<typeof machiavelliApi.exec>,
+  MachiavelliView
+> = {
+  key: 'machiavelli',
+  useGame: useMachiavelliGame,
+  useView: useMachiavelliView,
+  tutorial: MV_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 13 },
+  cli: ({ frontendHint }) => ({
+    parseCommand: parseMachiavelliCommand,
+    formatResponse: formatMachiavelliState,
+    helpText: MACHIAVELLI_HELP,
+    localCommand: hintLocalCommand(frontendHint.hint),
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: !!isGameEndOf(state),
+  }),
+  shell: ({ state }) => ({ isHumanTurn: isHumanTurnOf(state) }),
+  reset: ({ game }) => {
+    void game.exec('reset', undefined, {
+      playerCount: game.machiavelliConfig.playerCount,
+      targetRounds: game.machiavelliConfig.targetRounds,
+    });
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'playerCount',
+          label: t('settings.playerCount'),
+          value: game.machiavelliConfig.playerCount,
+          options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('playerCount', v),
+        },
+        {
+          type: 'select',
+          id: 'targetRounds',
+          label: t('settings.targetRounds'),
+          value: game.machiavelliConfig.targetRounds,
+          options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetRounds', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  cardNav: ({ game, state, view }) => ({
+    cardCount: state.players.find((p) => p.isHuman)?.cards?.length ?? 0,
+    onToggle: (index) => game.toggleCard(view.displayHand[index].index),
+    onConfirm: () => {
+      if (game.selectedCardIndices.length >= 3) game.handleNewMeld();
+    },
+    onClear: game.clearSelection,
+    enabled: isHumanTurnOf(state),
+  }),
+  shortcutsTestId: 'machiavelli-kbd-shortcuts',
+  primaryActions,
+  message: ({ state, view }) => (view.isMobile ? undefined : <MachiavelliMessageBox state={state} />),
+  resetTutorialId: 'mv-reset-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Machiavelli game page with a shared table, melding, and layoff. */
+export const MachiavelliPage = createGamePage(machiavelliDefinition);

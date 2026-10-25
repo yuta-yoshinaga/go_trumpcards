@@ -5,7 +5,6 @@
     "gameEnd": "ゲーム終了"
   },
   "settings": {
-    "title": "設定",
     "playerCount": "プレイヤー数",
     "targetRounds": "ラウンド数",
     "easy": "Easy",

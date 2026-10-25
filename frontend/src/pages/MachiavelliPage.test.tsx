@@ -647,6 +647,43 @@ describe('MachiavelliPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    expect(await screen.findByText('手番', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('turn', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('Enter plays a new meld only once three cards are selected', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: '2' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: '3' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('newmeld', { handIndices: [0, 1, 2] }));
+  });
+
+  it('settings panel changes targetRounds', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('設定'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[1], { target: { value: '5' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(turnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        playerCount: 4,
+        targetRounds: 5,
+      }),
+    );
+  });
+
   it('handles action log visibility and API fetch', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<MachiavelliPage />);
