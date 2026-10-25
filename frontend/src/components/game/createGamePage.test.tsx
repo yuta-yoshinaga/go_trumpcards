@@ -690,6 +690,118 @@ describe('createGamePage', () => {
     view.unmount();
   });
 
+  it('keeps LandscapeBanner in CLI mode only when landscapeBannerInCliMode is enabled', async () => {
+    const makeBannerPage = (landscapeBannerInCliMode?: boolean) =>
+      createGamePage({
+        key: 'acesup',
+        useGame: useFakeGame,
+        tutorial: [],
+        skeleton: { kind: 'centered', rows: [1] },
+        cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+        phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+        landscapeBanner: true,
+        ...(landscapeBannerInCliMode ? { landscapeBannerInCliMode } : {}),
+        Board,
+      });
+
+    const PageWithOption = makeBannerPage(true);
+    const enabledView = renderWithProviders(<PageWithOption />);
+    const bannerCount = (container: HTMLElement) =>
+      Array.from(container.querySelectorAll('[data-app-chrome]')).filter((element) =>
+        element.classList.contains('portrait:flex'),
+      ).length;
+    expect(bannerCount(enabledView.container)).toBe(1);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(bannerCount(enabledView.container)).toBe(1);
+    enabledView.unmount();
+
+    localStorage.removeItem('cli-mode-acesup');
+    const PageWithoutOption = makeBannerPage();
+    const disabledView = renderWithProviders(<PageWithoutOption />);
+    expect(bannerCount(disabledView.container)).toBe(1);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(bannerCount(disabledView.container)).toBe(0);
+  });
+
+  it('orders LiveRegion, banner and settings ahead of the content when both CLI-mode options are set', async () => {
+    localStorage.removeItem('cli-mode-acesup');
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      settings: () => [{ items: [{ type: 'checkbox' as const, id: 'order-setting', label: 'Order', checked: false }] }],
+      settingsPlacement: 'top',
+      landscapeBanner: true,
+      landscapeBannerInCliMode: true,
+      settingsInCliMode: true,
+      LiveRegion: () => <div data-testid="live-region" />,
+      Board,
+    });
+    const view = renderWithProviders(<Page />);
+    const follows = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const banner = () =>
+      Array.from(view.container.querySelectorAll('[data-app-chrome]')).find((el) =>
+        el.classList.contains('portrait:flex'),
+      ) as Element;
+    const panel = () => view.container.querySelector('details') as Element;
+    const live = screen.getByTestId('live-region');
+    expect(follows(live, banner())).toBe(true);
+    expect(follows(banner(), panel())).toBe(true);
+    expect(follows(panel(), screen.getByTestId('board'))).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(follows(live, banner())).toBe(true);
+    expect(follows(banner(), panel())).toBe(true);
+    expect(follows(panel(), screen.getByRole('textbox'))).toBe(true);
+    view.unmount();
+    localStorage.removeItem('cli-mode-acesup');
+  });
+
+  it('keeps top settings in CLI mode only when settingsInCliMode is enabled', async () => {
+    const makeSettingsPage = (settingsInCliMode?: boolean) =>
+      createGamePage({
+        key: 'acesup',
+        useGame: useFakeGame,
+        tutorial: [],
+        skeleton: { kind: 'centered', rows: [1] },
+        cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+        phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+        settings: () => [
+          { items: [{ type: 'checkbox' as const, id: 'top-cli-setting', label: 'CLI setting', checked: false }] },
+        ],
+        settingsPlacement: 'top',
+        ...(settingsInCliMode ? { settingsInCliMode } : {}),
+        Board,
+      });
+
+    const PageWithOption = makeSettingsPage(true);
+    const enabledView = renderWithProviders(<PageWithOption />);
+    expect(enabledView.container.querySelectorAll('details')).toHaveLength(1);
+    // The same element must survive the toggle: an opened panel stays open, as on the hand-wired pages.
+    const panel = enabledView.container.querySelector('details') as HTMLDetailsElement;
+    panel.open = true;
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(enabledView.container.querySelectorAll('details')).toHaveLength(1);
+    expect(enabledView.container.querySelector('details')).toBe(panel);
+    expect(panel.open).toBe(true);
+    enabledView.unmount();
+
+    localStorage.removeItem('cli-mode-acesup');
+    const PageWithoutOption = makeSettingsPage();
+    const disabledView = renderWithProviders(<PageWithoutOption />);
+    expect(disabledView.container.querySelectorAll('details')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(disabledView.container.querySelectorAll('details')).toHaveLength(0);
+  });
+
   it('places settings before or after the scroll content according to settingsPlacement', () => {
     const settings = () => [
       { items: [{ type: 'checkbox' as const, id: 'test-setting', label: 'Test', checked: false }] },

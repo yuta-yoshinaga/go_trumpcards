@@ -24,7 +24,7 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, actionLogDuringPlay?, actionLogEndPhase?, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, footerTall?, controlsInFooter?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, actionLogDuringPlay?, actionLogEndPhase?, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, footerTall?, controlsInFooter?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, landscapeBannerInCliMode?, settingsInCliMode?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
@@ -81,3 +81,7 @@ CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する�
 プレイ中も棋譜を出すページ (`ActionLogSection availableDuringPlay`) 用に `actionLogDuringPlay` を追加。
 
 ラウンド終了で棋譜ボタンを出すページ (Loo など) 用に `actionLogEndPhase` を追加。
+
+## 追記 (2026-10-26): CLI モードでも出す帯と設定
+
+未移行の標準レイアウトのページのうち 40 余りは、横向き推奨の帯 (うち 13 は上置きの設定パネルも) を CLI モードの分岐の前に描いており、CLI モードでも表示される。ファクトリはどちらも GUI 側だけで描くので、移行すると CLI モードで消える。振る舞いを変えないために `landscapeBannerInCliMode` / `settingsInCliMode` を追加した (分岐の前に描き、モードを切り替えても同じ要素のまま)。CLI モードで出すべきかどうか自体は #12132 で決める。
