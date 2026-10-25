@@ -204,7 +204,6 @@ MrsMopPage.tsx
 MusPage.tsx
 MushiPage.tsx
 NainJaunePage.tsx
-NapPage.tsx
 NapoleonPage.tsx
 NapoleonsSquarePage.tsx
 NarcoticPage.tsx

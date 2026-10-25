@@ -8,7 +8,6 @@
     "gameEnd": "Game End"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "targetPoints": "Target Chips",
     "easy": "Easy",
