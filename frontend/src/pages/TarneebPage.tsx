@@ -241,6 +241,12 @@ function Board({ state, t, tc, view }: TarneebContext) {
             </div>
             <ScrollFadeHint />
 
+            {/*
+              Per-player trick breakdown (#3306). The aggregate table above only shows
+              each team's combined tricks; this collapsible section reveals how many
+              tricks each teammate (partner + CPUs) contributed. Kept in a <details> so
+              it never crowds the mobile layout unless the player opens it.
+            */}
             <details className="mt-2" data-testid="tn-player-breakdown">
               <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('breakdownTitle')}</summary>
               <div className="mt-1 space-y-2">
@@ -544,6 +550,8 @@ const tarneebDefinition: GameDefinition<
   shortcutsTestId: 'tarneeb-kbd-shortcuts',
   resetTutorialId: 'tn-reset-button',
   actionsTutorialId: 'tn-play-button',
+  // The old row had no layout class: its buttons sat inline, spaced by their own margins.
+  actionsClassName: '',
   Board,
   FooterHand,
   FooterStatus,
