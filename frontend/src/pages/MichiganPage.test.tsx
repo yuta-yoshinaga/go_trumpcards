@@ -473,4 +473,10 @@ describe('MichiganPage', () => {
     expect(card0).toHaveAttribute('aria-label', `${cardAlt(playState.players[0].cards[0])} を出す`);
     expect(card0.getAttribute('aria-label')).not.toContain('{{');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MichiganPage />);
+    expect(await screen.findByText('ベット', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bet', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
