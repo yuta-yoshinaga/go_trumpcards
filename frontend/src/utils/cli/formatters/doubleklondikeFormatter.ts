@@ -16,7 +16,9 @@ export function formatDoubleKlondikeState(state: DoubleKlondikeResponse): string
     `moves: ${state.moveCount} | stock: ${state.stockCount}`,
   ];
   const wasteTop = state.waste[state.waste.length - 1];
-  lines.push(`waste: ${wasteTop ? `[${state.waste.length - 1}]${formatCard(wasteTop)}` : '[empty]'}`);
+  const wasteCanMove =
+    (state.legalTargets.waste?.tableau.length ?? 0) > 0 || (state.legalTargets.waste?.foundation.length ?? 0) > 0;
+  lines.push(`waste: ${wasteTop ? `${wasteCanMove ? '*' : ''}${formatCard(wasteTop)}` : '[empty]'}`);
   lines.push('Foundations:');
   state.foundation.forEach((pile, i) => {
     const top = pile[pile.length - 1];
@@ -25,17 +27,18 @@ export function formatDoubleKlondikeState(state: DoubleKlondikeResponse): string
   lines.push('Tableau (columns top at right; use p <col> <idx> <to>):');
   state.tableau.forEach((column, col) => {
     const cards = column
-      .map((cell, idx) => `${cell.faceUp && cell.card ? `[${idx}]${formatCard(cell.card)}` : `[${idx}]XX`}`)
+      .map((cell, idx) => {
+        const targets = state.legalTargets[`tableau-${col}-${idx}`];
+        const movable = (targets?.tableau.length ?? 0) > 0 || (targets?.foundation.length ?? 0) > 0;
+        return `${movable ? '*' : ''}[${idx}]${cell.faceUp && cell.card ? formatCard(cell.card) : 'XX'}`;
+      })
       .join(' ');
-    const movable = Object.entries(state.legalTargets).some(
-      ([key, targets]) =>
-        key.startsWith(`tableau-${col}-`) && (targets.tableau.length > 0 || targets.foundation.length > 0),
-    );
-    lines.push(`${movable ? '*' : ' '}[${col}] ${cards || '[empty]'}`);
+    lines.push(` [${col}] ${cards || '[empty]'}`);
   });
   if (state.phase === DoubleKlondikePhase.PLAYING) {
+    if (state.isStalemate) lines.push('Stalemate - no more moves possible');
     const commands = [
-      'd (draw)',
+      ...(state.stockCount > 0 || state.waste.length > 0 ? ['d (draw)'] : []),
       'ac (auto)',
       ...(state.canUndo ? ['u (undo)'] : []),
       'h (hint)',

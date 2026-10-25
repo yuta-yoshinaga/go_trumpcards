@@ -21,18 +21,41 @@ const base: DoubleKlondikeResponse = {
   moveCount: 3,
   canUndo: true,
   isStalemate: false,
-  legalTargets: { 'tableau-0-1': { tableau: [1], foundation: [] } },
+  legalTargets: {
+    waste: { tableau: [1], foundation: [] },
+    'tableau-0-1': { tableau: [1], foundation: [] },
+  },
   message: '',
 };
 
 describe('formatDoubleKlondikeState', () => {
-  it('formats a playing board with indexed cards, top cards, and available commands', () => {
+  it('formats a playing board with card-level move markers and available commands', () => {
     const output = formatDoubleKlondikeState(base);
     expect(output).toContain('phase: Playing');
-    expect(output).toContain('[0]♠9 [1]♥8');
-    expect(output).toContain('waste: [1]♣K');
-    expect(output).toContain('*[0]');
+    expect(output).toContain('[0]♠9 *[1]♥8');
+    expect(output).toContain('waste: *♣K');
     expect(output).toContain('d (draw)');
+  });
+  it('marks the waste when it can move and omits draw guidance when stock and waste are empty', () => {
+    const output = formatDoubleKlondikeState({
+      ...base,
+      stockCount: 0,
+      waste: [],
+      legalTargets: { waste: { tableau: [0], foundation: [] } },
+    });
+    expect(output).not.toContain('d (draw)');
+    expect(output).toContain('waste: [empty]');
+  });
+  it('prints stalemate guidance and renders a real face-down card as hidden', () => {
+    const output = formatDoubleKlondikeState({
+      ...base,
+      isStalemate: true,
+      tableau: [[{ card: { design: 'SPADE', value: 7 }, faceUp: false }], []],
+      legalTargets: {},
+    });
+    expect(output).toContain('Stalemate - no more moves possible');
+    expect(output).toContain('[0]XX');
+    expect(output).not.toContain('♠7');
   });
   it('reports a requested card hint with the server message code', () => {
     expect(

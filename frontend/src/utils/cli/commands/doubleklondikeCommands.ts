@@ -16,14 +16,13 @@ export function parseDoubleKlondikeCommand(
   switch (cmd) {
     case 'p':
     case 'play': {
-      if (state && state.phase !== DoubleKlondikePhase.PLAYING)
+      if (!state || state.phase !== DoubleKlondikePhase.PLAYING)
         return { error: 'Moves are available only while playing' };
       const [from, to] = args;
       if ((from === 'waste' && args.length !== 2) || (from !== 'waste' && args.length !== 3))
         return { error: 'Usage: p waste <col|f> | p <col> <idx> <to>' };
       if (from === 'waste' && to === 'f') {
-        if (state && (state.phase !== DoubleKlondikePhase.PLAYING || !state.legalTargets.waste?.foundation.length))
-          return { error: 'Waste cannot move to a foundation' };
+        if (!state.legalTargets.waste?.foundation.length) return { error: 'Waste cannot move to a foundation' };
         return { args: ['mwf'] };
       }
       if (from === 'waste' && /^\d+$/.test(to ?? '')) {
@@ -44,6 +43,7 @@ export function parseDoubleKlondikeCommand(
           cardIndex >= (state.tableau[col]?.length ?? 0)
         )
           return { error: 'Tableau card index is out of range' };
+        if (!state.tableau[col]?.[cardIndex]?.faceUp) return { error: 'That card is face down' };
         const key = `tableau-${col}-${cardIndex}`;
         if (args[2] === 'f') {
           if (cardIndex !== (state.tableau[col]?.length ?? 0) - 1 || !state.legalTargets[key]?.foundation.length)

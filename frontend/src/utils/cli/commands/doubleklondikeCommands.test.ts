@@ -19,7 +19,11 @@ const state: DoubleKlondikeResponse = {
   moveCount: 0,
   canUndo: true,
   isStalemate: false,
-  legalTargets: { waste: { tableau: [1], foundation: [0] }, 'tableau-0-1': { tableau: [2], foundation: [0] } },
+  legalTargets: {
+    waste: { tableau: [1], foundation: [0] },
+    'tableau-0-0': { tableau: [1], foundation: [] },
+    'tableau-0-1': { tableau: [2], foundation: [0] },
+  },
   message: '',
 };
 
@@ -57,6 +61,22 @@ describe('parseDoubleKlondikeCommand', () => {
   it('allows draw without state, but rejects an exhausted draw', () => {
     expect(parseDoubleKlondikeCommand('d')).toEqual({ args: ['d'] });
     expect(parseDoubleKlondikeCommand('d', { ...state, stockCount: 0, waste: [] })).toHaveProperty('error');
+  });
+  it('uses per-card legal targets for multi-card tableau runs and rejects face-down cards', () => {
+    expect(parseDoubleKlondikeCommand('p 0 0 1', state)).toEqual({
+      args: ['mtt', { fromCol: 0, cardIndex: 0, toCol: 1 }],
+    });
+    const faceDownState = {
+      ...state,
+      tableau: [[{ card: { design: 'SPADE' as const, value: 9 }, faceUp: false }], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0] } },
+    };
+    expect(parseDoubleKlondikeCommand('p 0 0 1', faceDownState)).toHaveProperty('error');
+    expect(parseDoubleKlondikeCommand('p 0 0 f', faceDownState)).toHaveProperty('error');
+  });
+  it('requires state for waste moves to both tableau and foundation', () => {
+    expect(parseDoubleKlondikeCommand('p waste f')).toHaveProperty('error');
+    expect(parseDoubleKlondikeCommand('p waste 0')).toHaveProperty('error');
   });
   it('requires undo to be available and gates actions after game end', () => {
     expect(parseDoubleKlondikeCommand('u', { ...state, canUndo: false })).toHaveProperty('error');
