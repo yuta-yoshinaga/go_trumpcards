@@ -1,37 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { spoilFiveApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useSpoilFiveGame } from '../hooks/useSpoilFiveGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { SpoilFiveResponse } from '../types/card';
 import { SpoilFivePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
 import { parseSpoilFiveCommand, SPOIL_FIVE_HELP } from '../utils/cli/commands/spoilFiveCommands';
 import { formatSpoilFiveState } from '../utils/cli/formatters/spoilFiveFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -92,58 +77,17 @@ const SPOIL_FIVE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SpoilFivePhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Spoil Five game page: an Irish play-only 5-player trick-taker with a pot, fixed top trumps, and Reneging. */
-export const SpoilFivePage = withTutorial(SpoilFivePageContent, 'spoilfive', SPOIL_FIVE_TUTORIAL_STEPS);
+type SpoilFiveGame = ReturnType<typeof useSpoilFiveGame>;
+type SpoilFiveView = ReturnType<typeof useSpoilFiveView>;
+type SpoilFiveContext = GamePageContext<SpoilFiveResponse, SpoilFiveGame, SpoilFiveView>;
 
-/** Inner content of the Spoil Five page, wrapped by TutorialProvider. */
-function SpoilFivePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('spoilfive');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    spoilFiveConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useSpoilFiveGame();
-
+function useSpoilFiveView({ game }: { game: SpoilFiveGame }) {
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spoilfive');
-  const spoilFiveCliConfig: CliGameConfig<SpoilFiveResponse, Parameters<typeof spoilFiveApi.exec>> = useMemo(
-    () => ({
-      gameName: 'spoilfive',
-      parseCommand: parseSpoilFiveCommand,
-      formatResponse: formatSpoilFiveState,
-      helpText: SPOIL_FIVE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, spoilFiveCliConfig, state, {
-    addInput,
-    addOutput,
-    addError,
-    clearLog,
-  });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('spoilfive', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('spoilfive', SPOIL_FIVE_PHASE_KEYS);
 
@@ -152,7 +96,7 @@ function SpoilFivePageContent() {
   const [potDelta, setPotDelta] = useState(0);
   const prevPotRef = useRef<number | null>(null);
   useEffect(() => {
-    const pot = state?.pot;
+    const pot = game.state?.pot;
     if (pot == null) return;
     const prev = prevPotRef.current;
     prevPotRef.current = pot;
@@ -161,29 +105,19 @@ function SpoilFivePageContent() {
       const id = setTimeout(() => setPotDelta(0), 2500);
       return () => clearTimeout(id);
     }
-  }, [state?.pot]);
+  }, [game.state?.pot]);
 
-  if (!state)
-    return <GameSkeleton gameKey="spoilfive" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+  return { cardWidth, isMobile, phaseNames, potDelta };
+}
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanTurn = state.isHumanTurn;
-
-  const isPlayPhase = state.phase === SpoilFivePhase.PLAY;
-  const isTrickEnd = state.phase === SpoilFivePhase.TRICK_END;
+function Board({ state, t, view }: SpoilFiveContext) {
+  const { cardWidth, isMobile, potDelta } = view;
   const isRoundEnd = state.phase === SpoilFivePhase.ROUND_END;
   const isGameEnd = state.phase === SpoilFivePhase.GAME_END || state.gameEndFlag;
   const isSpoil = isRoundEnd && state.roundWinnerIdx < 0;
 
-  const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   const topTrumps = spoilFiveTopTrumps(state.trumpSuit);
-
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
 
   /** Renders one player panel showing round tricks, match score, and leader / round-winner state. */
   const renderPlayerPanel = (p: SpoilFiveResponse['players'][number]) => {
@@ -221,257 +155,271 @@ function SpoilFivePageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.spoilfive')}
-      gameThemeBg={gameTheme.spoilfive.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/spoilfive"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerPlayer === humanIdx}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: spoilFiveConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetPoints',
-                    label: t('settings.targetPoints'),
-                    value: spoilFiveConfig.targetPoints,
-                    options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetPoints', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+        <span className="mr-4 whitespace-nowrap" data-testid="spoilfive-target">
+          {t('target', { n: state.config.targetPoints })}
+        </span>
+        <span className={potDelta > 0 ? 'font-semibold text-ds-warning motion-safe:animate-pulse' : ''}>
+          {t('pot', { n: state.pot })}
+        </span>
+        {potDelta > 0 && (
+          <span
+            data-testid="spoilfive-pot-delta"
+            className="ml-1 text-sm font-semibold text-ds-warning motion-safe:animate-pulse"
+            aria-hidden="true"
+          >
+            {t('potIncrease', { n: potDelta })}
+          </span>
+        )}
+        {/* Screen-reader announcement of the pot change: a self-contained live
+            region so a spoiled round carrying the pot forward is spoken even
+            though the visual "+NN" pulse is transient and colour-only. */}
+        <span className="sr-only" role="status" aria-live="polite" data-testid="spoilfive-pot-announce">
+          {potDelta > 0 ? t('potIncreaseAnnounce', { delta: potDelta, total: state.pot }) : ''}
+        </span>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="spoilfive-trick-display"
           />
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span className="mr-4 whitespace-nowrap" data-testid="spoilfive-target">
-                {t('target', { n: state.config.targetPoints })}
-              </span>
-              <span className={potDelta > 0 ? 'font-semibold text-ds-warning motion-safe:animate-pulse' : ''}>
-                {t('pot', { n: state.pot })}
-              </span>
-              {potDelta > 0 && (
-                <span
-                  data-testid="spoilfive-pot-delta"
-                  className="ml-1 text-sm font-semibold text-ds-warning motion-safe:animate-pulse"
-                  aria-hidden="true"
-                >
-                  {t('potIncrease', { n: potDelta })}
-                </span>
-              )}
-              {/* Screen-reader announcement of the pot change: a self-contained live
-                  region so a spoiled round carrying the pot forward is spoken even
-                  though the visual "+NN" pulse is transient and colour-only. */}
-              <span className="sr-only" role="status" aria-live="polite" data-testid="spoilfive-pot-announce">
-                {potDelta > 0 ? t('potIncreaseAnnounce', { delta: potDelta, total: state.pot }) : ''}
-              </span>
+        {/* Right: info sidebar — 5 player panels */}
+        <div data-tutorial="spoilfive-info">
+          {/* Top-trump ordering legend (collapsible, follows the current trump suit) */}
+          {/* **免除ルールの存在は畳んだままでも見えるようにする。**説明は
+              caption に元からあったが、`<details>` は既定で閉じているので、
+              開かない限り Reneging という規則があること自体に気づけない。
+              見出しに名前を出し、詳細は 1 クリック先に置く (#6451)。 */}
+          <details className="mb-2 p-2 rounded bg-black/30" data-testid="spoilfive-trump-legend">
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+              {t('trumpLegend.title')}
+            </summary>
+            <div className="mt-1 text-ds-text-muted text-xs">
+              <div className="mb-1">{t('trumpLegend.caption', { suit: trumpSymbol })}</div>
+              <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                {topTrumps.map((card) => (
+                  <span key={card} className="inline-flex items-center gap-1">
+                    <span className="font-mono text-ds-text-primary">{card}</span>
+                    <span aria-hidden="true">&gt;</span>
+                  </span>
+                ))}
+                <span className="text-ds-text-primary">{t('trumpLegend.otherTrumps')}</span>
+                <span aria-hidden="true">&gt;</span>
+                <span className="text-ds-text-primary">{t('trumpLegend.nonTrump')}</span>
+              </div>
             </div>
+          </details>
 
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1 text-sm">{state.players.map(renderPlayerPanel)}</div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30 text-sm">{state.players.map(renderPlayerPanel)}</div>
+          )}
+
+          {/* Round result */}
+          {(isRoundEnd || isGameEnd) && (
+            <div
+              className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+              data-testid="spoilfive-round-result"
+            >
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              {isSpoil ? (
+                <div>{t('roundResult.spoil')}</div>
+              ) : (
+                state.roundWinnerIdx >= 0 && (
+                  <div>
+                    {t('roundResult.winner', {
+                      name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
+                    })}
+                  </div>
+                )
+              )}
+            </div>
+          )}
+          {isGameEnd && state.winnerPlayer >= 0 && (
+            <div
+              className="my-3 p-3 rounded bg-ds-surface-elevated text-ds-text-primary"
+              data-testid="spoilfive-game-result"
+            >
+              <div className="font-semibold">{t('gameResult.title')}</div>
               <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="spoilfive-trick-display"
-                />
+                {t('gameResult.winner', {
+                  name: playerName(state.winnerPlayer, state.players[state.winnerPlayer]?.isHuman ?? false),
+                })}
               </div>
-
-              {/* Right: info sidebar — 5 player panels */}
-              <div data-tutorial="spoilfive-info">
-                {/* Top-trump ordering legend (collapsible, follows the current trump suit) */}
-                {/* **免除ルールの存在は畳んだままでも見えるようにする。**説明は
-                    caption に元からあったが、`<details>` は既定で閉じているので、
-                    開かない限り Reneging という規則があること自体に気づけない。
-                    見出しに名前を出し、詳細は 1 クリック先に置く (#6451)。 */}
-                <details className="mb-2 p-2 rounded bg-black/30" data-testid="spoilfive-trump-legend">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                    {t('trumpLegend.title')}
-                  </summary>
-                  <div className="mt-1 text-ds-text-muted text-xs">
-                    <div className="mb-1">{t('trumpLegend.caption', { suit: trumpSymbol })}</div>
-                    <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
-                      {topTrumps.map((card) => (
-                        <span key={card} className="inline-flex items-center gap-1">
-                          <span className="font-mono text-ds-text-primary">{card}</span>
-                          <span aria-hidden="true">&gt;</span>
-                        </span>
-                      ))}
-                      <span className="text-ds-text-primary">{t('trumpLegend.otherTrumps')}</span>
-                      <span aria-hidden="true">&gt;</span>
-                      <span className="text-ds-text-primary">{t('trumpLegend.nonTrump')}</span>
-                    </div>
-                  </div>
-                </details>
-
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1 text-sm">{state.players.map(renderPlayerPanel)}</div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30 text-sm">{state.players.map(renderPlayerPanel)}</div>
-                )}
-
-                {/* Round result */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="spoilfive-round-result"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    {isSpoil ? (
-                      <div>{t('roundResult.spoil')}</div>
-                    ) : (
-                      state.roundWinnerIdx >= 0 && (
-                        <div>
-                          {t('roundResult.winner', {
-                            name: playerName(
-                              state.roundWinnerIdx,
-                              state.players[state.roundWinnerIdx]?.isHuman ?? false,
-                            ),
-                          })}
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
-                {isGameEnd && state.winnerPlayer >= 0 && (
-                  <div
-                    className="my-3 p-3 rounded bg-ds-surface-elevated text-ds-text-primary"
-                    data-testid="spoilfive-game-result"
-                  >
-                    <div className="font-semibold">{t('gameResult.title')}</div>
-                    <div>
-                      {t('gameResult.winner', {
-                        name: playerName(state.winnerPlayer, state.players[state.winnerPlayer]?.isHuman ?? false),
-                      })}
-                    </div>
-                    <div>
-                      {t('gameResult.score', {
-                        score: state.players[state.winnerPlayer]?.score ?? 0,
-                        target: state.config.targetPoints,
-                      })}
-                    </div>
-                  </div>
-                )}
+              <div>
+                {t('gameResult.score', {
+                  score: state.players[state.winnerPlayer]?.score ?? 0,
+                  target: state.config.targetPoints,
+                })}
               </div>
             </div>
+          )}
+        </div>
+      </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              availableDuringPlay
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.spoilfive.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="spoilfive"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="spoilfive-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="spoilfive-action-buttons">
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="spoilfive-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+      {/* Message */}
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterHand({ state, game, t, view }: SpoilFiveContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+  const isPlayPhase = state.phase === SpoilFivePhase.PLAY;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  return (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="spoilfive"
+      validIndices={canPlay ? state.playableIndices : undefined}
+      restrictedTooltip={t('playButton')}
+    />
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: SpoilFiveContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="spoilfive-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices &&
+              state.hint.cardIndices.length > 0 &&
+              ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ state, game, t, busy }: SpoilFiveContext) {
+  const isPlayPhase = state.phase === SpoilFivePhase.PLAY;
+  const isTrickEnd = state.phase === SpoilFivePhase.TRICK_END;
+  const isRoundEnd = state.phase === SpoilFivePhase.ROUND_END;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  return (
+    <>
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const spoilFiveDefinition: GameDefinition<
+  SpoilFiveResponse,
+  SpoilFiveGame,
+  Parameters<typeof spoilFiveApi.exec>,
+  SpoilFiveView
+> = {
+  key: 'spoilfive',
+  useGame: useSpoilFiveGame,
+  useView: useSpoilFiveView,
+  tutorial: SPOIL_FIVE_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 5 },
+  cli: () => ({
+    parseCommand: parseSpoilFiveCommand,
+    formatResponse: formatSpoilFiveState,
+    helpText: SPOIL_FIVE_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === SpoilFivePhase.GAME_END || state.gameEndFlag;
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerPlayer === humanIdx,
+    };
+  },
+  shell: ({ state }) => ({
+    isHumanTurn: state.isHumanTurn,
+  }),
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.spoilFiveConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetPoints',
+          label: t('settings.targetPoints'),
+          value: game.spoilFiveConfig.targetPoints,
+          options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetPoints', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  actionLogDuringPlay: true,
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  actionsTutorialId: 'spoilfive-action-buttons',
+  resetTutorialId: 'spoilfive-reset-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Spoil Five game page: an Irish play-only 5-player trick-taker with a pot, fixed top trumps, and Reneging. */
+export const SpoilFivePage = createGamePage(spoilFiveDefinition);
