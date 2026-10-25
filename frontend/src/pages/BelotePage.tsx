@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CpuAccordion } from '../components/CpuAccordion';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,6 +18,8 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useBeloteGame } from '../hooks/useBeloteGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -23,8 +27,12 @@ import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { BeloteResponse } from '../types/card';
 import { BelotePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { BELOTE_HELP, parseBeloteCommand } from '../utils/cli/commands/beloteCommands';
+import { formatBeloteState } from '../utils/cli/formatters/beloteFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -122,6 +130,18 @@ function BelotePageContent() {
 
   const phaseNames = usePhaseNames('belote', BELOTE_PHASE_KEYS);
 
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('belote');
+  const cliConfig: CliGameConfig<BeloteResponse, Parameters<typeof dispatch>> = useMemo(
+    () => ({
+      gameName: 'belote',
+      parseCommand: parseBeloteCommand,
+      formatResponse: formatBeloteState,
+      helpText: BELOTE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
   const { playSound } = useSound();
   const beloteTotal = state ? state.roundBeloteBonus[0] + state.roundBeloteBonus[1] : 0;
   const prevBeloteTotalRef = useRef<number | null>(null);
@@ -198,349 +218,360 @@ function BelotePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: beloteConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: beloteConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'targetScore',
+                    label: t('settings.targetScore'),
+                    value: beloteConfig.targetScore,
+                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('targetScore', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'enableBeloteRebelote',
+                    label: t('settings.enableBeloteRebelote'),
+                    checked: beloteConfig.enableBeloteRebelote,
+                    onToggle: (v) => handleToggle('enableBeloteRebelote', v),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
               },
-              {
-                type: 'select',
-                id: 'targetScore',
-                label: t('settings.targetScore'),
-                value: beloteConfig.targetScore,
-                options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => handleConfigChange('targetScore', v),
-              },
-              {
-                type: 'checkbox',
-                id: 'enableBeloteRebelote',
-                label: t('settings.enableBeloteRebelote'),
-                checked: beloteConfig.enableBeloteRebelote,
-                onToggle: (v) => handleToggle('enableBeloteRebelote', v),
-              },
-              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Round/Trick/Trump info */}
-        <div className="text-ds-text-primary text-center mb-2">
-          <span className="mr-4 whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
-          <span className="mr-4 whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-          {state.trumpSuit > 0 && (
-            <span className="mr-4 whitespace-nowrap">{t('maker', { team: state.makerTeam })}</span>
-          )}
-          <span className="whitespace-nowrap">
-            {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
-          </span>
-        </div>
-        {/* Bonus trackers — Dix de Der lights up on trick 8; Belote/Rebelote
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Round/Trick/Trump info */}
+            <div className="text-ds-text-primary text-center mb-2">
+              <span className="mr-4 whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="mr-4 whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              {state.trumpSuit > 0 && (
+                <span className="mr-4 whitespace-nowrap">{t('maker', { team: state.makerTeam })}</span>
+              )}
+              <span className="whitespace-nowrap">
+                {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
+              </span>
+            </div>
+            {/* Bonus trackers — Dix de Der lights up on trick 8; Belote/Rebelote
             lights up as soon as ANY team finishes playing K + Q of trump
             (the bonus is awarded to whichever team holds those cards, not
             specifically the maker — see internal/domain/Belote.go #864). */}
-        {state.trumpSuit > 0 &&
-          (() => {
-            const isLastTrick = state.trickNumber === 8;
-            const hasBeloteBonus = state.roundBeloteBonus.some((b) => b > 0);
-            return (
-              <div
-                className="text-center mb-2 flex justify-center gap-2 flex-wrap text-xs"
-                data-testid="belote-bonus-trackers"
-              >
-                {state.config.dixDeDer > 0 && (
-                  <span
-                    data-testid="dix-de-der-badge"
-                    data-active={isLastTrick ? 'true' : undefined}
-                    className={
-                      isLastTrick
-                        ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-accent text-ds-text-on-accent border-ds-accent animate-pulse'
-                        : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
-                    }
+            {state.trumpSuit > 0 &&
+              (() => {
+                const isLastTrick = state.trickNumber === 8;
+                const hasBeloteBonus = state.roundBeloteBonus.some((b) => b > 0);
+                return (
+                  <div
+                    className="text-center mb-2 flex justify-center gap-2 flex-wrap text-xs"
+                    data-testid="belote-bonus-trackers"
                   >
-                    {/* 点数は設定から。訳文に +10 と書くと、設定を変えたとき
+                    {state.config.dixDeDer > 0 && (
+                      <span
+                        data-testid="dix-de-der-badge"
+                        data-active={isLastTrick ? 'true' : undefined}
+                        className={
+                          isLastTrick
+                            ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-accent text-ds-text-on-accent border-ds-accent animate-pulse'
+                            : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
+                        }
+                      >
+                        {/* 点数は設定から。訳文に +10 と書くと、設定を変えたとき
                         バッジだけが古い数字を出す (#5592)。 */}
-                    👑 {t('tracker.dixDeDer', { points: state.config.dixDeDer })}
-                  </span>
-                )}
-                {state.config.enableBeloteRebelote && (
-                  <span
-                    data-testid="belote-rebelote-badge"
-                    data-active={hasBeloteBonus ? 'true' : undefined}
-                    className={`${
-                      hasBeloteBonus
-                        ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-success text-ds-text-on-accent border-ds-success'
-                        : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
-                    }${beloteJustConfirmed ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
-                  >
-                    {t('tracker.beloteKing')} · {t('tracker.beloteQueen')}
-                    {state.roundBeloteBonus.map((points, team) =>
-                      points > 0 ? ` ${t('tracker.beloteAwarded', { team: t('team', { n: team }), points })}` : '',
+                        👑 {t('tracker.dixDeDer', { points: state.config.dixDeDer })}
+                      </span>
                     )}
-                  </span>
-                )}
+                    {state.config.enableBeloteRebelote && (
+                      <span
+                        data-testid="belote-rebelote-badge"
+                        data-active={hasBeloteBonus ? 'true' : undefined}
+                        className={`${
+                          hasBeloteBonus
+                            ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-success text-ds-text-on-accent border-ds-success'
+                            : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
+                        }${beloteJustConfirmed ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                      >
+                        {t('tracker.beloteKing')} · {t('tracker.beloteQueen')}
+                        {state.roundBeloteBonus.map((points, team) =>
+                          points > 0 ? ` ${t('tracker.beloteAwarded', { team: t('team', { n: team }), points })}` : '',
+                        )}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+
+            {beloteJustConfirmed && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="belote-bonus-confirmed"
+                className="text-center mb-2 text-sm font-semibold text-ds-success motion-safe:animate-pulse"
+              >
+                {t('tracker.beloteConfirmed')}
               </div>
-            );
-          })()}
+            )}
 
-        {beloteJustConfirmed && (
-          <div
-            role="status"
-            aria-live="polite"
-            data-testid="belote-bonus-confirmed"
-            className="text-center mb-2 text-sm font-semibold text-ds-success motion-safe:animate-pulse"
-          >
-            {t('tracker.beloteConfirmed')}
-          </div>
-        )}
-
-        {/* Face-up card (during bidding) */}
-        {state.faceUpCard && (isBidPickUp || isBidCallTrump) && (
-          <div className="mb-3 flex flex-col items-center gap-1 text-ds-text-muted">
-            <span className="text-xs">{t('faceUpCard')}</span>
-            <AnimatedCard card={state.faceUpCard} width={cardWidth * 0.8} />
-          </div>
-        )}
-
-        {/* CPU players */}
-        <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-          {state.players
-            .filter((p) => !p.isHuman)
-            .map((p) => (
-              <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
+            {/* Face-up card (during bidding) */}
+            {state.faceUpCard && (isBidPickUp || isBidCallTrump) && (
+              <div className="mb-3 flex flex-col items-center gap-1 text-ds-text-muted">
+                <span className="text-xs">{t('faceUpCard')}</span>
+                <AnimatedCard card={state.faceUpCard} width={cardWidth * 0.8} />
               </div>
-            ))}
-        </CpuAccordion>
+            )}
 
-        {/* Current trick */}
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="be-trick-display"
-        />
+            {/* CPU players */}
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              {state.players
+                .filter((p) => !p.isHuman)
+                .map((p) => (
+                  <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+                    {t('trickCount', { count: p.trickCount })}
+                  </div>
+                ))}
+            </CpuAccordion>
 
-        {/* Team scores */}
-        <div className="my-3 p-2 rounded bg-black/30">
-          <div className="text-ds-text-muted text-sm mb-1 sm:hidden" data-testid="belote-team-score-summary">
-            {t('teamScores')}: {t('team', { n: 0 })} {state.teamScores[0]} · {t('team', { n: 1 })} {state.teamScores[1]}
-          </div>
-          <details data-testid="belote-score-details" open={!isMobile || undefined}>
-            <summary className="cursor-pointer select-none text-ds-text-muted text-sm" data-tutorial="be-score-table">
-              {t('teamScores')}
-            </summary>
-            <table className="w-full table-fixed text-sm text-ds-text-muted">
-              <thead>
-                <tr>
-                  <td />
-                  <th id="belote-team-0-header" scope="col" className="text-left break-words">
-                    {t('team', { n: 0 })}
-                    <span className="block text-xs leading-tight">
-                      {state.players
-                        .filter((player) => player.team === 0)
-                        .map((player) => playerName(player.id, player.isHuman))
-                        .join(t('listSeparator'))}
-                    </span>
-                  </th>
-                  <th id="belote-team-1-header" scope="col" className="text-center break-words">
-                    {t('team', { n: 1 })}
-                    <span className="block text-xs leading-tight">
-                      {state.players
-                        .filter((player) => player.team === 1)
-                        .map((player) => playerName(player.id, player.isHuman))
-                        .join(t('listSeparator'))}
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th id="belote-cumulative-score-header" scope="row" className="text-left">
-                    {t('cumulativeScore')}
-                  </th>
-                  <td headers="belote-team-0-header belote-cumulative-score-header" className="text-ds-accent">
-                    {state.teamScores[0]}
-                  </td>
-                  <td headers="belote-team-1-header belote-cumulative-score-header" className="text-center">
-                    {state.teamScores[1]}
-                  </td>
-                </tr>
-                <tr>
-                  <td />
-                  {[0, 1].map((team) => (
-                    <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
-                      {t('roundPoints', { points: state.roundPoints[team] })}
-                      {state.roundBeloteBonus[team] > 0 && (
-                        <span className="block text-ds-warning">
-                          {t('tracker.beloteAwarded', {
-                            team: t('team', { n: team }),
-                            points: state.roundBeloteBonus[team],
-                          })}
+            {/* Current trick */}
+            <TrickDisplay
+              currentTrick={state.currentTrick}
+              players={state.players}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="be-trick-display"
+            />
+
+            {/* Team scores */}
+            <div className="my-3 p-2 rounded bg-black/30">
+              <div className="text-ds-text-muted text-sm mb-1 sm:hidden" data-testid="belote-team-score-summary">
+                {t('teamScores')}: {t('team', { n: 0 })} {state.teamScores[0]} · {t('team', { n: 1 })}{' '}
+                {state.teamScores[1]}
+              </div>
+              <details data-testid="belote-score-details" open={!isMobile || undefined}>
+                <summary
+                  className="cursor-pointer select-none text-ds-text-muted text-sm"
+                  data-tutorial="be-score-table"
+                >
+                  {t('teamScores')}
+                </summary>
+                <table className="w-full table-fixed text-sm text-ds-text-muted">
+                  <thead>
+                    <tr>
+                      <td />
+                      <th id="belote-team-0-header" scope="col" className="text-left break-words">
+                        {t('team', { n: 0 })}
+                        <span className="block text-xs leading-tight">
+                          {state.players
+                            .filter((player) => player.team === 0)
+                            .map((player) => playerName(player.id, player.isHuman))
+                            .join(t('listSeparator'))}
                         </span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </details>
-          <div className="text-ds-text-muted text-sm mt-1" data-testid="belote-target-score">
-            {t('targetScore', { score: state.config.targetScore })}
+                      </th>
+                      <th id="belote-team-1-header" scope="col" className="text-center break-words">
+                        {t('team', { n: 1 })}
+                        <span className="block text-xs leading-tight">
+                          {state.players
+                            .filter((player) => player.team === 1)
+                            .map((player) => playerName(player.id, player.isHuman))
+                            .join(t('listSeparator'))}
+                        </span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th id="belote-cumulative-score-header" scope="row" className="text-left">
+                        {t('cumulativeScore')}
+                      </th>
+                      <td headers="belote-team-0-header belote-cumulative-score-header" className="text-ds-accent">
+                        {state.teamScores[0]}
+                      </td>
+                      <td headers="belote-team-1-header belote-cumulative-score-header" className="text-center">
+                        {state.teamScores[1]}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td />
+                      {[0, 1].map((team) => (
+                        <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
+                          {t('roundPoints', { points: state.roundPoints[team] })}
+                          {state.roundBeloteBonus[team] > 0 && (
+                            <span className="block text-ds-warning">
+                              {t('tracker.beloteAwarded', {
+                                team: t('team', { n: team }),
+                                points: state.roundBeloteBonus[team],
+                              })}
+                            </span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </details>
+              <div className="text-ds-text-muted text-sm mt-1" data-testid="belote-target-score">
+                {t('targetScore', { score: state.config.targetScore })}
+              </div>
+              <details className="mt-1">
+                <summary className="cursor-pointer select-none text-ds-text-muted text-xs">{t('rules')}</summary>
+                <p className="text-ds-text-muted text-xs mt-1" data-testid="belote-scoring-explanation">
+                  {t('scoringExplanation', { dixDeDer: state.config.dixDeDer })}
+                </p>
+              </details>
+            </div>
+
+            <RoundScoreAnnouncement
+              active={isRoundEnd || isGameEnd}
+              entries={[
+                {
+                  name: t('team', { n: 0 }),
+                  roundScore: state.roundPoints[0] + state.roundBeloteBonus[0],
+                  cumulativeScore: state.teamScores[0],
+                },
+                {
+                  name: t('team', { n: 1 }),
+                  roundScore: state.roundPoints[1] + state.roundBeloteBonus[1],
+                  cumulativeScore: state.teamScores[1],
+                },
+              ]}
+            />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isMobile && messageBox}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-          <details className="mt-1">
-            <summary className="cursor-pointer select-none text-ds-text-muted text-xs">{t('rules')}</summary>
-            <p className="text-ds-text-muted text-xs mt-1" data-testid="belote-scoring-explanation">
-              {t('scoringExplanation', { dixDeDer: state.config.dixDeDer })}
-            </p>
-          </details>
-        </div>
 
-        <RoundScoreAnnouncement
-          active={isRoundEnd || isGameEnd}
-          entries={[
-            {
-              name: t('team', { n: 0 }),
-              roundScore: state.roundPoints[0] + state.roundBeloteBonus[0],
-              cumulativeScore: state.teamScores[0],
-            },
-            {
-              name: t('team', { n: 1 }),
-              roundScore: state.roundPoints[1] + state.roundBeloteBonus[1],
-              cumulativeScore: state.teamScores[1],
-            },
-          ]}
-        />
+          <GameFooter className={`${gameTheme.belote.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="be"
+                legalIndices={legalPlayIndices}
+              />
+            )}
 
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-        {isMobile && messageBox}
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.belote.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
-        {humanPlayer && (
-          <PlayerHandSection
-            humanPlayer={humanPlayer}
-            selectedCardIndices={selectedCardIndices}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={isMobile}
-            dataTutorialPrefix="be"
-            legalIndices={legalPlayIndices}
-          />
-        )}
-
-        <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
             付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
             読み上げられないことがある (#5955, #6663)。 */}
-        <div data-testid="belote-hint-live" role="status" aria-live="polite">
-          {hint && (
-            <div className="text-ds-warning text-sm mb-2">
-              {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+            <div data-testid="belote-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {/* hint.reason is a raw backend identifier; translate via hintReason.*,
                   falling back to a generic label. The hint shape depends on the phase:
                   orderUp (take/pass) and suit (call trump) during bidding, cardIndex in play. */}
-              {(() => {
-                const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
-                if (hint.orderUp !== undefined) {
-                  return `${hint.orderUp ? t('hintOrderUpTake') : t('hintOrderUpPass')} (${reason})`;
-                }
-                if (hint.suit !== undefined) {
-                  return `${t('hintCallSuit', { suit: t(SUIT_LABEL_KEYS[hint.suit]) })} (${reason})`;
-                }
-                return `${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${reason})`;
-              })()}
+                  {(() => {
+                    const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
+                    if (hint.orderUp !== undefined) {
+                      return `${hint.orderUp ? t('hintOrderUpTake') : t('hintOrderUpPass')} (${reason})`;
+                    }
+                    if (hint.suit !== undefined) {
+                      return `${t('hintCallSuit', { suit: t(SUIT_LABEL_KEYS[hint.suit]) })} (${reason})`;
+                    }
+                    return `${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${reason})`;
+                  })()}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
-          {isHumanBidTurn && isBidPickUp && (
-            <span data-tutorial="be-bid-controls" className="flex gap-2">
-              <button type="button" className={btnPrimary} onClick={handleOrderUp} disabled={loading}>
-                {t('orderUpButton')}
-              </button>
-              <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
-                {t('passButton')}
-              </button>
-            </span>
-          )}
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
+              {isHumanBidTurn && isBidPickUp && (
+                <span data-tutorial="be-bid-controls" className="flex gap-2">
+                  <button type="button" className={btnPrimary} onClick={handleOrderUp} disabled={loading}>
+                    {t('orderUpButton')}
+                  </button>
+                  <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
+                    {t('passButton')}
+                  </button>
+                </span>
+              )}
 
-          {isHumanBidTurn && isBidCallTrump && (
-            <span data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap">
-              {callableSuits.map((s) => (
+              {isHumanBidTurn && isBidCallTrump && (
+                <span data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap">
+                  {callableSuits.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleCallTrump(s)}
+                      disabled={loading}
+                    >
+                      {t(SUIT_LABEL_KEYS[s])}
+                    </button>
+                  ))}
+                  <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
+                    {t('passButton')}
+                  </button>
+                </span>
+              )}
+
+              {(isHumanTurn || isHumanBidTurn) && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+              )}
+              {isHumanTurn && (
                 <button
-                  key={s}
                   type="button"
                   className={btnPrimary}
-                  onClick={() => handleCallTrump(s)}
-                  disabled={loading}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
                 >
-                  {t(SUIT_LABEL_KEYS[s])}
+                  {t('playButton')}
                 </button>
-              ))}
-              <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
-                {t('passButton')}
-              </button>
-            </span>
-          )}
-
-          {(isHumanTurn || isHumanBidTurn) && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-              {tc('button.hint')}
-            </button>
-          )}
-          {isHumanTurn && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handlePlay}
-              disabled={loading || selectedCardIndices.length !== 1}
-            >
-              {t('playButton')}
-            </button>
-          )}
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={!!isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="be-reset-button"
-          />
-        </div>
-      </GameFooter>
+              )}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="be-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

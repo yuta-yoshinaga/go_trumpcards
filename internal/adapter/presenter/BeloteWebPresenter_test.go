@@ -184,6 +184,7 @@ func TestBeloteWebPresenter_HintOutput(t *testing.T) {
 		var resObj controller.BeloteWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Nil(t, resObj.Hint)
+		assert.Equal(t, "belote.noHint", resObj.MessageCode)
 	})
 
 	t.Run("with hint", func(t *testing.T) {
@@ -198,6 +199,7 @@ func TestBeloteWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.NotNil(t, resObj.Hint.OrderUp)
 		assert.Equal(t, "strategic_pickup", resObj.Hint.Reason)
+		assert.Equal(t, "belote.hintRequested", resObj.MessageCode)
 	})
 }
 
@@ -221,4 +223,7 @@ func TestBeloteWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.BeloteWebPresenter).Output(blg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	var resObj controller.BeloteWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+	assert.NotEqual(t, "belote.hintRequested", resObj.MessageCode, "ordinary Output must not mark a hint request")
 }
