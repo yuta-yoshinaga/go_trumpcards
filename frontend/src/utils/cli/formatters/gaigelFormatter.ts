@@ -1,4 +1,5 @@
 import type { GaigelResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -17,7 +18,7 @@ export function formatGaigelState(state: GaigelResponse): string {
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
   lines.push(
-    `trump: ${state.trumpSuit || 'none'}  stock: ${state.stockRemaining}${state.isEndgame ? ' (endgame)' : ''}`,
+    `trump: ${state.trumpSuit === 0 ? 'none' : suitSymbolAt(state.trumpSuit, '?')}  stock: ${state.stockRemaining}${state.isEndgame ? ' (endgame)' : ''}`,
   );
   lines.push(
     `scores: team0=${state.teamScores[0]}  team1=${state.teamScores[1]} (first to ${state.config.targetScore})`,
@@ -30,7 +31,11 @@ export function formatGaigelState(state: GaigelResponse): string {
       `${formatPlayerName(player.id, player.isHuman)} (team ${player.team}): cards=${player.cardCount} tricks=${player.trickCount}`,
     );
     if (player.isHuman && player.cards.length > 0) {
-      lines.push(`  ${formatIndexedCards(player.cards)}  (use p <idx> to play)`);
+      const hand = formatIndexedCards(player.cards).replace(/\[(\d+)\]/g, (index, rawIndex: string) =>
+        state.marriageIndices.includes(Number(rawIndex)) ? `${index}*` : index,
+      );
+      const marriageHint = state.marriageIndices.length > 0 ? '  (m <idx> to declare a marriage)' : '';
+      lines.push(`  ${hand}  (use p <idx> to play)${marriageHint}`);
     }
   }
   lines.push('----------');

@@ -17,6 +17,37 @@ describe('formatGaigelState', () => {
     expect(text).toContain('use p <idx> to play');
   });
 
+  it('marks marriage cards and names the trump suit', () => {
+    const text = formatGaigelState(
+      makeGaigelState({
+        trumpSuit: 2,
+        marriageIndices: [1],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [
+              { design: 'SPADE', value: 13 },
+              { design: 'HEART', value: 12 },
+            ],
+            team: 0,
+            trickCount: 0,
+          },
+        ],
+      }),
+    );
+    expect(text).toContain('trump: ♣');
+    expect(text).toContain('[1]*♥Q');
+    expect(text).toContain('m <idx> to declare a marriage');
+  });
+
+  it('does not add marriage notation when there are no marriage indices', () => {
+    const text = formatGaigelState(makeGaigelState({ marriageIndices: [] }));
+    expect(text).not.toContain('*');
+    expect(text).not.toContain('m <idx> to declare a marriage');
+  });
+
   it('prints a completed trick, endgame and winner', () => {
     const text = formatGaigelState(
       makeGaigelState({
@@ -47,6 +78,19 @@ describe('formatGaigelState', () => {
         }),
       ),
     ).toContain('HINT: play card [0]');
+  });
+
+  it('does not print a hint for non-hint messages or gaigel.noHint', () => {
+    const hint = { cardIndex: 1, reason: 'lead', isMarriage: false };
+    expect(formatGaigelState(makeGaigelState({ hint, messageCode: 'gaigel.playPhase.lead' }))).not.toContain('HINT:');
+    expect(formatGaigelState(makeGaigelState({ hint, messageCode: 'gaigel.noHint' }))).not.toContain('HINT:');
+  });
+
+  it('does not expose raw gaigel translation keys', () => {
+    const text = formatGaigelState(
+      makeGaigelState({ message: 'A translated message', messageCode: 'gaigel.hintRequested' }),
+    );
+    expect(text).not.toMatch(/gaigel\./);
   });
 
   it('handles absent optional values and a draw', () => {
