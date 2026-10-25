@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeRussianBankState } from '../../../test/stateFactories';
+import { RussianBankPhase } from '../../../types/phases';
 import { formatRussianBankState } from './russianbankFormatter';
 
 describe('formatRussianBankState', () => {
@@ -19,6 +20,10 @@ describe('formatRussianBankState', () => {
     });
     const text = formatRussianBankState(s);
     expect(text).toContain('phase: Playing');
+    expect(text).toContain('Turn: You');
+    expect(text).toContain('reserve *available');
+    expect(text).toContain('Opponent sources: reserve *available');
+    expect(text).toContain('Legal moves (*):');
     expect(text).toContain('[0] ♥9 (2 cards)');
     expect(text).toContain('Use s to call stop.');
     expect(text).toContain('Use u to undo.');
@@ -51,22 +56,46 @@ describe('formatRussianBankState', () => {
     ).toContain('your pile');
   });
   it('handles idle states without a human player and suppresses messages after game end', () => {
-    const idle = makeRussianBankState({ phase: 0, players: [] });
+    const idle = makeRussianBankState({ phase: RussianBankPhase.IDLE, players: [] });
     expect(formatRussianBankState(idle)).toContain('phase: Idle');
     expect(formatRussianBankState(idle)).toContain('Use r to reset.');
     expect(
-      formatRussianBankState(makeRussianBankState({ phase: 2, gameEndFlag: true, winnerIdx: 1, message: '日本語' })),
+      formatRussianBankState(
+        makeRussianBankState({ phase: RussianBankPhase.GAME_END, gameEndFlag: true, winnerIdx: 1, message: '日本語' }),
+      ),
     ).not.toContain('日本語');
   });
   it('shows only reset after game end and reports the result in English', () => {
     const text = formatRussianBankState(
-      makeRussianBankState({ phase: 2, gameEndFlag: true, winnerIdx: 0, message: '終局です' }),
+      makeRussianBankState({ phase: RussianBankPhase.GAME_END, gameEndFlag: true, winnerIdx: 0, message: '終局です' }),
     );
     expect(text).toContain('Game Over! You win!');
     expect(text).toContain('Use r to reset.');
     expect(text).not.toContain('終局');
-    expect(formatRussianBankState(makeRussianBankState({ phase: 2, gameEndFlag: true, winnerIdx: -1 }))).toContain(
-      'Draw',
-    );
+    expect(
+      formatRussianBankState(
+        makeRussianBankState({ phase: RussianBankPhase.GAME_END, gameEndFlag: true, winnerIdx: -1 }),
+      ),
+    ).toContain('Draw');
+    expect(
+      formatRussianBankState(
+        makeRussianBankState({ phase: RussianBankPhase.GAME_END, gameEndFlag: true, winnerIdx: 1 }),
+      ),
+    ).toContain('CPU wins!');
+  });
+  it('hides move commands when no source has a legal destination', () => {
+    const state = makeRussianBankState({
+      foundationNext: Array.from({ length: 8 }, () => ({ design: 'HEART', value: 13 })),
+      tableauNext: Array.from({ length: 4 }, () => ({ any: false, black: false, value: 13 })),
+    });
+    const text = formatRussianBankState(state);
+    expect(text).toContain('Commands: d, h, r');
+    expect(text).not.toContain('Commands: pf');
+    expect(text).not.toContain('Legal moves (*)');
+  });
+  it('keeps non-move commands available if the active response has no human player record', () => {
+    const text = formatRussianBankState(makeRussianBankState({ players: [] }));
+    expect(text).toContain('Turn: You');
+    expect(text).toContain('Commands: d, h, r');
   });
 });

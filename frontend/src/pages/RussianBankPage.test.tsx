@@ -42,6 +42,9 @@ afterEach(() => localStorage.removeItem('cli-mode-russianbank'));
 
 describe('RussianBankPage', () => {
   it('switches to the terminal and executes a move with the page button arguments', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ foundationNext: Array.from({ length: 8 }, (_, i) => ({ design: '', value: i === 0 ? 7 : 1 })) }),
+    );
     renderWithProviders(<RussianBankPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
     const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });

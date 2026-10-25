@@ -1,5 +1,10 @@
 import type { RussianBankResponse } from '../../../types/card';
 import { RussianBankPhase } from '../../../types/phases';
+import {
+  russianBankFoundationTarget,
+  russianBankTableauTargets,
+  selectedRussianBankCard,
+} from '../../russianBankRules';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const ZONES = ['reserve', 'waste', 'tableau'];
@@ -15,6 +20,7 @@ export function formatRussianBankState(state: RussianBankResponse): string {
   const lines = [
     formatHeader('Russian Bank'),
     `phase: ${ended ? 'GameEnd' : state.phase === RussianBankPhase.PLAYING ? 'Playing' : 'Idle'}`,
+    `Turn: ${state.isHumanTurn ? 'You' : 'CPU'}`,
     `moves: ${state.moveCount}`,
   ];
   for (const player of state.players) {
@@ -34,16 +40,53 @@ export function formatRussianBankState(state: RussianBankResponse): string {
   const player = state.players.find((p) => p.isHuman);
   const canAct = !ended && state.phase === RussianBankPhase.PLAYING && state.isHumanTurn;
   if (canAct) {
-    lines.push('Commands: pf <zone> <fromOpp:0|1> <col>, mt <zone> <fromOpp:0|1> <col> <toCol>, d, h, r');
     if (state.canCallStop) lines.push('Use s to call stop.');
     if (state.canUndo) lines.push('Use u to undo.');
     if (player) {
-      lines.push(
-        `Your sources: reserve ${player.reserveTop ? 'available' : 'empty'}; waste ${player.wasteTop ? 'available' : 'empty'}.`,
-      );
-      state.tableau.forEach((pile, i) => {
-        lines.push(`  Tableau column ${i}: ${pile.length ? 'available' : 'empty'}`);
+      const sources = state.players
+        .flatMap((owner) => [
+          { zone: 0, fromOpp: !owner.isHuman, col: 0 },
+          { zone: 1, fromOpp: !owner.isHuman, col: 0 },
+        ])
+        .concat(state.tableau.map((_, col) => ({ zone: 2, fromOpp: false, col })));
+      const legal = sources.flatMap((source) => {
+        const card = selectedRussianBankCard(state, source);
+        if (!card) return [];
+        return [
+          ...(russianBankFoundationTarget(state, card) >= 0
+            ? [
+                `${source.fromOpp ? 'opponent ' : ''}${ZONES[source.zone]}${source.zone === 2 ? ` ${source.col}` : ''} → foundation`,
+              ]
+            : []),
+          ...[...russianBankTableauTargets(state, card, source)].map(
+            (col) =>
+              `${source.fromOpp ? 'opponent ' : ''}${ZONES[source.zone]}${source.zone === 2 ? ` ${source.col}` : ''} → tableau ${col}`,
+          ),
+        ];
       });
+      const canMoveFrom = (name: string) => legal.some((move) => move.startsWith(`${name} →`));
+      lines.push(
+        legal.length
+          ? 'Commands: pf <zone> <fromOpp:0|1> <col>, mt <zone> <fromOpp:0|1> <col> <toCol>, d, h, r'
+          : 'Commands: d, h, r',
+      );
+      lines.push(
+        `Your sources: reserve ${player.reserveTop ? (canMoveFrom('reserve') ? '*available' : 'available') : 'empty'}; waste ${player.wasteTop ? (canMoveFrom('waste') ? '*available' : 'available') : 'empty'}.`,
+      );
+      const opponent = state.players.find((p) => !p.isHuman);
+      if (opponent) {
+        lines.push(
+          `Opponent sources: reserve ${opponent.reserveTop ? (canMoveFrom('opponent reserve') ? '*available' : 'available') : 'empty'}; waste ${opponent.wasteTop ? (canMoveFrom('opponent waste') ? '*available' : 'available') : 'empty'}.`,
+        );
+      }
+      state.tableau.forEach((pile, i) => {
+        const available = pile.length > 0;
+        const marked = canMoveFrom(`tableau ${i}`);
+        lines.push(`  Tableau column ${i}: ${available ? (marked ? '*available' : 'available') : 'empty'}`);
+      });
+      if (legal.length) lines.push(`Legal moves (*): ${legal.join('; ')}`);
+    } else {
+      lines.push('Commands: d, h, r');
     }
   } else {
     lines.push('Use r to reset.');
@@ -59,11 +102,7 @@ export function formatRussianBankState(state: RussianBankResponse): string {
   }
   if (state.message && !ended && state.messageCode !== 'russianbank.noHint') lines.push(state.message);
   if (ended)
-    lines.push(
-      state.winnerIdx < 0
-        ? 'Game Over! Draw.'
-        : `Game Over! ${state.winnerIdx === 0 ? 'You' : `CPU ${state.winnerIdx}`} win!`,
-    );
+    lines.push(state.winnerIdx < 0 ? 'Game Over! Draw.' : state.winnerIdx === 0 ? 'Game Over! You win!' : 'CPU wins!');
   lines.push(formatSeparator());
   return lines.join('\n');
 }

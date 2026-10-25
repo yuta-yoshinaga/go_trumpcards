@@ -30,12 +30,17 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseRussianBankCommand, RUSSIANBANK_HELP } from '../utils/cli/commands/russianbankCommands';
 import { formatRussianBankState } from '../utils/cli/formatters/russianbankFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import {
+  russianBankFoundationTarget,
+  russianBankTableauTargets,
+  selectedRussianBankCard,
+  ZONE_RESERVE,
+  ZONE_TABLEAU,
+  ZONE_WASTE,
+} from '../utils/russianBankRules';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Source-zone codes matching the Go `RussianBankZone` enum. */
-const ZONE_RESERVE = 0;
-const ZONE_WASTE = 1;
-const ZONE_TABLEAU = 2;
 
 /** A selected move source (the human picks a source, then a destination). */
 interface SelectedSource {
@@ -166,46 +171,10 @@ function RussianBankPageContent() {
     setSelected(null);
   };
 
-  // **送り先はスートで決まる。**8 つの枠はどれを押しても同じコマンドを送って
-  // いて、4 通り (実際は 8 通り) の選択肢があるように見えて挙動と食い違って
-  // いた (#6473)。枠は押せなくし、選択中の札が**実際に行く台**だけを光らせる。
-  //
-  // 判定の材料はサーバが渡す `foundationNext` ── 規則をここに書き写すと、
-  // ドメインの `rbFoundationFor` とずれたときに画面だけが嘘をつく。
-  // 先頭一致なのも `rbFoundationFor` と同じ (最初に受け取れる台へ行く)。
-  const selectedCard = ((): Card | undefined => {
-    if (!state || !selected) return undefined;
-    const owner = state.players.find((p) => p.isHuman === !selected.fromOpp);
-    if (selected.zone === ZONE_RESERVE) return owner?.reserveTop;
-    if (selected.zone === ZONE_WASTE) return owner?.wasteTop;
-    const col = state.tableau[selected.col] ?? [];
-    return col.length > 0 ? col[col.length - 1] : undefined;
-  })();
-
-  const foundationTarget = ((): number => {
-    if (!canAct || !selected || !selectedCard) return -1;
-    return state.foundationNext.findIndex(
-      (n) => (n.design === '' || n.design === selectedCard.design) && n.value === selectedCard.value,
-    );
-  })();
-
-  // The server describes each column's next accepted card, so placement rules
-  // stay in the domain. A tableau source cannot target itself.
-  const tableauTargets = new Set<number>();
-  if (canAct && selected && selectedCard) {
-    state.tableau.forEach((_, i) => {
-      if (selected.zone === ZONE_TABLEAU && selected.col === i) return;
-      const next = state.tableauNext[i];
-      if (
-        next &&
-        (next.any ||
-          (next.black === (selectedCard.design === 'SPADE' || selectedCard.design === 'CLOVER') &&
-            next.value === selectedCard.value))
-      ) {
-        tableauTargets.add(i);
-      }
-    });
-  }
+  const selectedCard = selected ? selectedRussianBankCard(state, selected) : undefined;
+  const foundationTarget = canAct && selected ? russianBankFoundationTarget(state, selectedCard) : -1;
+  const tableauTargets =
+    canAct && selected ? russianBankTableauTargets(state, selectedCard, selected) : new Set<number>();
 
   const sendToTableau = (toCol: number) => {
     if (!selected) {
@@ -459,7 +428,7 @@ function RussianBankPageContent() {
 
             <GameMessageBox
               message={state.message}
-              messageCode={state.messageCode}
+              messageCode={state.messageCode === 'russianbank.noHint' ? undefined : state.messageCode}
               messageParams={state.messageParams}
             />
 
