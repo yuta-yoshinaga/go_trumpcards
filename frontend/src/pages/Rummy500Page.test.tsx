@@ -15,6 +15,7 @@ const mockExec = vi.mocked(rummy500Api.exec);
 
 afterEach(() => {
   localStorage.removeItem('hint_enabled_rummy500');
+  localStorage.removeItem('cli-mode-rummy500');
 });
 
 const drawPhaseState: Rummy500Response = {
@@ -818,5 +819,13 @@ describe('Rummy500Page RoundScoreAnnouncement', () => {
     const status = screen.getByRole('status');
     expect(status).toBeInTheDocument();
     expect(status).toBeEmptyDOMElement();
+  });
+
+  it('switches to the CLI terminal when CLI mode is enabled', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
   });
 });

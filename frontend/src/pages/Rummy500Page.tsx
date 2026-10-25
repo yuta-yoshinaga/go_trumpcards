@@ -2,6 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,6 +18,8 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -32,6 +36,9 @@ import { gameTheme } from '../styles/gameTheme';
 import { Rummy500Phase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseRummy500Command, RUMMY500_HELP } from '../utils/cli/commands/rummy500Commands';
+import { formatRummy500State } from '../utils/cli/formatters/rummy500Formatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import { playerName } from '../utils/playerUtils';
 import { rummy500CardPenalty, rummy500HandPenalty } from '../utils/rummy500HandPenalty';
 import { rummy500MeldScore } from '../utils/rummy500MeldScore';
@@ -100,6 +107,18 @@ function Rummy500PageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('rummy500', state);
   const { cardWidth } = useCardDimensions();
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rummy500');
+  const cliConfig = useMemo(
+    () => ({
+      gameName: 'rummy500',
+      parseCommand: parseRummy500Command,
+      formatResponse: formatRummy500State,
+      helpText: RUMMY500_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // The lay-off destination is chosen solely by clicking a meld on the board above; null
   // means nothing is selected yet, so the Lay off button stays disabled. The owner's
   // display name is captured here (where isHuman is in scope) for the footer label.
@@ -233,331 +252,345 @@ function Rummy500PageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: rummy500Config.cpuDifficulty,
-                options: RUMMY500_CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: rummy500Config.cpuDifficulty,
+                    options: RUMMY500_CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pointLimit',
+                    label: t('settings.pointLimit'),
+                    value: rummy500Config.pointLimit,
+                    options: RUMMY500_POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
               },
-              {
-                type: 'select',
-                id: 'pointLimit',
-                label: t('settings.pointLimit'),
-                value: rummy500Config.pointLimit,
-                options: RUMMY500_POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => handleConfigChange('pointLimit', v),
-              },
-              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        <div className="text-ds-text-primary text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span>{t('drawPile', { count: state.drawPileCount })}</span>
-        </div>
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className="text-ds-text-primary text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span>{t('drawPile', { count: state.drawPileCount })}</span>
+            </div>
 
-        <div className={lgTwoColGrid}>
-          {/* Left: discard pile + draw stock */}
-          <div data-tutorial="r5-draw-area">
-            <div className="my-3 p-3 rounded bg-black/40">
-              <div className="text-ds-text-muted text-sm mb-1">{t('discardPile')}</div>
-              {state.discardPile.length === 0 ? (
-                <div className="text-ds-text-muted text-xs">{t('discardEmpty')}</div>
-              ) : (
-                <div className="flex flex-wrap gap-1">
-                  {state.discardPile.map((card, idx) => {
-                    const takeCount = rummy500PickupCount(state.discardPile.length, idx);
-                    const inPickupRange = hoveredDiscardIdx !== null && idx >= hoveredDiscardIdx;
-                    const isPickupAnchor = hoveredDiscardIdx === idx;
-                    return (
-                      <button
-                        type="button"
-                        key={`disc-${card.design}-${card.value}-${idx}`}
-                        onClick={() => isDrawPhase && isHumanTurn && !loading && handleDrawDiscard(idx)}
-                        onMouseEnter={() => setHoveredDiscardIdx(idx)}
-                        onMouseLeave={() => setHoveredDiscardIdx(null)}
-                        onFocus={() => setHoveredDiscardIdx(idx)}
-                        onBlur={() => setHoveredDiscardIdx(null)}
-                        disabled={!isDrawPhase || !isHumanTurn || loading}
-                        aria-label={t('drawDiscardRangeLabel', { card: cardAlt(card), count: takeCount })}
-                        data-testid={`disc-card-${idx}`}
-                        data-in-pickup-range={inPickupRange ? 'true' : undefined}
-                        className={`relative transition-transform ${focusRingCard} ${
-                          inPickupRange ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                        }`}
-                        style={{ background: 'none', padding: 0, borderRadius: 8 }}
-                      >
-                        <AnimatedCard card={card} width={cardWidth * 0.7} />
-                        {isPickupAnchor && (
-                          <span
-                            data-testid="pickup-range-badge"
-                            className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ds-warning px-1.5 py-0.5 text-[10px] font-bold text-ds-text-on-accent shadow"
+            <div className={lgTwoColGrid}>
+              {/* Left: discard pile + draw stock */}
+              <div data-tutorial="r5-draw-area">
+                <div className="my-3 p-3 rounded bg-black/40">
+                  <div className="text-ds-text-muted text-sm mb-1">{t('discardPile')}</div>
+                  {state.discardPile.length === 0 ? (
+                    <div className="text-ds-text-muted text-xs">{t('discardEmpty')}</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1">
+                      {state.discardPile.map((card, idx) => {
+                        const takeCount = rummy500PickupCount(state.discardPile.length, idx);
+                        const inPickupRange = hoveredDiscardIdx !== null && idx >= hoveredDiscardIdx;
+                        const isPickupAnchor = hoveredDiscardIdx === idx;
+                        return (
+                          <button
+                            type="button"
+                            key={`disc-${card.design}-${card.value}-${idx}`}
+                            onClick={() => isDrawPhase && isHumanTurn && !loading && handleDrawDiscard(idx)}
+                            onMouseEnter={() => setHoveredDiscardIdx(idx)}
+                            onMouseLeave={() => setHoveredDiscardIdx(null)}
+                            onFocus={() => setHoveredDiscardIdx(idx)}
+                            onBlur={() => setHoveredDiscardIdx(null)}
+                            disabled={!isDrawPhase || !isHumanTurn || loading}
+                            aria-label={t('drawDiscardRangeLabel', { card: cardAlt(card), count: takeCount })}
+                            data-testid={`disc-card-${idx}`}
+                            data-in-pickup-range={inPickupRange ? 'true' : undefined}
+                            className={`relative transition-transform ${focusRingCard} ${
+                              inPickupRange ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                            }`}
+                            style={{ background: 'none', padding: 0, borderRadius: 8 }}
                           >
-                            {t('pickupBadge', { count: takeCount })}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                            <AnimatedCard card={card} width={cardWidth * 0.7} />
+                            {isPickupAnchor && (
+                              <span
+                                data-testid="pickup-range-badge"
+                                className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ds-warning px-1.5 py-0.5 text-[10px] font-bold text-ds-text-on-accent shadow"
+                              >
+                                {t('pickupBadge', { count: takeCount })}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Right: players + melds + scores */}
+              <div>
+                {state.players.map((p) => (
+                  <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                    <div className="text-ds-text-muted text-sm">
+                      {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                      {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
+                    </div>
+                    {p.laidMelds.length > 0 && (
+                      <div className="mt-1">
+                        <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
+                        {p.laidMelds.map((meld, mIdx) => {
+                          const isLayoffTarget = layoffTarget?.owner === p.id && layoffTarget?.meldIdx === mIdx;
+                          // **押せるボタンは必ず通る。**1 枚選んでいるあいだ、その札を
+                          // 実際に置けるメルドだけを押せるようにする (#4832)。
+                          const canLayoffHere =
+                            selectedCardIndices.length === 1 &&
+                            (state.layoffTargets?.[selectedCardIndices[0]]?.some(
+                              (tgt) => tgt.owner === p.id && tgt.meldIdx === mIdx,
+                            ) ??
+                              false);
+                          return (
+                            <button
+                              type="button"
+                              key={`meld-${p.id}-${mIdx}`}
+                              onClick={() =>
+                                setLayoffTarget((prev) =>
+                                  prev?.owner === p.id && prev.meldIdx === mIdx
+                                    ? null
+                                    : { owner: p.id, meldIdx: mIdx, ownerName: playerName(p.id, p.isHuman) },
+                                )
+                              }
+                              aria-pressed={isLayoffTarget}
+                              disabled={selectedCardIndices.length === 1 && !canLayoffHere}
+                              data-layoff-legal={canLayoffHere ? 'true' : undefined}
+                              aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
+                              data-testid={`layoff-meld-${p.id}-${mIdx}`}
+                              className={`flex flex-wrap gap-1 mb-1 w-full rounded p-1 text-left transition-all ${
+                                isLayoffTarget
+                                  ? 'ring-2 ring-ds-info'
+                                  : canLayoffHere
+                                    ? 'ring-1 ring-ds-success hover:bg-white/5'
+                                    : 'hover:bg-white/5'
+                              }`}
+                            >
+                              <span className="text-xs text-ds-text-muted self-center">[{mIdx}]</span>
+                              {meld.cards.map((card, ci) => (
+                                <AnimatedCard
+                                  key={`meld-${p.id}-${mIdx}-${card.design}-${card.value}-${ci}`}
+                                  card={card}
+                                  width={cardWidth * 0.6}
+                                />
+                              ))}
+                              <span className="self-center text-xs text-ds-text-muted">
+                                {t('meldScore', { score: meld.score })}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {(isRoundEnd || isGameEnd) && (
+                  <section data-testid="round-hand-penalties" className="my-3 rounded bg-ds-surface p-3">
+                    <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('roundHandPenalties')}</h2>
+                    <ul className="space-y-1 text-sm text-ds-text-muted">
+                      {state.players.map((p) => (
+                        <li key={p.id} className="flex flex-col gap-1">
+                          <div className="flex justify-between gap-4">
+                            <span>{playerName(p.id, p.isHuman)}</span>
+                            <span className="tabular-nums">
+                              {t('handPenalty', { points: rummy500HandPenalty(p.cards) })}
+                            </span>
+                          </div>
+                          {p.cards.length > 0 && (
+                            <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                              {p.cards.map((card, idx) => (
+                                <li key={`${card.design}-${card.value}-${idx}`}>
+                                  {t('cardHandPenalty', {
+                                    card: cardAlt(card),
+                                    points: rummy500CardPenalty(card.value),
+                                  })}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                <RoundScoreAnnouncement
+                  active={isRoundEnd || isGameEnd}
+                  entries={state.players.map((p) => ({
+                    name: playerName(p.id, p.isHuman),
+                    roundScore: p.roundScore,
+                    cumulativeScore: p.cumulativeScore,
+                  }))}
+                />
+              </div>
+            </div>
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ActionShortcutsPanel bindings={keyboardActions} data-testid="rummy500-kbd-shortcuts" />
+            <CardNavShortcutsPanel data-testid="rummy500-card-kbd-shortcuts" />
+            {humanPlayer && humanPlayer.cards.length > 0 && (
+              <div className="flex justify-end mb-1 text-xs">
+                <span
+                  data-testid="hand-penalty-badge"
+                  className={`px-2 py-0.5 rounded-full border border-ds-error font-medium ${badgeErrorColors}`}
+                  title={t('handPenaltyHint')}
+                >
+                  {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}
+                  <span className="sr-only"> — {t('handPenaltyHint')}</span>
+                </span>
+              </div>
+            )}
+            <ErrorAlert message={error} onRetry={retry} />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <div>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="r5-reset-button"
+              />
             </div>
           </div>
 
-          {/* Right: players + melds + scores */}
-          <div>
-            {state.players.map((p) => (
-              <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                <div className="text-ds-text-muted text-sm">
-                  {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                  {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
-                </div>
-                {p.laidMelds.length > 0 && (
-                  <div className="mt-1">
-                    <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
-                    {p.laidMelds.map((meld, mIdx) => {
-                      const isLayoffTarget = layoffTarget?.owner === p.id && layoffTarget?.meldIdx === mIdx;
-                      // **押せるボタンは必ず通る。**1 枚選んでいるあいだ、その札を
-                      // 実際に置けるメルドだけを押せるようにする (#4832)。
-                      const canLayoffHere =
-                        selectedCardIndices.length === 1 &&
-                        (state.layoffTargets?.[selectedCardIndices[0]]?.some(
-                          (tgt) => tgt.owner === p.id && tgt.meldIdx === mIdx,
-                        ) ??
-                          false);
-                      return (
-                        <button
-                          type="button"
-                          key={`meld-${p.id}-${mIdx}`}
-                          onClick={() =>
-                            setLayoffTarget((prev) =>
-                              prev?.owner === p.id && prev.meldIdx === mIdx
-                                ? null
-                                : { owner: p.id, meldIdx: mIdx, ownerName: playerName(p.id, p.isHuman) },
-                            )
-                          }
-                          aria-pressed={isLayoffTarget}
-                          disabled={selectedCardIndices.length === 1 && !canLayoffHere}
-                          data-layoff-legal={canLayoffHere ? 'true' : undefined}
-                          aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
-                          data-testid={`layoff-meld-${p.id}-${mIdx}`}
-                          className={`flex flex-wrap gap-1 mb-1 w-full rounded p-1 text-left transition-all ${
-                            isLayoffTarget
-                              ? 'ring-2 ring-ds-info'
-                              : canLayoffHere
-                                ? 'ring-1 ring-ds-success hover:bg-white/5'
-                                : 'hover:bg-white/5'
-                          }`}
-                        >
-                          <span className="text-xs text-ds-text-muted self-center">[{mIdx}]</span>
-                          {meld.cards.map((card, ci) => (
-                            <AnimatedCard
-                              key={`meld-${p.id}-${mIdx}-${card.design}-${card.value}-${ci}`}
-                              card={card}
-                              width={cardWidth * 0.6}
-                            />
-                          ))}
-                          <span className="self-center text-xs text-ds-text-muted">
-                            {t('meldScore', { score: meld.score })}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+          <GameFooter
+            className={`${gameTheme.rummy500.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap">
+                {isDrawPhase && isHumanTurn && (
+                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                    {t('drawStockButton')}
+                  </button>
+                )}
+                {isPlayPhase && isHumanTurn && (
+                  <>
+                    {showInvalidMeld && (
+                      <p
+                        role="status"
+                        data-testid="r5-invalid-meld"
+                        className="w-full text-center font-medium text-ds-warning text-xs"
+                      >
+                        {t('invalidMeld')}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeld}
+                      disabled={loading || selectedCardIndices.length < 3 || !meldValid}
+                      data-tutorial="r5-meld-button"
+                    >
+                      {t('meldButton')}
+                    </button>
+                    <div className="flex items-center gap-1 text-xs text-ds-text-muted">
+                      <span data-testid="r5-layoff-target">
+                        {layoffTarget
+                          ? t('layoffTargetLabel', { owner: layoffTarget.ownerName, idx: layoffTarget.meldIdx })
+                          : t('layoffTargetNone')}
+                      </span>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={
+                          layoffTarget
+                            ? () => {
+                                handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
+                                setLayoffTarget(null);
+                              }
+                            : undefined
+                        }
+                        // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を
+                        // 選んだあと選択を B に変えると、ボタン自体は無効化されるのに
+                        // 送信は通ってしまっていた (#4832 のレビュー指摘)。
+                        disabled={loading || !selectedLayoffIsLegal}
+                      >
+                        {t('layoffButton')}
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      data-tutorial="r5-discard-button"
+                    >
+                      {t('discardButton')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
                 )}
               </div>
-            ))}
-            {(isRoundEnd || isGameEnd) && (
-              <section data-testid="round-hand-penalties" className="my-3 rounded bg-ds-surface p-3">
-                <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('roundHandPenalties')}</h2>
-                <ul className="space-y-1 text-sm text-ds-text-muted">
-                  {state.players.map((p) => (
-                    <li key={p.id} className="flex flex-col gap-1">
-                      <div className="flex justify-between gap-4">
-                        <span>{playerName(p.id, p.isHuman)}</span>
-                        <span className="tabular-nums">
-                          {t('handPenalty', { points: rummy500HandPenalty(p.cards) })}
-                        </span>
-                      </div>
-                      {p.cards.length > 0 && (
-                        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                          {p.cards.map((card, idx) => (
-                            <li key={`${card.design}-${card.value}-${idx}`}>
-                              {t('cardHandPenalty', { card: cardAlt(card), points: rummy500CardPenalty(card.value) })}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-            <RoundScoreAnnouncement
-              active={isRoundEnd || isGameEnd}
-              entries={state.players.map((p) => ({
-                name: playerName(p.id, p.isHuman),
-                roundScore: p.roundScore,
-                cumulativeScore: p.cumulativeScore,
-              }))}
-            />
-          </div>
-        </div>
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-
-        <ActionShortcutsPanel bindings={keyboardActions} data-testid="rummy500-kbd-shortcuts" />
-        <CardNavShortcutsPanel data-testid="rummy500-card-kbd-shortcuts" />
-        {humanPlayer && humanPlayer.cards.length > 0 && (
-          <div className="flex justify-end mb-1 text-xs">
-            <span
-              data-testid="hand-penalty-badge"
-              className={`px-2 py-0.5 rounded-full border border-ds-error font-medium ${badgeErrorColors}`}
-              title={t('handPenaltyHint')}
-            >
-              {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}
-              <span className="sr-only"> — {t('handPenaltyHint')}</span>
-            </span>
-          </div>
-        )}
-        <ErrorAlert message={error} onRetry={retry} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-        <div>
-          <GameResetButton
-            isGameEnd={!!isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="r5-reset-button"
-          />
-        </div>
-      </div>
-
-      <GameFooter
-        className={`${gameTheme.rummy500.footer} px-4 py-2.5`}
-        actions={
-          <div className="flex gap-2 items-center flex-wrap">
-            {isDrawPhase && isHumanTurn && (
-              <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                {t('drawStockButton')}
-              </button>
-            )}
-            {isPlayPhase && isHumanTurn && (
-              <>
-                {showInvalidMeld && (
-                  <p
-                    role="status"
-                    data-testid="r5-invalid-meld"
-                    className="w-full text-center font-medium text-ds-warning text-xs"
-                  >
-                    {t('invalidMeld')}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleMeld}
-                  disabled={loading || selectedCardIndices.length < 3 || !meldValid}
-                  data-tutorial="r5-meld-button"
-                >
-                  {t('meldButton')}
-                </button>
-                <div className="flex items-center gap-1 text-xs text-ds-text-muted">
-                  <span data-testid="r5-layoff-target">
-                    {layoffTarget
-                      ? t('layoffTargetLabel', { owner: layoffTarget.ownerName, idx: layoffTarget.meldIdx })
-                      : t('layoffTargetNone')}
-                  </span>
+            }
+          >
+            {humanPlayer && (
+              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="r5-player-hand">
+                {humanPlayer.cards.map((card, idx) => (
                   <button
                     type="button"
-                    className={btnSecondary}
-                    onClick={
-                      layoffTarget
-                        ? () => {
-                            handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
-                            setLayoffTarget(null);
-                          }
-                        : undefined
-                    }
-                    // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を
-                    // 選んだあと選択を B に変えると、ボタン自体は無効化されるのに
-                    // 送信は通ってしまっていた (#4832 のレビュー指摘)。
-                    disabled={loading || !selectedLayoffIsLegal}
+                    key={`${card.design}-${card.value}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    aria-label={cardAlt(card)}
+                    aria-pressed={selectedCardIndices.includes(idx)}
+                    data-hint-target={frontendHintEnabled && frontendHint?.targetPos === idx ? 'true' : undefined}
+                    className={`transition-transform ${focusRingCard} ${frontendHintEnabled && frontendHint?.targetPos === idx ? 'ring-2 ring-ds-accent' : ''}`}
+                    style={{
+                      background: 'none',
+                      padding: 0,
+                      borderRadius: 8,
+                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                      boxSizing: 'border-box',
+                    }}
                   >
-                    {t('layoffButton')}
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
-                </div>
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleDiscard}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                  data-tutorial="r5-discard-button"
-                >
-                  {t('discardButton')}
-                </button>
-              </>
+                ))}
+              </div>
             )}
-            {isRoundEnd && (
-              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                {t('nextRound')}
-              </button>
-            )}
-          </div>
-        }
-      >
-        {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="r5-player-hand">
-            {humanPlayer.cards.map((card, idx) => (
-              <button
-                type="button"
-                key={`${card.design}-${card.value}-${idx}`}
-                onClick={() => toggleCard(idx)}
-                aria-label={cardAlt(card)}
-                aria-pressed={selectedCardIndices.includes(idx)}
-                data-hint-target={frontendHintEnabled && frontendHint?.targetPos === idx ? 'true' : undefined}
-                className={`transition-transform ${focusRingCard} ${frontendHintEnabled && frontendHint?.targetPos === idx ? 'ring-2 ring-ds-accent' : ''}`}
-                style={{
-                  background: 'none',
-                  padding: 0,
-                  borderRadius: 8,
-                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                  boxSizing: 'border-box',
-                }}
-              >
-                <AnimatedCard card={card} width={cardWidth} />
-              </button>
-            ))}
-          </div>
-        )}
 
-        {meldScorePreview !== null && (
-          <p data-testid="r5-meld-score-preview" className="mb-2 text-xs text-ds-text-muted">
-            {t('meldScorePreview', { score: meldScorePreview })}
-          </p>
-        )}
-      </GameFooter>
+            {meldScorePreview !== null && (
+              <p data-testid="r5-meld-score-preview" className="mb-2 text-xs text-ds-text-muted">
+                {t('meldScorePreview', { score: meldScorePreview })}
+              </p>
+            )}
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

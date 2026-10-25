@@ -3,6 +3,8 @@
 package presenter
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -149,5 +151,12 @@ func (p *Rummy500WebPresenter) ActionLogOutput(g interfaces.Rummy500Game) string
 // HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
 // 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
 func (p *Rummy500WebPresenter) HintOutput(g interfaces.Rummy500Game) string {
-	return p.Output(g, nil)
+	var resObj controller.Rummy500WebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, nil)), &resObj); err != nil {
+		return marshalOrError(nil)
+	}
+	// Rummy 500 has no server-side hint payload; mark the complete state response
+	// so callers can distinguish the explicit request from passive state output.
+	resObj.MessageCode = "rummy500.noHint"
+	return marshalOrError(resObj)
 }
