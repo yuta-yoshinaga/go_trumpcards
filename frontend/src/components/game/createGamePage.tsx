@@ -147,6 +147,11 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   Board: ComponentType<GamePageContext<S, G, V>>;
   /** Optional hand content rendered first in the game footer. */
   FooterHand?: ComponentType<GamePageContext<S, G, V>>;
+  /**
+   * Optional content rendered first in the footer controls, before the error alert and FooterStatus.
+   * In the standard layout it follows FooterHand; with primaryActions it follows ActionLogSection in the scroll area.
+   */
+  FooterLead?: ComponentType<GamePageContext<S, G, V>>;
   /** Optional status content rendered after errors and before footer actions. */
   FooterStatus?: ComponentType<GamePageContext<S, G, V>>;
   FooterActions?: ComponentType<GamePageContext<S, G, V>>;
@@ -247,6 +252,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const AboveContent = def.AboveContent;
     const Board = def.Board;
     const FooterHand = def.FooterHand;
+    const FooterLead = def.FooterLead;
     const FooterStatus = def.FooterStatus;
     const FooterActions = def.FooterActions;
     const primaryActions = def.primaryActions?.(context);
@@ -256,6 +262,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     // at the end of the scrolling content when `primaryActions` pins the footer's action row.
     const footerControls = (
       <>
+        {FooterLead && <FooterLead {...context} />}
         <ErrorAlert message={game.error ?? game.hintError ?? null} onRetry={game.retry} />
         {FooterStatus && <FooterStatus {...context} />}
         <div

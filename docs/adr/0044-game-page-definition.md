@@ -24,7 +24,7 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
@@ -32,7 +32,7 @@ Issue #11912。
 
 2 ページ目 (Hearts、trick-taking・カード選択・パスフェーズ): 744 行 → 680 行、import 43 → 26、横断シンボルの手配線は `hintCheckboxItem` (ゲーム固有設定と並べるため) を除いて 0。足した口は `cardNav` (カード番号キー操作、62 ページが `useCardKeyboardNav` を使う)、`FooterHand` / `FooterStatus`、`actionsTutorialId`、`settingsPlacement` (設定パネルが盤面の上か下かは概算 169 / 172 ページで二分。ソース上の行位置の比較による)、`landscapeBanner` (91 ページだけが出すので既定は false)。`HeartsPage.test.tsx` と `e2e/hearts.spec.ts` は無変更で通過。
 
-3 ページ目 (Spades、固定アクション付きフッター): 676 行 → 588 行、import 41 → 24。足した口は `primaryActions` (定義すると GameFooter の固定形になり、返り値をそのまま `actions` に渡すので null で操作行が消える。115 ページが固定形) と `message`。固定形では ErrorAlert・FooterStatus・操作行・ショートカットをスクロール領域の末尾 (ActionLogSection の直後) に置く。`SpadesPage.test.tsx` は無変更で通過。
+3 ページ目 (Spades、固定アクション付きフッター): 676 行 → 588 行、import 41 → 24。足した口は `primaryActions` (定義すると GameFooter の固定形になり、返り値をそのまま `actions` に渡すので null で操作行が消える。115 ページが固定形) と `message`。固定形では FooterLead・ErrorAlert・FooterStatus・操作行・ショートカットをスクロール領域の末尾 (ActionLogSection の直後) に置く。`SpadesPage.test.tsx` は無変更で通過。
 
 ## Consequences
 
@@ -73,3 +73,5 @@ CLI モードの無いページは、移行の前に CLI を正式な機能と�
 委譲の前に各候補をこの 4 つの観点で grep し、今のファクトリで表せるページだけを渡す。
 
 CallBreak のチュートリアル対象は固定フッター自体なので、`primaryActions` と組み合わせて固定フッター (`<footer>` 要素そのもの、操作が無い手番でも存在する) に `data-tutorial` を付ける `footerTutorialId` を追加する。
+
+CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する。
