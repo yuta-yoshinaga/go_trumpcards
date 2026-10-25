@@ -136,6 +136,11 @@ func (p *TrucoWebPresenter) HintOutput(g interfaces.TrucoGame) string {
 			Reason:    hint.Reason,
 		}
 	}
+	if hint != nil {
+		resObj.MessageCode = "truco.hintRequested"
+	} else {
+		resObj.MessageCode = "truco.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

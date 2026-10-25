@@ -59,6 +59,16 @@ beforeEach(() => {
 });
 
 describe('TrucoPage', () => {
+  it('shows the terminal when CLI mode is enabled', async () => {
+    localStorage.removeItem('cli-mode-truco');
+    renderWithProviders(<TrucoPage />);
+    await screen.findByTestId('truco-primary-actions');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('truco-primary-actions')).not.toBeInTheDocument();
+    localStorage.removeItem('cli-mode-truco');
+  });
+
   it('renders the Truco declaration in the primary action row', async () => {
     renderWithProviders(<TrucoPage />);
     expect(await screen.findByTestId('truco-primary-actions')).toContainElement(

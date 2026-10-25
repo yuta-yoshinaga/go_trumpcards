@@ -1113,6 +1113,8 @@
     "put.errCannotRaiseNow": "これ以上引き上げできません",
     "truco.errCardIndexOutOfRange": "カードインデックスが範囲外です",
     "truco.errCannotRaiseNow": "これ以上引き上げできません",
+    "truco.hintRequested": "ヒントがあります",
+    "truco.noHint": "ヒントはありません",
     "bezique.errCardIndexOutOfRange": "カードインデックスが範囲外です",
     "bezique.errNoMeldAvailable": "宣言できる役がありません",
     "accordion.gameClear": "ゲームクリア！ 手数: {{moveCount}}",

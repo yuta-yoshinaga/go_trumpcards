@@ -3,6 +3,8 @@ import { trucoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -13,6 +15,8 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -22,6 +26,9 @@ import type { TrucoResponse } from '../types/card';
 import { TrucoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseTrucoCommand, TRUCO_HELP } from '../utils/cli/commands/trucoCommands';
+import { formatTrucoState } from '../utils/cli/formatters/trucoFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Tutorial steps for the Truco page. */
 const TRUCO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -61,6 +68,17 @@ function TrucoPageContent() {
   } = useGameApi<TrucoResponse, Parameters<typeof trucoApi.exec>>(trucoApi.exec);
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('truco', state);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('truco');
+  const cliConfig: CliGameConfig<TrucoResponse, Parameters<typeof trucoApi.exec>> = useMemo(
+    () => ({
+      gameName: 'truco',
+      parseCommand: parseTrucoCommand,
+      formatResponse: formatTrucoState,
+      helpText: TRUCO_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Match target is the only configurable game setting.
   const [matchTarget, setMatchTarget] = useState(TRUCO_DEFAULT_MATCH_TARGET);
@@ -170,218 +188,238 @@ function TrucoPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3" data-tutorial="truco-score" data-testid="truco-header">
-          <span className="mr-4">
-            {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
-            {state.matchTarget})
-          </span>
-          <span
-            className="whitespace-nowrap rounded bg-ds-info px-2 py-1 text-sm text-ds-text-on-accent"
-            data-testid="truco-mano"
-          >
-            {t('header.mano')}: {playerLabel(state.manoIdx)}
-          </span>
-          <span
-            className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm text-ds-text-on-accent"
-            data-testid="truco-dealer"
-          >
-            {t('header.dealer')}: {playerLabel(state.dealerIdx)}
-          </span>
-        </div>
-        <div className="text-ds-text-muted text-center text-sm mb-3">
-          <span className="mr-4">
-            {t('header.hand')}: {state.handNumber}
-          </span>
-          <span className="mr-4">
-            {t('header.baza')}: {state.trickNumber}
-          </span>
-          <span data-testid="truco-stake">
-            {t('header.stake')}: {state.handStake} ({levelLabel(state.acceptedLevel)})
-          </span>
-        </div>
-
-        <details
-          className="my-3 p-2 rounded bg-black/30 max-w-md mx-auto"
-          data-testid="truco-rank-ref"
-          data-tutorial="truco-rankref"
-        >
-          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
-          <div className="mt-2 text-ds-text-muted text-xs space-y-1">
-            <div>
-              <span className="font-semibold text-ds-text-primary">{t('rankRef.matadores')}</span>
-              <div className="mt-0.5">{t('rankRef.matadoresOrder')}</div>
-            </div>
-            <div>
-              <span className="font-semibold text-ds-text-primary">{t('rankRef.common')}</span>
-              <div className="mt-0.5">{t('rankRef.commonOrder')}</div>
-            </div>
-            <div className="pt-1">{t('rankRef.note')}</div>
-          </div>
-        </details>
-
-        <div className="flex flex-wrap items-start gap-4 mb-4">
-          <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-            {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
-          </div>
-        </div>
-
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="truco-trick"
-        />
-        <div data-testid="truco-trick-live" className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-          {state.currentTrick
-            .map(({ playerIdx, card }) => `${playerLabel(playerIdx)}: ${cardAlt(card)}`)
-            .join(t('listSeparator'))}
-        </div>
-
-        <div
-          data-testid="truco-trick-result-live"
-          className="sr-only"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {isTrickEnd && state.trickResults.length > 0
-            ? state.trickResults[state.trickResults.length - 1] === -1
-              ? t('trickResult.tie', { number: state.trickResults.length })
-              : t('trickResult.winner', {
-                  number: state.trickResults.length,
-                  name: playerLabel(state.trickResults[state.trickResults.length - 1]),
-                })
-            : ''}
-        </div>
-
-        {state.trickResults.length > 0 && (
-          <div className="mx-auto my-3 max-w-md rounded bg-black/30 p-2 text-sm" data-testid="truco-trick-history">
-            <div className="mb-1 text-ds-text-primary">{t('history.title')}</div>
-            <div className="space-y-1 text-ds-text-muted">
-              {state.trickResults.map((result, idx) => (
-                <div key={`${idx}-${result}`} data-testid="truco-trick-history-row">
-                  {t('history.baza', { number: idx + 1 })}:{' '}
-                  {result === -1 ? t('history.parda') : t('history.winner', { name: playerLabel(result) })}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {resultBanner && (
-          <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
-            {resultBanner}
-          </div>
-        )}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        {isHumanRespond && state.trucoCallerIdx >= 0 && (
-          <div className="text-center text-lg my-2 text-ds-accent" role="status">
-            {t('respondPrompt', { name: t('header.cpu'), level: levelLabel(state.pendingLevel) })}
-          </div>
-        )}
-        <div className="mt-3 flex flex-wrap gap-2" data-testid="truco-primary-actions">
-          {isHumanPlayTurn && state.canDeclareTruco && (
-            <button
-              type="button"
-              className={btnWarning}
-              onClick={handleTruco}
-              disabled={loading}
-              data-tutorial="truco-call"
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div
+              className="text-ds-text-primary text-center mb-3"
+              data-tutorial="truco-score"
+              data-testid="truco-header"
             >
-              {t('actions.truco')}
-            </button>
-          )}
-          {isHumanRespond && (
-            <>
-              <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
-                {t('actions.accept')}
-              </button>
-              <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
-                {t('actions.decline')}
-              </button>
-              {state.canDeclareTruco && (
-                <button type="button" className={btnWarning} onClick={handleTruco} disabled={loading}>
-                  {t('actions.raise')}
+              <span className="mr-4">
+                {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} (
+                {t('header.target')}: {state.matchTarget})
+              </span>
+              <span
+                className="whitespace-nowrap rounded bg-ds-info px-2 py-1 text-sm text-ds-text-on-accent"
+                data-testid="truco-mano"
+              >
+                {t('header.mano')}: {playerLabel(state.manoIdx)}
+              </span>
+              <span
+                className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm text-ds-text-on-accent"
+                data-testid="truco-dealer"
+              >
+                {t('header.dealer')}: {playerLabel(state.dealerIdx)}
+              </span>
+            </div>
+            <div className="text-ds-text-muted text-center text-sm mb-3">
+              <span className="mr-4">
+                {t('header.hand')}: {state.handNumber}
+              </span>
+              <span className="mr-4">
+                {t('header.baza')}: {state.trickNumber}
+              </span>
+              <span data-testid="truco-stake">
+                {t('header.stake')}: {state.handStake} ({levelLabel(state.acceptedLevel)})
+              </span>
+            </div>
+
+            <details
+              className="my-3 p-2 rounded bg-black/30 max-w-md mx-auto"
+              data-testid="truco-rank-ref"
+              data-tutorial="truco-rankref"
+            >
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
+              <div className="mt-2 text-ds-text-muted text-xs space-y-1">
+                <div>
+                  <span className="font-semibold text-ds-text-primary">{t('rankRef.matadores')}</span>
+                  <div className="mt-0.5">{t('rankRef.matadoresOrder')}</div>
+                </div>
+                <div>
+                  <span className="font-semibold text-ds-text-primary">{t('rankRef.common')}</span>
+                  <div className="mt-0.5">{t('rankRef.commonOrder')}</div>
+                </div>
+                <div className="pt-1">{t('rankRef.note')}</div>
+              </div>
+            </details>
+
+            <div className="flex flex-wrap items-start gap-4 mb-4">
+              <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
+              </div>
+            </div>
+
+            <TrickDisplay
+              currentTrick={state.currentTrick}
+              players={state.players}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="truco-trick"
+            />
+            <div data-testid="truco-trick-live" className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {state.currentTrick
+                .map(({ playerIdx, card }) => `${playerLabel(playerIdx)}: ${cardAlt(card)}`)
+                .join(t('listSeparator'))}
+            </div>
+
+            <div
+              data-testid="truco-trick-result-live"
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {isTrickEnd && state.trickResults.length > 0
+                ? state.trickResults[state.trickResults.length - 1] === -1
+                  ? t('trickResult.tie', { number: state.trickResults.length })
+                  : t('trickResult.winner', {
+                      number: state.trickResults.length,
+                      name: playerLabel(state.trickResults[state.trickResults.length - 1]),
+                    })
+                : ''}
+            </div>
+
+            {state.trickResults.length > 0 && (
+              <div className="mx-auto my-3 max-w-md rounded bg-black/30 p-2 text-sm" data-testid="truco-trick-history">
+                <div className="mb-1 text-ds-text-primary">{t('history.title')}</div>
+                <div className="space-y-1 text-ds-text-muted">
+                  {state.trickResults.map((result, idx) => (
+                    <div key={`${idx}-${result}`} data-testid="truco-trick-history-row">
+                      {t('history.baza', { number: idx + 1 })}:{' '}
+                      {result === -1 ? t('history.parda') : t('history.winner', { name: playerLabel(result) })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {resultBanner && (
+              <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+                {resultBanner}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            {isHumanRespond && state.trucoCallerIdx >= 0 && (
+              <div className="text-center text-lg my-2 text-ds-accent" role="status">
+                {t('respondPrompt', { name: t('header.cpu'), level: levelLabel(state.pendingLevel) })}
+              </div>
+            )}
+            <div className="mt-3 flex flex-wrap gap-2" data-testid="truco-primary-actions">
+              {isHumanPlayTurn && state.canDeclareTruco && (
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={handleTruco}
+                  disabled={loading}
+                  data-tutorial="truco-call"
+                >
+                  {t('actions.truco')}
                 </button>
               )}
-            </>
-          )}
-        </div>
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-        <ErrorAlert message={error} onRetry={retry} />
-
-        {human && human.cards.length > 0 && (
-          <div className="mt-4" data-tutorial="truco-hand">
-            <div className="text-ds-text-muted text-sm mb-1">
-              {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+              {isHumanRespond && (
+                <>
+                  <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
+                    {t('actions.accept')}
+                  </button>
+                  <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
+                    {t('actions.decline')}
+                  </button>
+                  {state.canDeclareTruco && (
+                    <button type="button" className={btnWarning} onClick={handleTruco} disabled={loading}>
+                      {t('actions.raise')}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {human.cards.map((card, idx) => (
-                <button
-                  key={`${card.design}-${card.value}-${idx}`}
-                  type="button"
-                  onClick={() => handlePlay(idx)}
-                  disabled={loading || !isHumanPlayTurn}
-                  aria-label={tc('card.play', { card: cardAlt(card) })}
-                  className="disabled:opacity-50"
-                >
-                  <CardImage card={card} width={cardWidth} />
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {human && human.cards.length > 0 && (
+              <div className="mt-4" data-tutorial="truco-hand">
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => (
+                    <button
+                      key={`${card.design}-${card.value}-${idx}`}
+                      type="button"
+                      onClick={() => handlePlay(idx)}
+                      disabled={loading || !isHumanPlayTurn}
+                      aria-label={tc('card.play', { card: cardAlt(card) })}
+                      className="disabled:opacity-50"
+                    >
+                      <CardImage card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(isTrickEnd || isHandEnd) && (
+                <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                  {t('actions.next')}
                 </button>
-              ))}
+              )}
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={() => requestConfirm(handleReset)}
+                disabled={loading}
+              >
+                {t('actions.reset')}
+              </button>
+              <label
+                className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
+                data-testid="truco-hint-toggle"
+              >
+                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                {tc('button.hint')}
+              </label>
             </div>
           </div>
-        )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {(isTrickEnd || isHandEnd) && (
-            <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-              {t('actions.next')}
-            </button>
-          )}
-          <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-            {t('actions.reset')}
-          </button>
-          <label
-            className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
-            data-testid="truco-hint-toggle"
-          >
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('button.hint')}
-          </label>
-        </div>
-      </div>
-
-      <ActionLogSection
-        isEndPhase={isGameEnd}
-        actionLog={actionLog}
-        showActionLog={showActionLog}
-        hideActionLog={hideActionLog}
-      />
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+          <ActionLogSection
+            isEndPhase={isGameEnd}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'matchTarget',
-                label: t('settings.matchTarget'),
-                value: matchTarget,
-                description: matchTarget !== state.matchTarget ? t('settings.matchTargetNextReset') : undefined,
-                options: TRUCO_MATCH_TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => setMatchTarget(Number(v)),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'matchTarget',
+                    label: t('settings.matchTarget'),
+                    value: matchTarget,
+                    description: matchTarget !== state.matchTarget ? t('settings.matchTargetNextReset') : undefined,
+                    options: TRUCO_MATCH_TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => setMatchTarget(Number(v)),
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      />
-      {/* No GameFooter on this page, where the other 55 action-nav pages put the
+            ]}
+          />
+          {/* No GameFooter on this page, where the other 55 action-nav pages put the
           panel, so it sits after the action log instead — still last on the page. */}
-      <ActionShortcutsPanel bindings={actionBindings} data-testid="truco-kbd-shortcuts" />
+          <ActionShortcutsPanel bindings={actionBindings} data-testid="truco-kbd-shortcuts" />
+        </>
+      )}
     </GamePageShell>
   );
 }
