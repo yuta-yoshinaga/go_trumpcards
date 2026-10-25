@@ -457,6 +457,12 @@ describe('MariasPage', () => {
     renderWithProviders(<MariasPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MariasPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **切り札の決まり方が見えない。**入札でも固定でもなく、ソリストの手札という

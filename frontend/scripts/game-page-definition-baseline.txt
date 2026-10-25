@@ -160,7 +160,6 @@ LobaPage.tsx
 MacauPage.tsx
 MadrassoPage.tsx
 MaoPage.tsx
-MariasPage.tsx
 MarjapussiPage.tsx
 MarriagePage.tsx
 MatrimonyPage.tsx
