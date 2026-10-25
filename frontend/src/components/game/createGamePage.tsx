@@ -126,6 +126,8 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   /** Whether to render the landscape recommendation banner. Defaults to false. */
   landscapeBanner?: boolean;
   resetTutorialId?: string;
+  /** Tutorial identifier on the fixed footer action row. Use with `primaryActions`; when omitted, no attribute is rendered. */
+  footerTutorialId?: string;
   /** Tutorial identifier applied to the footer actions row. */
   actionsTutorialId?: string;
   /** Replacement classes for the footer actions row. Defaults to "flex gap-2 items-center flex-wrap". */
@@ -322,6 +324,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                 className={`${gameTheme[def.key].footer} px-4 py-2.5`}
                 actions={primaryActions ?? null}
                 message={message}
+                dataTutorial={def.footerTutorialId}
               >
                 {FooterHand && <FooterHand {...context} />}
               </GameFooter>
