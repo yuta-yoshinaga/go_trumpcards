@@ -56,6 +56,7 @@ export function parseGapsCommand(input: string, state?: GapsResponse | null): Cl
     }
     case 'u':
     case 'undo':
+      if (!state?.canUndo) return { error: 'Undo is not available.' };
       return { args: ['undo'] };
     case 'd':
     case 'redeal':
@@ -68,6 +69,7 @@ export function parseGapsCommand(input: string, state?: GapsResponse | null): Cl
       return { args: ['hint'] };
     case 'un':
     case 'undo_n': {
+      if (!state?.canUndo) return { error: 'Undo is not available.' };
       const n = Number(args[0]);
       if (!args.length || !Number.isInteger(n) || n < 1) return { error: 'Usage: undo_n <count>' };
       return { args: ['undo_n', undefined, undefined, n] };
