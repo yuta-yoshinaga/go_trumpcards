@@ -310,6 +310,13 @@ describe('BurracoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
   });
 
+  // The hand-wired page passed no winShow, so the shell celebrated every game end, CPU wins included.
+  it('plays the game-end celebration even when a CPU wins', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, winnerIdx: 1 });
+    renderWithProviders(<BurracoPage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+  });
+
   it('renders hint toggle checkbox', async () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
@@ -757,5 +764,11 @@ describe('BurracoPage', () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.queryByTestId('ca-discard-pile')).not.toBeInTheDocument());
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BurracoPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
   });
 });
