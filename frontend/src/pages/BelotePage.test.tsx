@@ -604,4 +604,10 @@ describe('BelotePage', () => {
     const humanCard = await screen.findByRole('button', { name: '♥ 10' });
     expect(humanCard).not.toHaveAttribute('data-legal');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BelotePage />);
+    expect(await screen.findByText('ターンアップを取る', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bidPickUp', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

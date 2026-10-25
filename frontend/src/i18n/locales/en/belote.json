@@ -8,7 +8,6 @@
     "gameEnd": "Game End"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "targetScore": "Target Score",
     "dixDeDer": "Dix de Der (Last-trick bonus)",
