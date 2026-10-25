@@ -32,7 +32,11 @@ import type { Card, MississippiStudResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { MISSISSIPPISTUD_HELP, parseMississippiStudCommand } from '../utils/cli/commands/mississippistudCommands';
+import {
+  getMississippiStudAnteMax,
+  MISSISSIPPISTUD_HELP,
+  parseMississippiStudCommand,
+} from '../utils/cli/commands/mississippistudCommands';
 import { formatMississippiStudState } from '../utils/cli/formatters/mississippistudFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -103,12 +107,12 @@ function MississippiStudPageContent() {
   const cliConfig: CliGameConfig<MississippiStudResponse, Parameters<typeof mississippiStudApi.exec>> = useMemo(
     () => ({
       gameName: 'mississippistud',
-      parseCommand: parseMississippiStudCommand,
+      parseCommand: (input) => parseMississippiStudCommand(input, state ?? undefined),
       formatResponse: formatMississippiStudState,
       helpText: MISSISSIPPISTUD_HELP,
       localCommand: hintLocalCommand(frontendHint),
     }),
-    [frontendHint],
+    [frontendHint, state],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -390,7 +394,7 @@ function MississippiStudPageContent() {
                   label={t('label.ante')}
                   value={anteAmount}
                   onChange={setAnteAmount}
-                  max={Math.floor(state.chips / 4)}
+                  max={getMississippiStudAnteMax(state.chips)}
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}

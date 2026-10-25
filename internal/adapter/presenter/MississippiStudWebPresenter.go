@@ -3,7 +3,6 @@
 package presenter
 
 import (
-	"encoding/json"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -58,16 +57,11 @@ func (mp *MississippiStudWebPresenter) Output(g interfaces.MississippiStudGame, 
 	return marshalOrError(resObj)
 }
 
-// HintOutput ヒント要求に対する現在の状態をJSON出力する。
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。MississippiStudPresenter インタフェースを
+// 満たすための実装。
 func (mp *MississippiStudWebPresenter) HintOutput(g interfaces.MississippiStudGame) string {
-	var resObj controller.MississippiStudWebOutput
-	if err := json.Unmarshal([]byte(mp.Output(g, nil)), &resObj); err != nil {
-		return marshalOrError(nil)
-	}
-	// Mississippi Stud のWeb APIにはヒント計算がないため、要求された場合も
-	// 全状態を返したうえでヒントなしを明示する。
-	resObj.MessageCode = "mississippistud.noHint"
-	return marshalOrError(&resObj)
+	return mp.Output(g, nil)
 }
 
 // ActionLogOutput 棋譜を JSON 出力する。

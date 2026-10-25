@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { makeMississippiStudState } from '../../../test/stateFactories';
+import { MississippiStudPhase } from '../../../types/phases';
 import type { MississippiStudCliArgs } from './mississippistudCommands';
 import { MISSISSIPPISTUD_HELP, parseMississippiStudCommand } from './mississippistudCommands';
 
@@ -11,6 +13,22 @@ describe('parseMississippiStudCommand', () => {
     for (const input of ['bet', 'b nope', 'bet 0', 'bet -1', 'bet 1.5']) {
       expect(parseMississippiStudCommand(input)).toEqual({ error: 'Usage: bet <amount>' });
     }
+  });
+  it('enforces the ante minimum, step, and chip based maximum boundaries', () => {
+    const state = makeMississippiStudState({ chips: 1000, phase: MississippiStudPhase.ANTE });
+    expect(parseMississippiStudCommand('bet 0', state)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('bet 15', state)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('bet 250', state)).toEqual({ args: ['bet', 250] });
+    expect(parseMississippiStudCommand('bet 260', state)).toMatchObject({ error: expect.stringContaining('range') });
+  });
+  it('rejects commands outside their page action phases and unaffordable plays', () => {
+    const ante = makeMississippiStudState({ chips: 1000, phase: MississippiStudPhase.ANTE });
+    const street = makeMississippiStudState({ chips: 100, anteAmount: 100, phase: MississippiStudPhase.THIRD_STREET });
+    expect(parseMississippiStudCommand('play 1', ante)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('fold', ante)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('reset', ante)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('play 2', street)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('bet 100', street)).toHaveProperty('error');
   });
   it('maps street bets to the page button API call', () => {
     for (const multiplier of [1, 2, 3]) {

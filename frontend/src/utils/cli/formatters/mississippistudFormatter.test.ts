@@ -9,6 +9,7 @@ describe('formatMississippiStudState', () => {
     expect(text).toContain('phase: Ante');
     expect(text).toContain('chips: 800');
     expect(text).toContain('Action: bet <amount>');
+    expect(text).toContain('Ante range: min 10, step 10, max 200');
   });
   it('shows street, indexed hand cards, masked community cards, and available actions', () => {
     const text = formatMississippiStudState(
@@ -37,24 +38,16 @@ describe('formatMississippiStudState', () => {
     );
     expect(text).toContain('phase: End');
     expect(text).toContain('Status: folded');
-    expect(text).toContain('result: 0  payout: 0  net: -100');
+    expect(text).toContain('result: lose  payout: 0  net: -100');
+    expect(text).toContain('hand rank:');
     expect(text).toContain('Action: reset');
   });
-  it('does not show any hint because the Mississippi Stud response has no hint payload', () => {
-    const text = formatMississippiStudState(
-      makeMississippiStudState({ message: 'No hint available', messageCode: 'mississippistud.noHint' }),
-    );
-    expect(text).not.toContain('HINT:');
-  });
-  it('only labels a response as a hint when the server marks it requested', () => {
-    const requested = formatMississippiStudState(
-      makeMississippiStudState({
-        message: 'Stay in for the next street.',
-        messageCode: 'mississippistud.hintRequested',
-      }),
-    );
-    const passive = formatMississippiStudState(makeMississippiStudState({ message: 'Passive hint.' }));
-    expect(requested).toContain('HINT: Stay in for the next street.');
-    expect(passive).not.toContain('HINT:');
+  it.each([
+    [1, 'win'],
+    [-1, 'push'],
+    [0, 'lose'],
+  ])('formats result %i as %s', (result, label) => {
+    const text = formatMississippiStudState(makeMississippiStudState({ phase: MississippiStudPhase.END, result }));
+    expect(text).toContain(`result: ${label}`);
   });
 });

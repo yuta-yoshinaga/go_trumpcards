@@ -135,6 +135,32 @@ describe('MississippiStudPage', () => {
     expect(await screen.findByTestId('card-area')).toBeInTheDocument();
   });
 
+  it('rejects an ante above the page maximum without calling exec', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    mockApi.mockClear();
+    fireEvent.change(input, { target: { value: 'bet 260' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getAllByText(/range/).length).toBeGreaterThan(0));
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('dispatches a valid CLI ante with the same arguments as the ante button', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(antePhaseState);
+    fireEvent.change(input, { target: { value: 'bet 250' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 250));
+  });
+
   it('renders skeleton before state loads', () => {
     mockApi.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<MississippiStudPage />);

@@ -1,7 +1,8 @@
 import type { MississippiStudResponse } from '../../../types/card';
 import { isMaskedCard } from '../../../types/card';
 import { MississippiStudPhase } from '../../../types/phases';
-import { formatCard, formatHeader, formatIndexedCards, formatSeparator, isRequestedHint } from '../formatterBase';
+import { getMississippiStudAnteMax } from '../commands/mississippistudCommands';
+import { formatCard, formatHeader, formatIndexedCards, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
   [MississippiStudPhase.ANTE]: 'Ante',
@@ -23,8 +24,10 @@ export function formatMississippiStudState(state: MississippiStudResponse): stri
       `community: ${state.communityCards.map((card) => (isMaskedCard(card) ? '[hidden]' : formatCard(card))).join(' ')}`,
     );
   }
-  if (state.phase === MississippiStudPhase.ANTE) lines.push('Action: bet <amount>');
-  else if (
+  if (state.phase === MississippiStudPhase.ANTE) {
+    lines.push(`Ante range: min 10, step 10, max ${getMississippiStudAnteMax(state.chips)}`);
+    lines.push('Action: bet <amount>');
+  } else if (
     state.phase === MississippiStudPhase.THIRD_STREET ||
     state.phase === MississippiStudPhase.FOURTH_STREET ||
     state.phase === MississippiStudPhase.FIFTH_STREET
@@ -33,10 +36,11 @@ export function formatMississippiStudState(state: MississippiStudResponse): stri
   } else if (state.phase === MississippiStudPhase.END) lines.push('Action: reset');
   if (state.folded) lines.push('Status: folded');
   if (state.phase === MississippiStudPhase.END) {
-    lines.push(`result: ${state.result}  payout: ${state.totalPayout}  net: ${state.netChange}`);
+    const result = state.result > 0 ? 'win' : state.result < 0 ? 'push' : 'lose';
+    lines.push(`result: ${result}  payout: ${state.totalPayout}  net: ${state.netChange}`);
+    lines.push(`hand rank: ${state.handRank}  payout multiplier: ${state.payoutMultiplier}`);
   }
   if (state.message) lines.push(state.message);
-  if (isRequestedHint(state) && state.message) lines.push(`HINT: ${state.message}`);
   lines.push(formatSeparator());
   return lines.join('\n');
 }

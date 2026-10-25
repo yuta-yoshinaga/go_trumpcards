@@ -69,19 +69,6 @@ func TestMississippiStudWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "oops", result.Message)
 }
 
-func TestMississippiStudWebPresenter_HintOutputKeepsCompleteStateAndMarksNoHint(t *testing.T) {
-	m := new(interfaces.MockMississippiStudGame)
-	setupMississippiStudWebMockDefaults(m)
-
-	result := parseMississippiStudOutput(t, new(MississippiStudWebPresenter).HintOutput(m))
-	assert.Equal(t, "mississippistud.noHint", result.MessageCode)
-	assert.NotNil(t, result.PlayerHand)
-	assert.NotNil(t, result.CommunityCards)
-	assert.NotNil(t, result.CommunityRevealed)
-	assert.NotNil(t, result.StreetMultipliers)
-	assert.NotNil(t, result.StreetPayouts)
-}
-
 func TestMississippiStudWebPresenter_ChipsRefilledMessage(t *testing.T) {
 	m := new(interfaces.MockMississippiStudGame)
 	setupMississippiStudWebMockDefaults(m, true)
