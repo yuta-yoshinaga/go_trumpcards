@@ -168,6 +168,38 @@ func TestRussianBankWebPresenterOutputCarriesTheHint(t *testing.T) {
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
 
+func TestRussianBankWebPresenterHintOutputMarksRequestedHintAndReturnsFullState(t *testing.T) {
+	g := rbWithoutForcedMove(t)
+	if g.GetHint() == nil {
+		t.Fatal("fixture must provide a hint")
+	}
+	var response map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.RussianBankWebPresenter).HintOutput(g)), &response))
+	assert.Equal(t, "russianbank.hintRequested", response["messageCode"])
+	assert.NotNil(t, response["players"])
+	assert.NotNil(t, response["tableau"])
+	assert.NotNil(t, response["foundations"])
+	assert.NotNil(t, response["foundationNext"])
+	assert.NotNil(t, response["tableauNext"])
+}
+
+func TestRussianBankWebPresenterHintOutputMarksNoHint(t *testing.T) {
+	g := rbWithoutForcedMove(t)
+	// Mark the server state as a completed game: hints are unavailable after game end.
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var raw map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &raw))
+	raw["ph"], err = json.Marshal(domain.RussianBankPhaseGameEnd)
+	require.NoError(t, err)
+	patched, err := json.Marshal(raw)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(patched, g))
+	var response map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.RussianBankWebPresenter).HintOutput(g)), &response))
+	assert.Equal(t, "russianbank.noHint", response["messageCode"])
+}
+
 // **なぜボタンが増えたのかを言う (#4817)。**CUI は同じ状態を黄色で明示している。
 func TestRussianBankWebPresenter_StopAvailableMessage(t *testing.T) {
 	p := new(presenter.RussianBankWebPresenter)

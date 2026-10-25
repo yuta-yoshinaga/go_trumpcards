@@ -3473,6 +3473,8 @@
     "rummy500.playPhase": "カードを出すか、山札から引いてください",
     "rummy500.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "russianbank.playing": "プレイ中",
+    "russianbank.hintRequested": "ヒントがあります",
+    "russianbank.noHint": "ヒントはありません",
     "russianbank.result.cpuWin": "ゲーム終了！ CPU の勝ち！",
     "russianbank.result.draw": "ゲーム終了！ 引き分け！",
     "russianbank.result.humanWin": "ゲーム終了！ あなたの勝ち！",

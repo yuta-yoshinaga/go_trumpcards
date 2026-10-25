@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { russianbankApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -19,10 +23,13 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, RussianBankPlayer } from '../types/card';
+import type { Card, RussianBankPlayer, RussianBankResponse } from '../types/card';
 import { RussianBankPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseRussianBankCommand, RUSSIANBANK_HELP } from '../utils/cli/commands/russianbankCommands';
+import { formatRussianBankState } from '../utils/cli/formatters/russianbankFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Source-zone codes matching the Go `RussianBankZone` enum. */
@@ -64,6 +71,7 @@ function RussianBankPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('russianbank');
   const { state, loading, error, exec, retry } = useGameApi(russianbankApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('russianbank');
   const [selected, setSelected] = useState<SelectedSource | null>(null);
   // Whether the last hint's suggested move is currently highlighted on the board.
   // The move coordinates come from `state.hint` (set by the server on a `hint`
@@ -96,6 +104,17 @@ function RussianBankPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('russianbank', state);
+
+  const cliConfig: CliGameConfig<RussianBankResponse, Parameters<typeof russianbankApi.exec>> = useMemo(
+    () => ({
+      gameName: 'russianbank',
+      parseCommand: (input) => parseRussianBankCommand(input, state),
+      formatResponse: formatRussianBankState,
+      helpText: RUSSIANBANK_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   if (!state) return <GameSkeleton gameKey="russianbank" layout={{ kind: 'tableau', topRow: 8, tableau: 4 }} />;
 
@@ -324,6 +343,7 @@ function RussianBankPageContent() {
       gameThemeBg={gameTheme.russianbank.bg}
       phaseName={phaseName}
       gamePath="/russianbank"
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
       gameEndFlag={isGameEnd}
       winShow={humanWon}
       isHumanTurn={state.isHumanTurn}
@@ -332,224 +352,234 @@ function RussianBankPageContent() {
       confirmReset={confirmReset}
       cancelReset={cancelReset}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8" data-tutorial="rb-board">
-        {/* Foundations */}
-        <div className="mb-2">
-          <span className="text-ds-text-muted text-[11px]">{t('foundationsLabel')}</span>
-          <div
-            className={`flex gap-1 flex-wrap mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
-            data-hint-foundation={hintFoundation ? 'true' : undefined}
-          >
-            {state.foundations.map((f, i) =>
-              slot(
-                f[f.length - 1],
-                `foundation-${i}`,
-                // 押せない: 送り先は選ばせるものではない。
-                undefined,
-                false,
-                t('foundationZone', { n: i + 1 }),
-                false,
-                false,
-                // 実際に行く台だけを光らせる。
-                i === foundationTarget,
-              ),
-            )}
-          </div>
-        </div>
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8" data-tutorial="rb-board">
+            {/* Foundations */}
+            <div className="mb-2">
+              <span className="text-ds-text-muted text-[11px]">{t('foundationsLabel')}</span>
+              <div
+                className={`flex gap-1 flex-wrap mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
+                data-hint-foundation={hintFoundation ? 'true' : undefined}
+              >
+                {state.foundations.map((f, i) =>
+                  slot(
+                    f[f.length - 1],
+                    `foundation-${i}`,
+                    // 押せない: 送り先は選ばせるものではない。
+                    undefined,
+                    false,
+                    t('foundationZone', { n: i + 1 }),
+                    false,
+                    false,
+                    // 実際に行く台だけを光らせる。
+                    i === foundationTarget,
+                  ),
+                )}
+              </div>
+            </div>
 
-        {/* Shared tableau */}
-        <div className="mb-3">
-          <span className="text-ds-text-muted text-[11px]">{t('tableauLabel')}</span>
-          <div className="flex gap-2 flex-wrap mt-0.5 items-start">
-            {state.tableau.map((col, i) => {
-              const n = col.length;
-              const cardH = Math.round(w * 1.4);
-              const isHintSource = hint?.zone === ZONE_TABLEAU && hint.col === i;
-              const isHintDest = hint !== undefined && !hintFoundation && hint.toCol === i;
-              // Source ring (info) / destination ring (success) are additive hint cues,
-              // layered on top of the shared move-target ring.
-              const hintRing = isHintSource
-                ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
-                : isHintDest
-                  ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
-                  : '';
-              // Reveal every buried card's rank+suit corner via a vertical cascade
-              // instead of showing only the top card. The visible strip auto-compresses
-              // for tall columns so the pile never overruns the board / footer (#3574).
-              const baseStrip = Math.round(w * 0.34);
-              const maxColH = Math.round(cardH * 2.8);
-              const strip = n > 1 ? Math.min(baseStrip, Math.max(1, Math.round((maxColH - cardH) / (n - 1)))) : 0;
-              return (
+            {/* Shared tableau */}
+            <div className="mb-3">
+              <span className="text-ds-text-muted text-[11px]">{t('tableauLabel')}</span>
+              <div className="flex gap-2 flex-wrap mt-0.5 items-start">
+                {state.tableau.map((col, i) => {
+                  const n = col.length;
+                  const cardH = Math.round(w * 1.4);
+                  const isHintSource = hint?.zone === ZONE_TABLEAU && hint.col === i;
+                  const isHintDest = hint !== undefined && !hintFoundation && hint.toCol === i;
+                  // Source ring (info) / destination ring (success) are additive hint cues,
+                  // layered on top of the shared move-target ring.
+                  const hintRing = isHintSource
+                    ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
+                    : isHintDest
+                      ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
+                      : '';
+                  // Reveal every buried card's rank+suit corner via a vertical cascade
+                  // instead of showing only the top card. The visible strip auto-compresses
+                  // for tall columns so the pile never overruns the board / footer (#3574).
+                  const baseStrip = Math.round(w * 0.34);
+                  const maxColH = Math.round(cardH * 2.8);
+                  const strip = n > 1 ? Math.min(baseStrip, Math.max(1, Math.round((maxColH - cardH) / (n - 1)))) : 0;
+                  return (
+                    <button
+                      type="button"
+                      key={`tab-${i}`}
+                      className={`relative flex flex-col items-center rounded ${selected?.zone === ZONE_TABLEAU && selected.col === i ? 'ring-1 ring-ds-success' : ''} ${tableauTargets.has(i) ? 'ring-2 ring-ds-success' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
+                      onClick={canAct ? () => sendToTableau(i) : undefined}
+                      disabled={!canAct}
+                      data-testid={`tableau-${i}`}
+                      data-hint-source={isHintSource ? 'true' : undefined}
+                      data-hint-dest={isHintDest ? 'true' : undefined}
+                      aria-label={
+                        n > 0
+                          ? t(tableauTargets.has(i) ? 'slotCardZonePlaceable' : 'slotCardZone', {
+                              card: cardAlt(col[n - 1]),
+                              zone: t('srcTableau', { col: i + 1 }),
+                            })
+                          : t(tableauTargets.has(i) ? 'slotEmptyZonePlaceable' : 'slotEmptyZone', {
+                              zone: t('srcTableau', { col: i + 1 }),
+                            })
+                      }
+                    >
+                      {tableauTargets.has(i) && (
+                        <span className="absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded bg-ds-success px-1 text-[10px] font-semibold text-ds-text-primary">
+                          {t('placeable')}
+                        </span>
+                      )}
+                      {n === 0 ? (
+                        <div
+                          className="rounded border border-dashed border-white/25 bg-black/20"
+                          style={{ width: w, height: cardH }}
+                        />
+                      ) : (
+                        col.map((c, ci) => (
+                          <div
+                            key={`tab-${i}-card-${ci}`}
+                            data-testid={`tableau-${i}-card-${ci}`}
+                            style={{ marginTop: ci === 0 ? 0 : -(cardH - strip) }}
+                          >
+                            <CardImage card={c} width={w} />
+                          </div>
+                        ))
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Players */}
+            <div className="grid gap-2 sm:grid-cols-2">
+              {cpu && renderPlayer(cpu, true)}
+              {human && renderPlayer(human, false)}
+            </div>
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Footer: move controls */}
+          <GameFooter className={`${gameTheme.russianbank.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center" data-tutorial="rb-controls">
+              {isGameEnd && <span className="text-ds-text-primary text-sm font-semibold mr-1">{t('gameEnd')}</span>}
+
+              {!isGameEnd && selected && (
+                <>
+                  <span className="text-ds-text-primary text-xs" role="status" data-testid="rb-selected-source">
+                    {t('selectedSource', { src: selected.label })}
+                  </span>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={sendToFoundation}
+                    disabled={loading}
+                    data-testid="to-foundation"
+                  >
+                    {t('toFoundation')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => setSelected(null)}
+                    disabled={loading}
+                    data-testid="cancel-select"
+                  >
+                    {t('cancelSelect')}
+                  </button>
+                </>
+              )}
+
+              {canAct && !selected && <span className="text-ds-text-muted text-xs">{t('pickSourceHint')}</span>}
+
+              {canAct && (
                 <button
                   type="button"
-                  key={`tab-${i}`}
-                  className={`relative flex flex-col items-center rounded ${selected?.zone === ZONE_TABLEAU && selected.col === i ? 'ring-1 ring-ds-success' : ''} ${tableauTargets.has(i) ? 'ring-2 ring-ds-success' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
-                  onClick={canAct ? () => sendToTableau(i) : undefined}
-                  disabled={!canAct}
-                  data-testid={`tableau-${i}`}
-                  data-hint-source={isHintSource ? 'true' : undefined}
-                  data-hint-dest={isHintDest ? 'true' : undefined}
-                  aria-label={
-                    n > 0
-                      ? t(tableauTargets.has(i) ? 'slotCardZonePlaceable' : 'slotCardZone', {
-                          card: cardAlt(col[n - 1]),
-                          zone: t('srcTableau', { col: i + 1 }),
-                        })
-                      : t(tableauTargets.has(i) ? 'slotEmptyZonePlaceable' : 'slotEmptyZone', {
-                          zone: t('srcTableau', { col: i + 1 }),
-                        })
-                  }
+                  className={btnPrimary}
+                  onClick={() => exec('d')}
+                  disabled={loading}
+                  data-testid="discard-button"
                 >
-                  {tableauTargets.has(i) && (
-                    <span className="absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded bg-ds-success px-1 text-[10px] font-semibold text-ds-text-primary">
-                      {t('placeable')}
-                    </span>
-                  )}
-                  {n === 0 ? (
-                    <div
-                      className="rounded border border-dashed border-white/25 bg-black/20"
-                      style={{ width: w, height: cardH }}
-                    />
-                  ) : (
-                    col.map((c, ci) => (
-                      <div
-                        key={`tab-${i}-card-${ci}`}
-                        data-testid={`tableau-${i}-card-${ci}`}
-                        style={{ marginTop: ci === 0 ? 0 : -(cardH - strip) }}
-                      >
-                        <CardImage card={c} width={w} />
-                      </div>
-                    ))
-                  )}
+                  {t('discard')}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Players */}
-        <div className="grid gap-2 sm:grid-cols-2">
-          {cpu && renderPlayer(cpu, true)}
-          {human && renderPlayer(human, false)}
-        </div>
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Footer: move controls */}
-      <GameFooter className={`${gameTheme.russianbank.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center" data-tutorial="rb-controls">
-          {isGameEnd && <span className="text-ds-text-primary text-sm font-semibold mr-1">{t('gameEnd')}</span>}
-
-          {!isGameEnd && selected && (
-            <>
-              <span className="text-ds-text-primary text-xs" role="status" data-testid="rb-selected-source">
-                {t('selectedSource', { src: selected.label })}
-              </span>
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={sendToFoundation}
-                disabled={loading}
-                data-testid="to-foundation"
-              >
-                {t('toFoundation')}
-              </button>
-              <button
-                type="button"
-                className={btnSecondary}
-                onClick={() => setSelected(null)}
-                disabled={loading}
-                data-testid="cancel-select"
-              >
-                {t('cancelSelect')}
-              </button>
-            </>
-          )}
-
-          {canAct && !selected && <span className="text-ds-text-muted text-xs">{t('pickSourceHint')}</span>}
-
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={() => exec('d')}
-              disabled={loading}
-              data-testid="discard-button"
-            >
-              {t('discard')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={handleHint}
-              disabled={loading}
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
-          {hintEmpty && (
-            <span className="text-ds-text-muted text-xs" role="status" data-testid="rb-hint-none">
-              {t('hintNone')}
-            </span>
-          )}
-          {canAct && state.canCallStop && (
-            <>
-              {/* **なぜボタンが増えたのかを言う。**CUI は同じ状態を黄色で明示して
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={handleHint}
+                  disabled={loading}
+                  data-testid="hint-button"
+                >
+                  {t('hint')}
+                </button>
+              )}
+              {hintEmpty && (
+                <span className="text-ds-text-muted text-xs" role="status" data-testid="rb-hint-none">
+                  {t('hintNone')}
+                </span>
+              )}
+              {canAct && state.canCallStop && (
+                <>
+                  {/* **なぜボタンが増えたのかを言う。**CUI は同じ状態を黄色で明示して
                   いるのに、Web は無言でボタンが現れるだけだった (#4817)。 */}
-              <span className="text-ds-warning text-xs" role="status" data-testid="rb-stop-available">
-                {t('stopAvailable')}
-              </span>
-              <button
-                type="button"
-                className={btnWarning}
-                onClick={() => exec('s')}
-                disabled={loading}
-                data-testid="stop-button"
-              >
-                {t('stop')}
-              </button>
-            </>
-          )}
-          {canAct && state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('u')}
-              disabled={loading}
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
+                  <span className="text-ds-warning text-xs" role="status" data-testid="rb-stop-available">
+                    {t('stopAvailable')}
+                  </span>
+                  <button
+                    type="button"
+                    className={btnWarning}
+                    onClick={() => exec('s')}
+                    disabled={loading}
+                    data-testid="stop-button"
+                  >
+                    {t('stop')}
+                  </button>
+                </>
+              )}
+              {canAct && state.canUndo && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => exec('u')}
+                  disabled={loading}
+                  data-testid="undo-button"
+                >
+                  {t('undo')}
+                </button>
+              )}
 
-          <GameResetButton
-            isGameEnd={isGameEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="rb-reset-button"
-          />
-        </div>
-      </GameFooter>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="rb-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
