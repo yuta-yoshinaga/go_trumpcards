@@ -455,4 +455,55 @@ describe('FortyFivesPage', () => {
       window.dispatchEvent(new Event('resize'));
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<FortyFivesPage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('handles config select changes for cpuDifficulty and targetPoints', async () => {
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const cpuSelect = screen.getByLabelText('CPU難易度');
+    fireEvent.change(cpuSelect, { target: { value: '2' } });
+
+    const targetSelect = screen.getByLabelText('目標ポイント');
+    fireEvent.change(targetSelect, { target: { value: '60' } });
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, targetPoints: 60 } }),
+    );
+  });
+
+  it('triggers reset handler when confirming reset', async () => {
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetPoints: 45 } }),
+    );
+  });
+
+  it('renders correctly when humanPlayer is absent', async () => {
+    mockExec.mockResolvedValue(
+      makeFortyFivesState({
+        players: [
+          { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+          { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<FortyFivesPage />);
+    expect(await screen.findByTestId('fortyfives-hint-live')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="fortyfives-player-hand"]')).toBeNull();
+  });
 });

@@ -122,7 +122,6 @@ FlowerGardenPage.tsx
 FollowTheQueenPage.tsx
 FortressPage.tsx
 FortyAndEightPage.tsx
-FortyFivesPage.tsx
 FortyThievesPage.tsx
 FourCardPokerPage.tsx
 FourSeasonsPage.tsx
