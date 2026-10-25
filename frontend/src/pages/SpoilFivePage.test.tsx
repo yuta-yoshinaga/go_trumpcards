@@ -290,6 +290,12 @@ describe('SpoilFivePage', () => {
     renderWithProviders(<SpoilFivePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **Reneging は Spoil Five の三本柱の一つ。**説明は caption に元からあったが、
