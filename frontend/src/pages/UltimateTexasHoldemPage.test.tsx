@@ -138,6 +138,29 @@ afterEach(() => {
 });
 
 describe('UltimateTexasHoldemPage', () => {
+  it('switches to the CLI terminal when the toggle is enabled', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(screen.getByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+  });
+
+  it('rejects CLI bets above the same page cap and dispatches valid bets with button arguments', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = screen.getByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'bet 510' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getAllByText(/Bet is outside the allowed range/).length).toBeGreaterThan(0));
+    expect(mockApi).not.toHaveBeenCalledWith('bet', 510, 0);
+    fireEvent.change(input, { target: { value: 'bet 100 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100, 0));
+  });
+
   it('renders bet phase on mount', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<UltimateTexasHoldemPage />);
