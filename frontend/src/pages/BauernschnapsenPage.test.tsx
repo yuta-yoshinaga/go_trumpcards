@@ -356,6 +356,12 @@ describe('BauernschnapsenPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/no_such_reason/)).toBeInTheDocument());
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BauernschnapsenPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **バッジは読み上げに届かないと存在しないのと同じ (#6612)。**
