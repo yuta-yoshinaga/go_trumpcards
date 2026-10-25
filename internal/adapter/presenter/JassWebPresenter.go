@@ -155,6 +155,12 @@ func (p *JassWebPresenter) HintOutput(g interfaces.JassGame) string {
 			Reason:    hint.Reason,
 		}
 	}
+	// CLI が頼んだヒントかを見分けられるよう、HintOutput 専用の messageCode を付ける。
+	if hint != nil {
+		resObj.MessageCode = "jass.hintRequested"
+	} else {
+		resObj.MessageCode = "jass.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

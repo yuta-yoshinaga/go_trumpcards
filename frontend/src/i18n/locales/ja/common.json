@@ -4249,7 +4249,9 @@
     "twotenjack.errInvalidTrumpSuit": "トランプスートが不正です",
     "twotenjack.errCardIndexOutOfRange": "カードインデックスが範囲外です",
     "allfours.errCardIndexOutOfRange": "カードインデックスが範囲外です",
-    "allfours.errMustFollowLeadSuit": "リードスートに従うかトランプを切ってください"
+    "allfours.errMustFollowLeadSuit": "リードスートに従うかトランプを切ってください",
+    "jass.hintRequested": "ヒントがあります",
+    "jass.noHint": "ヒントはありません"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
