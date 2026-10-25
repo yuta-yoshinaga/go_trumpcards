@@ -167,7 +167,6 @@ LingerLongerPage.tsx
 LiteraturePage.tsx
 LobaPage.tsx
 MacauPage.tsx
-MachiavelliPage.tsx
 MadrassoPage.tsx
 ManillePage.tsx
 MaoPage.tsx
