@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pochApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -99,12 +99,47 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<PochPage />);
+    expect(await screen.findByText('賭ける', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('phase.pochen', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('renders the landscape banner before the live region', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+
+    const bannerMessage = screen.getByText(i18n.t('landscapeBanner', { ns: 'poch' }));
+    const banner = bannerMessage.closest('div');
+    const liveRegion = screen.getByTestId('poch-pool-live');
+    expect(banner).not.toBeNull();
+    const position = banner ? banner.compareDocumentPosition(liveRegion) : 0;
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('sends a changed difficulty in the reset request', async () => {
     renderWithProviders(<PochPage />);
     await screen.findAllByTestId('poch-pool');
     mockExec.mockClear();
 
     fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+  });
+
+  it('sends the changed difficulty when manually resetting', async () => {
+    mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 1, targetDeals: 5 } }));
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+
+    mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 2, targetDeals: 5 } }));
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(screen.getByLabelText('CPU難易度')).toHaveValue('2'));
+
+    mockExec.mockClear();
+    fireEvent.click(document.querySelector('[data-tutorial="pc-reset-button"]') as HTMLButtonElement);
+    const dialog = await screen.findByRole('alertdialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
   });
 

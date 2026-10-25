@@ -190,7 +190,6 @@ PineapplePage.tsx
 PiquetPage.tsx
 PishtiPage.tsx
 PitchPage.tsx
-PochPage.tsx
 PokerPage.tsx
 PokerSquaresPage.tsx
 PolignacPage.tsx
