@@ -22,7 +22,6 @@ BaseballPokerPage.tsx
 BasraPage.tsx
 BassetPage.tsx
 BatakPage.tsx
-BauernschnapsenPage.tsx
 BeggarMyNeighbourPage.tsx
 BeleagueredCastlePage.tsx
 BeziquePage.tsx
