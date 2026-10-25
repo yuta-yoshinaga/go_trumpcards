@@ -108,6 +108,8 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   shortcuts?: (ctx: GamePageContext<S, G, V>) => ActionBinding[];
   /** Plain function returning pinned primary footer actions. Must not call hooks. Its presence selects the pinned footer layout. Return null (not undefined) on turns with no actions. */
   primaryActions?: (ctx: GamePageContext<S, G, V>) => ReactNode;
+  /** Expands the mobile footer cap from 45vh to 60vh for pages with large hands (#11655). */
+  footerTall?: boolean;
   /** Plain function returning persistent footer guidance. Must not call hooks. */
   message?: (ctx: GamePageContext<S, G, V>) => ReactNode;
   /** Plain function returning whether shortcuts are enabled. Defaults to true. Must not call hooks. */
@@ -335,11 +337,16 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                 actions={primaryActions ?? null}
                 message={message}
                 dataTutorial={def.footerTutorialId}
+                tall={def.footerTall}
               >
                 {FooterHand && <FooterHand {...context} />}
               </GameFooter>
             ) : (
-              <GameFooter className={`${gameTheme[def.key].footer} px-4 py-2.5`} message={message}>
+              <GameFooter
+                className={`${gameTheme[def.key].footer} px-4 py-2.5`}
+                message={message}
+                tall={def.footerTall}
+              >
                 {FooterHand && <FooterHand {...context} />}
                 {footerControls}
               </GameFooter>
