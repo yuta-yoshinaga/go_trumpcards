@@ -700,4 +700,10 @@ describe('FrenchTarotPage', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('frenchtarot-discard-prompt'));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<FrenchTarotPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
