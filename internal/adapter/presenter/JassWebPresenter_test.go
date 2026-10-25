@@ -248,6 +248,7 @@ func TestJassWebPresenter_HintOutput(t *testing.T) {
 	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 	assert.NotNil(t, resObj.Hint)
 	assert.Equal(t, "strategic_trump", resObj.Hint.Reason)
+	assert.Equal(t, "jass.hintRequested", resObj.MessageCode)
 }
 
 func TestJassWebPresenter_HintOutput_Nil(t *testing.T) {
@@ -259,6 +260,7 @@ func TestJassWebPresenter_HintOutput_Nil(t *testing.T) {
 	var resObj controller.JassWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 	assert.Nil(t, resObj.Hint)
+	assert.Equal(t, "jass.noHint", resObj.MessageCode)
 }
 
 func TestJassWebPresenter_ActionLogOutput(t *testing.T) {
@@ -280,4 +282,5 @@ func TestJassWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.JassWebPresenter).Output(jsg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, "jass.hintRequested")
 }

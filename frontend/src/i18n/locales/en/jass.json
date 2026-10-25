@@ -103,5 +103,7 @@
     "scoreTable": "Team scores. First to {{target}} points wins.",
     "teamInfo": "The player across from you is your partner.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
