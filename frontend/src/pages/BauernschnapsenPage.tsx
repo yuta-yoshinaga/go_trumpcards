@@ -1,5 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import type { bauernschnapsenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -14,14 +17,20 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useBauernschnapsenGame } from '../hooks/useBauernschnapsenGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { BauernschnapsenResponse } from '../types/card';
 import { BauernschnapsenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { BAUERNSCHNAPSEN_HELP, parseBauernschnapsenCommand } from '../utils/cli/commands/bauernschnapsenCommands';
+import { formatBauernschnapsenState } from '../utils/cli/formatters/bauernschnapsenFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -122,6 +131,18 @@ function BauernschnapsenPageContent() {
     handleHint,
   } = useBauernschnapsenGame();
 
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bauernschnapsen');
+  const cliConfig: CliGameConfig<BauernschnapsenResponse, Parameters<typeof bauernschnapsenApi.exec>> = useMemo(
+    () => ({
+      gameName: 'bauernschnapsen',
+      parseCommand: parseBauernschnapsenCommand,
+      formatResponse: formatBauernschnapsenState,
+      helpText: BAUERNSCHNAPSEN_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -180,279 +201,296 @@ function BauernschnapsenPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: bauernschnapsenConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: bauernschnapsenConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'targetScore',
+                    label: t('settings.targetScore'),
+                    value: bauernschnapsenConfig.targetScore,
+                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('targetScore', v),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
               },
-              {
-                type: 'select',
-                id: 'targetScore',
-                label: t('settings.targetScore'),
-                value: bauernschnapsenConfig.targetScore,
-                options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => handleConfigChange('targetScore', v),
-              },
-              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {isHumanContractTurn && (
-          <>
-            <div data-testid="bauernschnapsen-contract-controls" className="mb-2">
-              <div className="grid grid-cols-3 gap-1">
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-h-[36px]`}
-                  onClick={() => handleContract(0, 1)}
-                  disabled={loading}
-                  title={t('contractPassHelp')}
-                >
-                  {t('contractPass')}
-                </button>
-                {TRUMP_CONTRACTS.map((c) =>
-                  TRUMP_SUITS.map((suit) => (
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanContractTurn && (
+              <>
+                <div data-testid="bauernschnapsen-contract-controls" className="mb-2">
+                  <div className="grid grid-cols-3 gap-1">
                     <button
-                      key={`${c}-${suit}`}
                       type="button"
                       className={`${btnPrimary} min-h-[36px]`}
-                      onClick={() => handleContract(c, suit)}
+                      onClick={() => handleContract(0, 1)}
                       disabled={loading}
-                      title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
-                      aria-describedby={
-                        c === 1 ? 'bauernschnapsen-contract-rufer-help' : 'bauernschnapsen-contract-farbenzwang-help'
-                      }
+                      title={t('contractPassHelp')}
                     >
-                      {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
+                      {t('contractPass')}
                     </button>
-                  )),
-                )}
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-h-[36px]`}
-                  onClick={() => handleContract(3, 1)}
-                  disabled={loading}
-                  title={t('contractBettelHelp')}
-                  aria-describedby="bauernschnapsen-contract-bettel-help"
-                >
-                  {t('contractBettel')}
-                </button>
-              </div>
-            </div>
-            <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
-              <div className="text-sm mb-1">{t('declareContract')}</div>
-              <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
-              <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
-              <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
-            </section>
-          </>
-        )}
-        {/* Round / trick / trump / contract. There is no stock and no turn-up
-            card in this game: all 20 cards are dealt, and the trump comes from
-            the winning declaration rather than from a face-up card. */}
-        <div className="text-ds-text-primary text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-          <span>
-            {isContractPhase
-              ? t('trumpPending')
-              : state.trumpSuit > 0
-                ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) })
-                : t('noTrump')}
-          </span>
-        </div>
-
-        <div className="text-ds-text-muted text-center text-sm mb-3" data-testid="bauernschnapsen-contract">
-          {isContractPhase
-            ? t('contractPending')
-            : t('contractLine', {
-                contract: t(CONTRACT_LABEL_KEYS[state.contract] ?? 'contractRufer'),
-                name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman === true),
-              })}
-        </div>
-
-        {/* All players */}
-        <div className="mb-3" data-testid="bauernschnapsen-player-list">
-          <div className="text-ds-text-muted text-sm mb-1">{t('playerList')}</div>
-          {state.players.map((p) => (
-            <div key={p.id} className="mb-1 p-2 rounded bg-ds-surface text-ds-text-muted text-sm">
-              {[
-                playerName(p.id, p.isHuman),
-                t('team', { n: p.team }),
-                t('cards', { count: p.cardCount }),
-                t('trickCount', { count: p.trickCount }),
-              ].join(t('listSeparator'))}
-            </div>
-          ))}
-        </div>
-
-        {/* Current trick */}
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="gg-trick-display"
-        />
-
-        {/* Team scores */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
-          <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
-          <div className="text-ds-text-muted text-xs mb-1">{t('targetScore', { score: state.config.targetScore })}</div>
-          <table className="w-full text-sm text-ds-text-muted">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('team', { n: 0 })}
-                </th>
-                <th scope="col" className="text-center">
-                  {t('team', { n: 1 })}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="text-ds-accent">{state.teamScores[0]}</td>
-                <td className="text-center">{state.teamScores[1]}</td>
-              </tr>
-              <tr>
-                <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
-                <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
-              </tr>
-              {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
-                <tr>
-                  <td className="text-xs text-ds-warning">{t('marriagePoints', { points: state.roundMarriage[0] })}</td>
-                  <td className="text-center text-xs text-ds-warning">
-                    {t('marriagePoints', { points: state.roundMarriage[1] })}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <RoundScoreAnnouncement
-          active={isRoundEnd || isGameEnd}
-          entries={[
-            {
-              name: t('team', { n: 0 }),
-              roundScore: state.roundPoints[0] + state.roundMarriage[0],
-              cumulativeScore: state.teamScores[0],
-            },
-            {
-              name: t('team', { n: 1 }),
-              roundScore: state.roundPoints[1] + state.roundMarriage[1],
-              cumulativeScore: state.teamScores[1],
-            },
-          ]}
-        />
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          availableDuringPlay
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-
-        <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-            読み上げられないことがある (#5955, #6663)。 */}
-        <div data-testid="bauernschnapsen-hint-live" role="status" aria-live="polite">
-          {hint && (
-            <div className="text-ds-warning text-sm mb-2">
-              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
-            </div>
-          )}
-        </div>
-
-        <GameResetButton
-          isGameEnd={!!isGameEnd}
-          onReset={handleManualReset}
-          requestConfirm={requestConfirm}
-          loading={loading}
-          dataTutorial="gg-reset-button"
-        />
-      </div>
-
-      <GameFooter
-        className={`${gameTheme.bauernschnapsen.footer} px-4 py-2.5`}
-        actions={
-          <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
-            {isHumanTurn && (
-              <>
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-                {canDeclareMarriage && (
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleMarriage(selectedIdx)}
-                    disabled={loading}
-                    title={t('declareMarriage')}
-                  >
-                    {t('marriageButton')}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
+                    {TRUMP_CONTRACTS.map((c) =>
+                      TRUMP_SUITS.map((suit) => (
+                        <button
+                          key={`${c}-${suit}`}
+                          type="button"
+                          className={`${btnPrimary} min-h-[36px]`}
+                          onClick={() => handleContract(c, suit)}
+                          disabled={loading}
+                          title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
+                          aria-describedby={
+                            c === 1
+                              ? 'bauernschnapsen-contract-rufer-help'
+                              : 'bauernschnapsen-contract-farbenzwang-help'
+                          }
+                        >
+                          {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
+                        </button>
+                      )),
+                    )}
+                    <button
+                      type="button"
+                      className={`${btnPrimary} min-h-[36px]`}
+                      onClick={() => handleContract(3, 1)}
+                      disabled={loading}
+                      title={t('contractBettelHelp')}
+                      aria-describedby="bauernschnapsen-contract-bettel-help"
+                    >
+                      {t('contractBettel')}
+                    </button>
+                  </div>
+                </div>
+                <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
+                  <div className="text-sm mb-1">{t('declareContract')}</div>
+                  <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
+                  <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
+                  <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
+                </section>
               </>
             )}
-            {isTrickEnd && (
-              <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                {t('nextTrick')}
-              </button>
-            )}
-            {isRoundEnd && (
-              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                {t('nextRound')}
-              </button>
-            )}
+            {/* Round / trick / trump / contract. There is no stock and no turn-up
+            card in this game: all 20 cards are dealt, and the trump comes from
+            the winning declaration rather than from a face-up card. */}
+            <div className="text-ds-text-primary text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              <span>
+                {isContractPhase
+                  ? t('trumpPending')
+                  : state.trumpSuit > 0
+                    ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) })
+                    : t('noTrump')}
+              </span>
+            </div>
+
+            <div className="text-ds-text-muted text-center text-sm mb-3" data-testid="bauernschnapsen-contract">
+              {isContractPhase
+                ? t('contractPending')
+                : t('contractLine', {
+                    contract: t(CONTRACT_LABEL_KEYS[state.contract] ?? 'contractRufer'),
+                    name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman === true),
+                  })}
+            </div>
+
+            {/* All players */}
+            <div className="mb-3" data-testid="bauernschnapsen-player-list">
+              <div className="text-ds-text-muted text-sm mb-1">{t('playerList')}</div>
+              {state.players.map((p) => (
+                <div key={p.id} className="mb-1 p-2 rounded bg-ds-surface text-ds-text-muted text-sm">
+                  {[
+                    playerName(p.id, p.isHuman),
+                    t('team', { n: p.team }),
+                    t('cards', { count: p.cardCount }),
+                    t('trickCount', { count: p.trickCount }),
+                  ].join(t('listSeparator'))}
+                </div>
+              ))}
+            </div>
+
+            {/* Current trick */}
+            <TrickDisplay
+              currentTrick={state.currentTrick}
+              players={state.players}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="gg-trick-display"
+            />
+
+            {/* Team scores */}
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
+              <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+              <div className="text-ds-text-muted text-xs mb-1">
+                {t('targetScore', { score: state.config.targetScore })}
+              </div>
+              <table className="w-full text-sm text-ds-text-muted">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('team', { n: 0 })}
+                    </th>
+                    <th scope="col" className="text-center">
+                      {t('team', { n: 1 })}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="text-ds-accent">{state.teamScores[0]}</td>
+                    <td className="text-center">{state.teamScores[1]}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
+                    <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
+                  </tr>
+                  {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
+                    <tr>
+                      <td className="text-xs text-ds-warning">
+                        {t('marriagePoints', { points: state.roundMarriage[0] })}
+                      </td>
+                      <td className="text-center text-xs text-ds-warning">
+                        {t('marriagePoints', { points: state.roundMarriage[1] })}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <RoundScoreAnnouncement
+              active={isRoundEnd || isGameEnd}
+              entries={[
+                {
+                  name: t('team', { n: 0 }),
+                  roundScore: state.roundPoints[0] + state.roundMarriage[0],
+                  cumulativeScore: state.teamScores[0],
+                },
+                {
+                  name: t('team', { n: 1 }),
+                  roundScore: state.roundPoints[1] + state.roundMarriage[1],
+                  cumulativeScore: state.teamScores[1],
+                },
+              ]}
+            />
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              availableDuringPlay
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+            読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="bauernschnapsen-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
+                </div>
+              )}
+            </div>
+
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="gg-reset-button"
+            />
           </div>
-        }
-      >
-        {humanPlayer && (
-          <PlayerHandSection
-            humanPlayer={humanPlayer}
-            selectedCardIndices={selectedCardIndices}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={isMobile}
-            dataTutorialPrefix="gg"
-            cardBadgeFor={marriageBadgeFor}
-            validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-            restrictedTooltip={t('mustFollow')}
-          />
-        )}
-      </GameFooter>
+
+          <GameFooter
+            className={`${gameTheme.bauernschnapsen.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
+                {isHumanTurn && (
+                  <>
+                    <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                      {tc('button.hint')}
+                    </button>
+                    {canDeclareMarriage && (
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleMarriage(selectedIdx)}
+                        disabled={loading}
+                        title={t('declareMarriage')}
+                      >
+                        {t('marriageButton')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  </>
+                )}
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="gg"
+                cardBadgeFor={marriageBadgeFor}
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('mustFollow')}
+              />
+            )}
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

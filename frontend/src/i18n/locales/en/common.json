@@ -1250,6 +1250,8 @@
     "bauernschnapsen.playPhase.lead": "Your turn — pick a card to lead.",
     "bauernschnapsen.result.team0Win": "Game over — Team 0 wins.",
     "bauernschnapsen.result.team1Win": "Game over — Team 1 wins.",
+    "bauernschnapsen.hintRequested": "A hint is available",
+    "bauernschnapsen.noHint": "No hint available",
     "bauernschnapsen.roundEnd": "Round complete — go to the next round.",
     "bauernschnapsen.trickEnd": "Trick complete — continue.",
     "bauernschnapsen.errTeamOutOfRange": "The team number is out of range.",

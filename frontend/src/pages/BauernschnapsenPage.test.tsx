@@ -90,6 +90,13 @@ beforeEach(() => {
 });
 
 describe('BauernschnapsenPage', () => {
+  it('switches to the CLI terminal when the toggle is enabled', async () => {
+    renderWithProviders(<BauernschnapsenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /CLIモードに切り替え/ }));
+    expect(await screen.findByRole('textbox')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+  });
+
   it('opens the action log during play and shows its entry', async () => {
     renderWithProviders(<BauernschnapsenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
