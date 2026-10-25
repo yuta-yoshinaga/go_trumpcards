@@ -5,7 +5,6 @@ AccordionPage.tsx
 AgnesPage.tsx
 AlaskaPage.tsx
 AllFoursPage.tsx
-AluettePage.tsx
 AmericanToadPage.tsx
 AnacondaPage.tsx
 AndarBaharPage.tsx
