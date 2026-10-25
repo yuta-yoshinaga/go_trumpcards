@@ -230,7 +230,16 @@ func TestContinentalRummy_RoundsAndGameEnd(t *testing.T) {
 	cfg := DefaultContinentalRummyConfig()
 	cfg.TotalRounds = 1
 	c := NewContinentalRummy(cfg)
-	c.Reset()
+	// Reset lets the CPU seats (1-3) take their opening turns. A CPU dealt a hand
+	// that goes out on the deal ends the only round, and with it the game, before
+	// the human acts, so re-deal until the game is still open.
+	for i := 0; i < 1000; i++ {
+		c.Reset()
+		if !c.GetGameEndFlag() {
+			break
+		}
+	}
+	require.False(t, c.GetGameEndFlag())
 	c.SetPhaseForTest(ContinentalRummyPhaseDiscard)
 	c.SetCurrentIdxForTest(ContinentalRummyHumanIdx)
 	p := c.GetPlayer(ContinentalRummyHumanIdx)
