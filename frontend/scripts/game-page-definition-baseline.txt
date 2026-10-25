@@ -240,7 +240,6 @@ ScopaPage.tsx
 ScoponePage.tsx
 ScorpionPage.tsx
 SeahavenTowersPage.tsx
-SedmaPage.tsx
 SergeantMajorPage.tsx
 SetteEMezzoPage.tsx
 SevenBridgePage.tsx
