@@ -612,4 +612,40 @@ describe('CoinchePage', () => {
     fireEvent.keyDown(document, { key: '1' });
     expect(cpuTurnCard).toHaveAttribute('aria-pressed', 'false');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CoinchePage />);
+    expect(await screen.findByText('競り', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('updates configuration via settings panel controls', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CoinchePage />);
+    const difficultySelect = await screen.findByLabelText('CPU難易度');
+    fireEvent.change(difficultySelect, { target: { value: '2' } });
+    const targetScoreSelect = screen.getByLabelText('ターゲットスコア');
+    fireEvent.change(targetScoreSelect, { target: { value: '1500' } });
+    const rebeloteToggle = screen.getByLabelText('ベロート/ルベロート (切り札のK+Q = +20)');
+    fireEvent.click(rebeloteToggle);
+    expect(difficultySelect).toHaveValue('2');
+    expect(targetScoreSelect).toHaveValue('1500');
+    expect(rebeloteToggle).not.toBeChecked();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 2,
+        targetScore: 1500,
+        dixDeDer: 10,
+        enableBeloteRebelote: false,
+      }),
+    );
+  });
+
+  it('treats the game-end phase as the end even before gameEndFlag is set', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, gameEndFlag: false });
+    renderWithProviders(<CoinchePage />);
+    expect(await screen.findByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
+  });
 });

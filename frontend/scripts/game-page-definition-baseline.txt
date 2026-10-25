@@ -70,7 +70,6 @@ CincinnatiPage.tsx
 CirullaPage.tsx
 CitadelPage.tsx
 ClockSolitairePage.tsx
-CoinchePage.tsx
 ColoradoPage.tsx
 ColourWhistPage.tsx
 CometPage.tsx
