@@ -66,6 +66,15 @@ type KarnoffelGame = ReturnType<typeof useKarnoffelGame>;
 type KarnoffelView = ReturnType<typeof useKarnoffelView>;
 type KarnoffelContext = GamePageContext<KarnoffelResponse, KarnoffelGame, KarnoffelView>;
 
+// 人間は席 0 = チーム 0。勝敗はチームで判定する。
+function isGameEnded(state: KarnoffelResponse): boolean {
+  return state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
+}
+
+function humanWon(state: KarnoffelResponse): boolean {
+  return isGameEnded(state) && state.winnerTeam === 0;
+}
+
 function useKarnoffelGame() {
   const { state, loading, error, exec, retry } = useGameApi(karnoffelApi.exec);
 
@@ -115,7 +124,7 @@ const rankForPosition = (baseRankKey: string | null, isLead: boolean) =>
 function Board({ state, game, t, tc, view }: KarnoffelContext) {
   const { cardWidth, isMobile, breakpoint } = view;
   const isHandEnd = state.phase === KarnoffelPhase.HAND_END;
-  const isGameEnd = state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
+  const isGameEnd = isGameEnded(state);
   const result = state.lastResult;
 
   const renderPlayer = (p: (typeof state.players)[number]) => (
@@ -392,9 +401,8 @@ function FooterStatus({ t, tc, frontendHint }: KarnoffelContext) {
 function FooterActions({ state, game, t, busy }: KarnoffelContext) {
   const isPlay = state.phase === KarnoffelPhase.PLAY;
   const isHandEnd = state.phase === KarnoffelPhase.HAND_END;
-  const isGameEnd = state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
-  // 人間は席 0 = チーム 0。勝敗はチームで判定する。
-  const humanWon = isGameEnd && state.winnerTeam === 0;
+  const isGameEnd = isGameEnded(state);
+  const didHumanWin = humanWon(state);
   const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
 
   return (
@@ -417,7 +425,7 @@ function FooterActions({ state, game, t, busy }: KarnoffelContext) {
       )}
 
       {isGameEnd && (
-        <span className="text-ds-text-primary text-sm font-semibold mr-1">{humanWon ? t('win') : t('lose')}</span>
+        <span className="text-ds-text-primary text-sm font-semibold mr-1">{didHumanWin ? t('win') : t('lose')}</span>
       )}
     </>
   );
@@ -441,24 +449,20 @@ const karnoffelDefinition: GameDefinition<
     localCommand: hintLocalCommand(frontendHint.hint),
   }),
   phase: ({ state, view }) => {
-    const isGameEnd = state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
-    // 人間は席 0 = チーム 0。勝敗はチームで判定する。
-    const humanWon = isGameEnd && state.winnerTeam === 0;
     return {
       name: view.phaseNames[state.phase],
-      ended: isGameEnd,
-      won: humanWon,
+      ended: isGameEnded(state),
+      won: humanWon(state),
     };
   },
   shell: ({ state }) => {
     const isPlay = state.phase === KarnoffelPhase.PLAY;
-    const isGameEnd = state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
+    const isGameEnd = isGameEnded(state);
     const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
     return {
       isHumanTurn: isHumanPlay,
     };
   },
-  reset: ({ game }) => game.handleReset(),
   settingsPlacement: 'none',
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   message: ({ state, view }) =>
