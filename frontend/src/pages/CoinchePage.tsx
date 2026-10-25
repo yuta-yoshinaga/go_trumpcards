@@ -1,38 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
+import { useEffect, useRef, useState } from 'react';
+import type { coincheApi } from '../api/gameApi';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useCoincheGame } from '../hooks/useCoincheGame';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
+import type { CoincheResponse } from '../types/card';
 import { COINCHE_CAPOT_POINTS, CoinchePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { COINCHE_HELP, parseCoincheCommand } from '../utils/cli/commands/coincheCommands';
 import { formatCoincheState } from '../utils/cli/formatters/coincheFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -92,80 +77,26 @@ const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {
   4: 'suitDiamond',
 };
 
-/** Renders the Coinche game page (4-player partnership trick-taking, 32-card deck). */
-export const CoinchePage = withTutorial(CoinchePageContent, 'coinche', COINCHE_TUTORIAL_STEPS);
+type CoincheGame = ReturnType<typeof useCoincheGame>;
+type CoincheView = ReturnType<typeof useCoincheView>;
+type CoincheContext = GamePageContext<CoincheResponse, CoincheGame, CoincheView>;
 
-function CoinchePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('coinche');
-  const {
-    state,
-    loading,
-    error,
-    exec: dispatch,
-    retry,
-    coincheConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
-    handleToggle,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    handleBid,
-    handleCoinche,
-    handleSurcoinche,
-    handleDeclineDouble,
-    handlePass,
-    hint,
-    hintError,
-    hintLoading,
-    handleHint,
-  } = useCoincheGame();
-
+function useCoincheView({ game }: { game: CoincheGame }) {
   // 目標点は先に選んでからスートを押す。契約は「点 + 切り札」の対なので、
   // 片方だけで送ると残りに既定値が入って別の契約になる。
   const [selectedPoints, setSelectedPoints] = useState<number | null>(null);
-  const currentBiddablePoints = state?.biddablePoints ?? [];
+  const currentBiddablePoints = game.state?.biddablePoints ?? [];
   useEffect(() => {
     if (selectedPoints !== null && !currentBiddablePoints.includes(selectedPoints)) {
       setSelectedPoints(null);
     }
   }, [currentBiddablePoints, selectedPoints]);
 
-  const isPlayPhaseForKbd = state?.phase === CoinchePhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: handlePlay,
-    onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
-  });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('coinche', state);
   const { cardWidth, isMobile } = useCardDimensions();
-
   const phaseNames = usePhaseNames('coinche', COINCHE_PHASE_KEYS);
 
   const { playSound } = useSound();
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('coinche');
-  const cliConfig: CliGameConfig<NonNullable<typeof state>, Parameters<typeof dispatch>> = useMemo(
-    () => ({
-      gameName: 'coinche',
-      parseCommand: parseCoincheCommand,
-      formatResponse: formatCoincheState,
-      helpText: COINCHE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const state = game.state;
   const coincheTotal = state ? state.roundBeloteBonus[0] + state.roundBeloteBonus[1] : 0;
   const prevCoincheTotalRef = useRef<number | null>(null);
   const [coincheJustConfirmed, setCoincheJustConfirmed] = useState(false);
@@ -189,23 +120,238 @@ function CoinchePageContent() {
     return () => clearTimeout(id);
   }, [coincheJustConfirmed]);
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void (
-      dispatch as unknown as (command: string, ci?: number, s?: number, cfg?: typeof coincheConfig) => Promise<void>
-    )('reset', undefined, undefined, coincheConfig);
-  }, [dispatch, hideActionLog, coincheConfig]);
+  return {
+    selectedPoints,
+    setSelectedPoints,
+    cardWidth,
+    isMobile,
+    phaseNames,
+    coincheJustConfirmed,
+  };
+}
 
-  if (!state)
-    return <GameSkeleton gameKey="coinche" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
+function Board({ state, t, view, frontendHint }: CoincheContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isRoundEnd = state.phase === CoinchePhase.ROUND_END;
+  const isGameEnd = state.phase === CoinchePhase.GAME_END || state.gameEndFlag;
 
+  return (
+    <>
+      {/* Round/Trick/Trump info */}
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span>
+          {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
+        </span>
+      </div>
+      {/* Bonus trackers — Dix de Der lights up on trick 8; Belote/Rebelote
+      lights up as soon as ANY team finishes playing K + Q of trump
+      (the bonus is awarded to whichever team holds those cards, not
+      specifically the maker — see internal/domain/Coinche.go #864). */}
+      {state.trumpSuit > 0 &&
+        (() => {
+          const isLastTrick = state.trickNumber === 8;
+          const hasCoincheBonus = state.roundBeloteBonus.some((b) => b > 0);
+          return (
+            <div
+              className="text-center mb-2 flex justify-center gap-2 flex-wrap text-xs"
+              data-testid="coinche-bonus-trackers"
+            >
+              {state.config.dixDeDer > 0 && (
+                <span
+                  data-testid="dix-de-der-badge"
+                  data-active={isLastTrick ? 'true' : undefined}
+                  className={
+                    isLastTrick
+                      ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-accent text-ds-text-on-accent border-ds-accent animate-pulse'
+                      : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
+                  }
+                >
+                  {/* 点数は設定から。訳文に +10 と書くと、設定を変えたとき
+                  バッジだけが古い数字を出す (#5592)。 */}
+                  👑 {t('tracker.dixDeDer', { points: state.config.dixDeDer })}
+                </span>
+              )}
+              {state.config.enableBeloteRebelote && (
+                <span
+                  data-testid="coinche-rebelote-badge"
+                  data-active={hasCoincheBonus ? 'true' : undefined}
+                  className={`${
+                    hasCoincheBonus
+                      ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-success text-ds-text-on-accent border-ds-success'
+                      : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
+                  }${view.coincheJustConfirmed ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                >
+                  {t('tracker.coincheKing')} · {t('tracker.coincheQueen')}
+                  {hasCoincheBonus ? ` ${t('tracker.coincheBonus')}` : ''}
+                </span>
+              )}
+            </div>
+          );
+        })()}
+
+      {view.coincheJustConfirmed && (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="coinche-bonus-confirmed"
+          className="text-center mb-2 text-sm font-semibold text-ds-success motion-safe:animate-pulse"
+        >
+          {t('tracker.coincheConfirmed')}
+        </div>
+      )}
+
+      {/* **契約と倍率は精算そのもの。** 出さないと、同じカード点でも
+      勝ち負けが変わる理由が画面から読めない。 */}
+      {state.contractPoints > 0 && (
+        <div className="mb-3 text-center text-sm text-ds-text-muted" data-testid="co-contract">
+          {t('contractLine', {
+            points: state.contractPoints,
+            team: state.makerTeam,
+            mult: state.multiplier,
+          })}
+        </div>
+      )}
+
+      {/* CPU players */}
+      <div className="mb-3">
+        {state.players
+          .filter((p) => !p.isHuman)
+          .map((p) => (
+            <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+              {t('trickCount', { count: p.trickCount })}
+            </div>
+          ))}
+      </div>
+
+      {/* Current trick */}
+      <TrickDisplay
+        currentTrick={state.currentTrick}
+        players={state.players}
+        cardWidth={view.cardWidth}
+        label={t('currentTrick')}
+        dataTutorial="be-trick-display"
+        cardAriaLabelFor={(player, card) =>
+          t('trickCardAria', {
+            player: playerName(player.id, player.isHuman),
+            relation: t(player.team === humanPlayer?.team ? 'ally' : 'opponent'),
+            card: cardAlt(card),
+          })
+        }
+      />
+
+      {/* Team scores */}
+      <div className="my-3 p-2 rounded bg-black/30" data-tutorial="be-score-table">
+        <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+        <table className="w-full text-sm text-ds-text-muted">
+          <thead>
+            <tr>
+              <th scope="col" />
+              <th scope="col" className="text-left">
+                {t('team', { n: 0 })}
+              </th>
+              <th scope="col" className="text-center">
+                {t('team', { n: 1 })}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" className="text-left font-normal">
+                {t('cumulativeScoreLabel')}
+              </th>
+              <td className="text-ds-accent">{state.teamScores[0]}</td>
+              <td className="text-center">{state.teamScores[1]}</td>
+            </tr>
+            <tr>
+              <th scope="row" className="text-left font-normal">
+                {t('roundScoreLabel')}
+              </th>
+              <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
+              <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
+            </tr>
+          </tbody>
+        </table>
+        {(state.roundBeloteBonus[0] > 0 || state.roundBeloteBonus[1] > 0) && (
+          <div className="text-xs text-ds-warning mt-1">{t('coincheRebelote')}</div>
+        )}
+      </div>
+
+      <RoundScoreAnnouncement
+        active={isRoundEnd || isGameEnd}
+        entries={[
+          {
+            name: t('team', { n: 0 }),
+            roundScore: state.roundPoints[0] + state.roundBeloteBonus[0],
+            cumulativeScore: state.teamScores[0],
+          },
+          {
+            name: t('team', { n: 1 }),
+            roundScore: state.roundPoints[1] + state.roundBeloteBonus[1],
+            cumulativeScore: state.teamScores[1],
+          },
+        ]}
+      />
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterStatus({ game, state, t, tc, busy }: CoincheContext) {
+  const isBidPhase = state.phase === CoinchePhase.BID;
+  const isPlayPhase = state.phase === CoinchePhase.PLAY;
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isHumanBidTurn = isBidPhase && state.bidPlayerIdx === humanIdx;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  return (
+    <>
+      {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+      付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+      読み上げられないことがある (#5955, #6663)。 */}
+      {(isHumanTurn || isHumanBidTurn) && (
+        <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+          {tc('button.hint')}
+        </button>
+      )}
+
+      <div data-testid="coinche-hint-live" role="status" aria-live="polite">
+        {game.hint && (
+          <div className="text-ds-warning text-sm mb-2">
+            {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+            falling back to a generic label. The hint shape depends on the phase:
+            orderUp (take/pass) and suit (call trump) during bidding, cardIndex in play. */}
+            {(() => {
+              const reason = t(`hintReason.${game.hint.reason}`, { defaultValue: t('hintReason.fallback') });
+              // **点だけ言って何で取るのか言わない助言にしない。** 契約は
+              // 目標点と切り札の対なので、どちらか欠けたら助言にならない。
+              if (game.hint.bid !== undefined && game.hint.suit !== undefined) {
+                return `${t('hintBid', { points: game.hint.bid, suit: t(SUIT_LABEL_KEYS[game.hint.suit]) })} (${reason})`;
+              }
+              if (game.hint.cardIndex !== undefined) {
+                return `${t('hintPlay')}: [${game.hint.cardIndex}] (${reason})`;
+              }
+              return reason;
+            })()}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function primaryActions({ game, state, t, view, busy }: CoincheContext) {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isBidPhase = state.phase === CoinchePhase.BID;
   const isDoublePhase = state.phase === CoinchePhase.DOUBLE;
   const isPlayPhase = state.phase === CoinchePhase.PLAY;
   const isTrickEnd = state.phase === CoinchePhase.TRICK_END;
   const isRoundEnd = state.phase === CoinchePhase.ROUND_END;
-  const isGameEnd = state.phase === CoinchePhase.GAME_END || state.gameEndFlag;
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanBidTurn = isBidPhase && state.bidPlayerIdx === humanIdx;
   const isHumanDoubleTurn = isDoublePhase && state.currentPlayerIdx === humanIdx;
@@ -218,391 +364,218 @@ function CoinchePageContent() {
   const canCoinche = isHumanDoubleTurn && !onMakerTeam && state.double === 0;
   const canSurcoinche = isHumanDoubleTurn && onMakerTeam && state.double === 1;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-  // The server computes legality from internal/domain/Coinche.go (ADR-0045).
-  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
   // Coinche の切り札はどのスートでも宣言できる (ベロートのような表向き札の
   // 除外は無い)。
   const allSuits = [1, 2, 3, 4];
 
+  if (!(isHumanBidTurn || isHumanDoubleTurn || isHumanTurn || isTrickEnd || isRoundEnd)) {
+    return null;
+  }
+
   return (
-    <GamePageShell
-      title={tc('nav.coinche')}
-      gameThemeBg={gameTheme.coinche.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn || isHumanBidTurn}
-      gamePath="/coinche"
-      gameEndFlag={!!state?.gameEndFlag}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: coincheConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetScore',
-                    label: t('settings.targetScore'),
-                    value: coincheConfig.targetScore,
-                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetScore', v),
-                  },
-                  {
-                    type: 'checkbox',
-                    id: 'enableBeloteRebelote',
-                    label: t('settings.enableBeloteRebelote'),
-                    checked: coincheConfig.enableBeloteRebelote,
-                    onToggle: (v) => handleToggle('enableBeloteRebelote', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* Round/Trick/Trump info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>
-                {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
-              </span>
-            </div>
-            {/* Bonus trackers — Dix de Der lights up on trick 8; Belote/Rebelote
-            lights up as soon as ANY team finishes playing K + Q of trump
-            (the bonus is awarded to whichever team holds those cards, not
-            specifically the maker — see internal/domain/Coinche.go #864). */}
-            {state.trumpSuit > 0 &&
-              (() => {
-                const isLastTrick = state.trickNumber === 8;
-                const hasCoincheBonus = state.roundBeloteBonus.some((b) => b > 0);
-                return (
-                  <div
-                    className="text-center mb-2 flex justify-center gap-2 flex-wrap text-xs"
-                    data-testid="coinche-bonus-trackers"
-                  >
-                    {state.config.dixDeDer > 0 && (
-                      <span
-                        data-testid="dix-de-der-badge"
-                        data-active={isLastTrick ? 'true' : undefined}
-                        className={
-                          isLastTrick
-                            ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-accent text-ds-text-on-accent border-ds-accent animate-pulse'
-                            : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
-                        }
-                      >
-                        {/* 点数は設定から。訳文に +10 と書くと、設定を変えたとき
-                        バッジだけが古い数字を出す (#5592)。 */}
-                        👑 {t('tracker.dixDeDer', { points: state.config.dixDeDer })}
-                      </span>
-                    )}
-                    {state.config.enableBeloteRebelote && (
-                      <span
-                        data-testid="coinche-rebelote-badge"
-                        data-active={hasCoincheBonus ? 'true' : undefined}
-                        className={`${
-                          hasCoincheBonus
-                            ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-success text-ds-text-on-accent border-ds-success'
-                            : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
-                        }${coincheJustConfirmed ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
-                      >
-                        {t('tracker.coincheKing')} · {t('tracker.coincheQueen')}
-                        {hasCoincheBonus ? ` ${t('tracker.coincheBonus')}` : ''}
-                      </span>
-                    )}
-                  </div>
-                );
-              })()}
-
-            {coincheJustConfirmed && (
-              <div
-                role="status"
-                aria-live="polite"
-                data-testid="coinche-bonus-confirmed"
-                className="text-center mb-2 text-sm font-semibold text-ds-success motion-safe:animate-pulse"
-              >
-                {t('tracker.coincheConfirmed')}
-              </div>
-            )}
-
-            {/* **契約と倍率は精算そのもの。** 出さないと、同じカード点でも
-            勝ち負けが変わる理由が画面から読めない。 */}
-            {state.contractPoints > 0 && (
-              <div className="mb-3 text-center text-sm text-ds-text-muted" data-testid="co-contract">
-                {t('contractLine', {
-                  points: state.contractPoints,
-                  team: state.makerTeam,
-                  mult: state.multiplier,
-                })}
-              </div>
-            )}
-
-            {/* CPU players */}
-            <div className="mb-3">
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                    {t('trickCount', { count: p.trickCount })}
-                  </div>
-                ))}
-            </div>
-
-            {/* Current trick */}
-            <TrickDisplay
-              currentTrick={state.currentTrick}
-              players={state.players}
-              cardWidth={cardWidth}
-              label={t('currentTrick')}
-              dataTutorial="be-trick-display"
-              cardAriaLabelFor={(player, card) =>
-                t('trickCardAria', {
-                  player: playerName(player.id, player.isHuman),
-                  relation: t(player.team === humanPlayer?.team ? 'ally' : 'opponent'),
-                  card: cardAlt(card),
-                })
-              }
-            />
-
-            {/* Team scores */}
-            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="be-score-table">
-              <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
-              <table className="w-full text-sm text-ds-text-muted">
-                <thead>
-                  <tr>
-                    <th scope="col" />
-                    <th scope="col" className="text-left">
-                      {t('team', { n: 0 })}
-                    </th>
-                    <th scope="col" className="text-center">
-                      {t('team', { n: 1 })}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row" className="text-left font-normal">
-                      {t('cumulativeScoreLabel')}
-                    </th>
-                    <td className="text-ds-accent">{state.teamScores[0]}</td>
-                    <td className="text-center">{state.teamScores[1]}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row" className="text-left font-normal">
-                      {t('roundScoreLabel')}
-                    </th>
-                    <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
-                    <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
-                  </tr>
-                </tbody>
-              </table>
-              {(state.roundBeloteBonus[0] > 0 || state.roundBeloteBonus[1] > 0) && (
-                <div className="text-xs text-ds-warning mt-1">{t('coincheRebelote')}</div>
-              )}
-            </div>
-
-            <RoundScoreAnnouncement
-              active={isRoundEnd || isGameEnd}
-              entries={[
-                {
-                  name: t('team', { n: 0 }),
-                  roundScore: state.roundPoints[0] + state.roundBeloteBonus[0],
-                  cumulativeScore: state.teamScores[0],
-                },
-                {
-                  name: t('team', { n: 1 }),
-                  roundScore: state.roundPoints[1] + state.roundBeloteBonus[1],
-                  cumulativeScore: state.teamScores[1],
-                },
-              ]}
-            />
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-            読み上げられないことがある (#5955, #6663)。 */}
-            {(isHumanTurn || isHumanBidTurn) && (
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                {tc('button.hint')}
-              </button>
-            )}
-
-            <div data-testid="coinche-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {/* hint.reason is a raw backend identifier; translate via hintReason.*,
-                  falling back to a generic label. The hint shape depends on the phase:
-                  orderUp (take/pass) and suit (call trump) during bidding, cardIndex in play. */}
-                  {(() => {
-                    const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
-                    // **点だけ言って何で取るのか言わない助言にしない。** 契約は
-                    // 目標点と切り札の対なので、どちらか欠けたら助言にならない。
-                    if (hint.bid !== undefined && hint.suit !== undefined) {
-                      return `${t('hintBid', { points: hint.bid, suit: t(SUIT_LABEL_KEYS[hint.suit]) })} (${reason})`;
-                    }
-                    if (hint.cardIndex !== undefined) {
-                      return `${t('hintPlay')}: [${hint.cardIndex}] (${reason})`;
-                    }
-                    return reason;
-                  })()}
-                </div>
-              )}
-            </div>
-
-            <GameResetButton
-              isGameEnd={!!isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="be-reset-button"
-            />
-            <CardNavShortcutsPanel data-testid="coinche-kbd-shortcuts" />
-          </div>
-
-          <GameFooter
-            className={`${gameTheme.coinche.footer} px-4 py-2.5`}
-            actions={
-              isHumanBidTurn || isHumanDoubleTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
-                <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
-                  {isHumanBidTurn && (
-                    <fieldset
-                      data-tutorial="be-bid-controls"
-                      className="flex gap-2 flex-wrap items-center border-0 p-0 m-0 min-w-0"
-                    >
-                      <legend className="sr-only">{t('bidControlsGroup')}</legend>
-                      <select
-                        className="rounded bg-black/40 px-2 py-1 text-ds-text-primary"
-                        value={selectedPoints ?? ''}
-                        onChange={(e) => setSelectedPoints(Number(e.target.value))}
-                        disabled={loading || biddablePoints.length === 0}
-                        aria-label={t('bidPointsLabel')}
-                      >
-                        <option value="">{t('bidPointsLabel')}</option>
-                        {biddablePoints.map((pts) => (
-                          <option key={pts} value={pts}>
-                            {pts === COINCHE_CAPOT_POINTS ? t('capotOption', { points: pts }) : pts}
-                          </option>
-                        ))}
-                      </select>
-                      {/* 目標点を選ぶまでスートは押せない。契約は対なので、片方だけ
-                  送ると残りに既定値が入って別の契約になる。 */}
-                      {allSuits.map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          className={btnPrimary}
-                          onClick={() =>
-                            selectedPoints !== null &&
-                            biddablePoints.includes(selectedPoints) &&
-                            handleBid(selectedPoints, s)
-                          }
-                          disabled={loading || selectedPoints === null || !biddablePoints.includes(selectedPoints)}
-                          aria-label={t('bidButtonAriaLabel', { suit: t(SUIT_LABEL_KEYS[s]) })}
-                        >
-                          {t(SUIT_LABEL_KEYS[s])}
-                        </button>
-                      ))}
-                      <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
-                        {t('passButton')}
-                      </button>
-                    </fieldset>
-                  )}
-
-                  {isHumanDoubleTurn && (
-                    <fieldset data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap border-0 p-0 m-0 min-w-0">
-                      <legend className="sr-only">{t('doubleControlsGroup')}</legend>
-                      {canCoinche && (
-                        <button type="button" className={btnPrimary} onClick={handleCoinche} disabled={loading}>
-                          {t('coincheButton')}
-                        </button>
-                      )}
-                      {canSurcoinche && (
-                        <button type="button" className={btnPrimary} onClick={handleSurcoinche} disabled={loading}>
-                          {t('surcoincheButton')}
-                        </button>
-                      )}
-                      <button type="button" className={btnSuccess} onClick={handleDeclineDouble} disabled={loading}>
-                        {t('declineDoubleButton')}
-                      </button>
-                    </fieldset>
-                  )}
-
-                  {isHumanTurn && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
-                </div>
-              ) : null
-            }
+    <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
+      {isHumanBidTurn && (
+        <fieldset
+          data-tutorial="be-bid-controls"
+          className="flex gap-2 flex-wrap items-center border-0 p-0 m-0 min-w-0"
+        >
+          <legend className="sr-only">{t('bidControlsGroup')}</legend>
+          <select
+            className="rounded bg-black/40 px-2 py-1 text-ds-text-primary"
+            value={view.selectedPoints ?? ''}
+            onChange={(e) => view.setSelectedPoints(Number(e.target.value))}
+            disabled={busy || biddablePoints.length === 0}
+            aria-label={t('bidPointsLabel')}
           >
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                stackRows
-                dataTutorialPrefix="be"
-                legalIndices={legalPlayIndices}
-              />
-            )}
-          </GameFooter>
-        </>
+            <option value="">{t('bidPointsLabel')}</option>
+            {biddablePoints.map((pts) => (
+              <option key={pts} value={pts}>
+                {pts === COINCHE_CAPOT_POINTS ? t('capotOption', { points: pts }) : pts}
+              </option>
+            ))}
+          </select>
+          {/* 目標点を選ぶまでスートは押せない。契約は対なので、片方だけ
+      送ると残りに既定値が入って別の契約になる。 */}
+          {allSuits.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={btnPrimary}
+              onClick={() =>
+                view.selectedPoints !== null &&
+                biddablePoints.includes(view.selectedPoints) &&
+                game.handleBid(view.selectedPoints, s)
+              }
+              disabled={busy || view.selectedPoints === null || !biddablePoints.includes(view.selectedPoints)}
+              aria-label={t('bidButtonAriaLabel', { suit: t(SUIT_LABEL_KEYS[s]) })}
+            >
+              {t(SUIT_LABEL_KEYS[s])}
+            </button>
+          ))}
+          <button type="button" className={btnSuccess} onClick={game.handlePass} disabled={busy}>
+            {t('passButton')}
+          </button>
+        </fieldset>
       )}
-    </GamePageShell>
+
+      {isHumanDoubleTurn && (
+        <fieldset data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap border-0 p-0 m-0 min-w-0">
+          <legend className="sr-only">{t('doubleControlsGroup')}</legend>
+          {canCoinche && (
+            <button type="button" className={btnPrimary} onClick={game.handleCoinche} disabled={busy}>
+              {t('coincheButton')}
+            </button>
+          )}
+          {canSurcoinche && (
+            <button type="button" className={btnPrimary} onClick={game.handleSurcoinche} disabled={busy}>
+              {t('surcoincheButton')}
+            </button>
+          )}
+          <button type="button" className={btnSuccess} onClick={game.handleDeclineDouble} disabled={busy}>
+            {t('declineDoubleButton')}
+          </button>
+        </fieldset>
+      )}
+
+      {isHumanTurn && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
   );
 }
+
+function FooterHand({ game, state, view }: CoincheContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+  const isPlayPhase = state.phase === CoinchePhase.PLAY;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
+
+  return (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      stackRows
+      dataTutorialPrefix="be"
+      legalIndices={legalPlayIndices}
+    />
+  );
+}
+
+const coincheDefinition: GameDefinition<
+  CoincheResponse,
+  CoincheGame,
+  Parameters<typeof coincheApi.exec>,
+  CoincheView
+> = {
+  key: 'coinche',
+  useGame: useCoincheGame,
+  useView: useCoincheView,
+  tutorial: COINCHE_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 8 },
+  cli: () => ({
+    parseCommand: parseCoincheCommand,
+    formatResponse: formatCoincheState,
+    helpText: COINCHE_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    // The hand-wired page treated either signal as the game end (reset button and action log).
+    ended: state.phase === CoinchePhase.GAME_END || !!state.gameEndFlag,
+  }),
+  shell: ({ state }) => {
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    const isHumanBidTurn = state.phase === CoinchePhase.BID && state.bidPlayerIdx === humanIdx;
+    const isHumanTurn = state.phase === CoinchePhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+    return {
+      isHumanTurn: isHumanTurn || isHumanBidTurn,
+    };
+  },
+  reset: ({ game }) => {
+    void (
+      game.exec as unknown as (
+        command: string,
+        ci?: number,
+        s?: number,
+        cfg?: typeof game.coincheConfig,
+      ) => Promise<void>
+    )('reset', undefined, undefined, game.coincheConfig);
+  },
+  settingsPlacement: 'top',
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.coincheConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetScore',
+          label: t('settings.targetScore'),
+          value: game.coincheConfig.targetScore,
+          options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetScore', v),
+        },
+        {
+          type: 'checkbox',
+          id: 'enableBeloteRebelote',
+          label: t('settings.enableBeloteRebelote'),
+          checked: game.coincheConfig.enableBeloteRebelote,
+          onToggle: (v) => game.handleToggle('enableBeloteRebelote', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  cardNav: ({ game, state }) => {
+    const isPlayPhaseForKbd = state.phase === CoinchePhase.PLAY;
+    const isHumanTurnForKbd = isPlayPhaseForKbd && state.players[state.currentPlayerIdx]?.isHuman === true;
+    const humanCardCountForKbd = state.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+    return {
+      cardCount: humanCardCountForKbd,
+      onToggle: game.toggleCard,
+      onConfirm: game.handlePlay,
+      onClear: game.clearSelection,
+      enabled: isHumanTurnForKbd,
+    };
+  },
+  shortcutsTestId: 'coinche-kbd-shortcuts',
+  resetTutorialId: 'be-reset-button',
+  actionsClassName: '',
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Coinche game page (4-player partnership trick-taking, 32-card deck). */
+export const CoinchePage = createGamePage(coincheDefinition);

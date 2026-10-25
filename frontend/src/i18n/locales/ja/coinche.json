@@ -8,7 +8,6 @@
     "double": "コワンシュ判断"
   },
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "targetScore": "ターゲットスコア",
     "dixDeDer": "Dix de Der (最終トリックボーナス)",
