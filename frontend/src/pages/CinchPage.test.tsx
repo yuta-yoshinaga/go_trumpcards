@@ -485,4 +485,10 @@ describe('CinchPage', () => {
     expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
     expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
   });
+
+  it('keeps the reset button out of a flex row, as on the hand-wired page', async () => {
+    renderWithProviders(<CinchPage />);
+    const reset = await screen.findByRole('button', { name: 'リセット' });
+    expect(reset.parentElement?.className ?? '').not.toMatch(/\bflex\b/);
+  });
 });
