@@ -118,7 +118,6 @@ GaigelPage.tsx
 GapsPage.tsx
 GermanSoloPage.tsx
 GermanWhistPage.tsx
-GleekPage.tsx
 GoFishPage.tsx
 GoStopPage.tsx
 GolfPage.tsx
