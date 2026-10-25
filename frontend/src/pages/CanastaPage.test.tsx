@@ -830,4 +830,10 @@ describe('CanastaPage', () => {
     expect(within(pile).getByText('捨て札')).toBeInTheDocument();
     expect(within(pile).queryByTestId('animated-card')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CanastaPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
