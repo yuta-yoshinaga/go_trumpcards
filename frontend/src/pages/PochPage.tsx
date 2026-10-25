@@ -8,6 +8,7 @@ import { CpuAccordion } from '../components/CpuAccordion';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { usePochGame } from '../hooks/usePochGame';
@@ -135,11 +136,14 @@ function HeaderExtra({ state, t }: PochContext) {
 
 function LiveRegion({ game, t, view }: PochContext) {
   return (
-    <div role="status" aria-live="polite" className="sr-only" data-testid="poch-pool-live">
-      {[view.poolAnnouncement, view.stakingAnnouncement, game.turnAnnouncement]
-        .filter(Boolean)
-        .join(t('listSeparator'))}
-    </div>
+    <>
+      <LandscapeBanner message={t('landscapeBanner')} />
+      <div role="status" aria-live="polite" className="sr-only" data-testid="poch-pool-live">
+        {[view.poolAnnouncement, view.stakingAnnouncement, game.turnAnnouncement]
+          .filter(Boolean)
+          .join(t('listSeparator'))}
+      </div>
+    </>
   );
 }
 
@@ -157,8 +161,8 @@ function Board({ state, t, view, frontendHint }: PochContext) {
   return (
     <>
       {/* Permanent, not tutorial-only: "only the pay suit pays" and
-                "pochen is a comparison, not a declaration" are what a player
-                gets wrong. */}
+          "pochen is a comparison, not a declaration" are what a player
+          gets wrong. */}
       <details
         open={!isMobile || undefined}
         className="mb-3 text-center"
@@ -189,7 +193,7 @@ function Board({ state, t, view, frontendHint }: PochContext) {
       </div>
 
       {/* **9 区画は毎回すべて出す。**膨らんでいる区画がそのディールの
-                狙いどころそのものになる。 */}
+          狙いどころそのものになる。 */}
       <div className="mb-4" data-tutorial="pc-board">
         <div className="text-game-text-muted text-xs mb-1 text-center">{t('board')}</div>
         <div className="flex gap-2 justify-center flex-wrap">
@@ -207,8 +211,8 @@ function Board({ state, t, view, frontendHint }: PochContext) {
       </div>
 
       {/* 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。
-                席 0 は「あなた」と呼ぶ ── 手札セクションが既にそうしているのに、
-                結果通知 3 種だけが「席0が」と出ていた (#6519)。 */}
+          席 0 は「あなた」と呼ぶ ── 手札セクションが既にそうしているのに、
+          結果通知 3 種だけが「席0が」と出ていた (#6519)。 */}
       {state.stakingAwards.length > 0 && (
         <div className="text-center text-xs mb-3" data-testid="poch-staking">
           {state.stakingAwards.map((a) => (
@@ -301,7 +305,7 @@ function Board({ state, t, view, frontendHint }: PochContext) {
           {t('yourChips', { n: human?.chips ?? 0 })}
           {betting && ` · ${t('yourBet', { n: human?.bet ?? 0, target: state.betTarget })}`}
           {/* pochen は組の比べ合い。自分の組は自分にとって既知の情報なので、
-                    賭ける前に見せる (#5722)。判定はサーバ (PochBestCombo) が唯一の出どころ。 */}
+              賭ける前に見せる (#5722)。判定はサーバ (PochBestCombo) が唯一の出どころ。 */}
           {betting && (
             <span data-testid="poch-your-combo">
               {' · '}
@@ -433,7 +437,10 @@ const pochDefinition: GameDefinition<PochResponse, PochGame, Parameters<typeof p
       ended,
     };
   },
-  reset: ({ game, view }) => view.resetWithQuietPoolBaseline(game.handleReset),
+  reset: ({ game, state, view }) =>
+    view.resetWithQuietPoolBaseline(() =>
+      game.exec('reset', undefined, { cpuDifficulty: state.config?.cpuDifficulty ?? 1 }),
+    ),
   settings: ({ game, state, t, tc, view, frontendHint }) => [
     {
       items: [
@@ -456,8 +463,6 @@ const pochDefinition: GameDefinition<PochResponse, PochGame, Parameters<typeof p
   ],
   settingsPlacement: 'top',
   settingsInCliMode: true,
-  landscapeBanner: true,
-  landscapeBannerInCliMode: true,
   contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
   resetTutorialId: 'pc-reset-button',
   HeaderExtra,
