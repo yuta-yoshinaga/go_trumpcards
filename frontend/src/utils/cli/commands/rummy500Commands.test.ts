@@ -10,6 +10,7 @@ const hand: Card[] = [
   { design: 'DIAMOND', value: 8 },
 ];
 const state = makeRummy500State({
+  phase: 1,
   players: [
     { id: 0, isHuman: true, cardCount: hand.length, cards: hand, roundScore: 0, cumulativeScore: 0, laidMelds: [] },
     { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
@@ -23,8 +24,9 @@ const state = makeRummy500State({
 
 describe('parseRummy500Command', () => {
   it('maps valid commands to API arguments', () => {
-    expect(parseRummy500Command('d', state)).toEqual({ args: ['drawstock'] });
-    expect(parseRummy500Command('take 1', state)).toEqual({
+    const drawState = { ...state, phase: 0 };
+    expect(parseRummy500Command('d', drawState)).toEqual({ args: ['drawstock'] });
+    expect(parseRummy500Command('take 1', drawState)).toEqual({
       args: ['drawdiscard', undefined, undefined, undefined, 1],
     });
     expect(parseRummy500Command('meld 0 1 2', state)).toEqual({ args: ['meld', undefined, undefined, [0, 1, 2]] });
@@ -33,8 +35,33 @@ describe('parseRummy500Command', () => {
     expect(parseRummy500Command('layoff 0 1 0', state)).toEqual({
       args: ['layoff', undefined, undefined, undefined, undefined, { cardIndex: 0, meldOwner: 1, meldIdx: 0 }],
     });
-    expect(parseRummy500Command('nr', state)).toEqual({ args: ['nextround'] });
+    expect(parseRummy500Command('nr', { ...state, phase: 2 })).toEqual({ args: ['nextround'] });
     expect(parseRummy500Command('r', state)).toEqual({ args: ['reset'] });
+  });
+
+  it('rejects commands outside their available phases', () => {
+    const commandsByPhase = [
+      { phase: 0, commands: ['meld 0 1 2', 'discard 0', 'layoff 0 1 0', 'nextround'] },
+      { phase: 1, commands: ['draw', 'take 0', 'nextround'] },
+      { phase: 2, commands: ['draw', 'take 0', 'meld 0 1 2', 'discard 0', 'layoff 0 1 0'] },
+      { phase: 3, commands: ['draw', 'take 0', 'meld 0 1 2', 'discard 0', 'layoff 0 1 0', 'nextround'] },
+    ];
+    for (const { phase, commands } of commandsByPhase) {
+      const phaseState = { ...state, phase };
+      for (const command of commands) {
+        expect(parseRummy500Command(command, phaseState), `${command} in phase ${phase}`).toHaveProperty('error');
+      }
+    }
+  });
+
+  it('reports an empty hand when discarding', () => {
+    const emptyHand = {
+      ...state,
+      players: state.players.map((player) => (player.isHuman ? { ...player, cards: [], cardCount: 0 } : player)),
+    };
+    expect(parseRummy500Command('discard 0', emptyHand)).toEqual({
+      error: 'Your hand is empty; there are no cards to discard.',
+    });
   });
 
   it('rejects invalid melds, unavailable targets, and indices outside the page choices', () => {
@@ -43,7 +70,9 @@ describe('parseRummy500Command', () => {
     expect(parseRummy500Command('layoff 0 1 1', state)).toEqual({
       error: 'That meld is not a legal layoff target for this card.',
     });
-    expect(parseRummy500Command('take 2', state)).toEqual({ error: expect.stringMatching(/outside the pile/) });
+    expect(parseRummy500Command('take 2', { ...state, phase: 0 })).toEqual({
+      error: expect.stringMatching(/outside the pile/),
+    });
     expect(parseRummy500Command('discard 4', state)).toEqual({ error: expect.stringMatching(/outside your hand/) });
     expect(parseRummy500Command('layoff 4 1 0', state)).toEqual({ error: expect.stringMatching(/outside your hand/) });
   });
