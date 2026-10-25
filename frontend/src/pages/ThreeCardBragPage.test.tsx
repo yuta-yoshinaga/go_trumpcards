@@ -627,6 +627,12 @@ describe('ThreeCardBragPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('tcb-server-hint')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('betting', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('ThreeCardBragPage raise controls', () => {
