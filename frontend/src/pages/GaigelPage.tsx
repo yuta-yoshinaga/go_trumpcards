@@ -1,7 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import type { gaigelApi } from '../api/games/gaigel';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -15,6 +18,8 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGaigelGame } from '../hooks/useGaigelGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -22,8 +27,12 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { GaigelResponse } from '../types/card';
 import { GaigelPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { GAIGEL_HELP, parseGaigelCommand } from '../utils/cli/commands/gaigelCommands';
+import { formatGaigelState } from '../utils/cli/formatters/gaigelFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -110,6 +119,18 @@ function GaigelPageContent() {
     handleHint,
   } = useGaigelGame();
 
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gaigel');
+  const cliConfig: CliGameConfig<GaigelResponse, Parameters<typeof gaigelApi.exec>> = useMemo(
+    () => ({
+      gameName: 'gaigel',
+      parseCommand: parseGaigelCommand,
+      formatResponse: formatGaigelState,
+      helpText: GAIGEL_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -175,99 +196,84 @@ function GaigelPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: gaigelConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: gaigelConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'targetScore',
+                    label: t('settings.targetScore'),
+                    value: gaigelConfig.targetScore,
+                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('targetScore', v),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
               },
-              {
-                type: 'select',
-                id: 'targetScore',
-                label: t('settings.targetScore'),
-                value: gaigelConfig.targetScore,
-                options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => handleConfigChange('targetScore', v),
-              },
-              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Round/Trick/Trump/Stock info */}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
-          <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
-          <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-          <span className="whitespace-nowrap">
-            {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
-          </span>
-          <span className="whitespace-nowrap">{t('stock', { count: state.stockRemaining })}</span>
-        </div>
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Round/Trick/Trump/Stock info */}
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">
+                {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
+              </span>
+              <span className="whitespace-nowrap">{t('stock', { count: state.stockRemaining })}</span>
+            </div>
 
-        {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
+            {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
             出ていたが、そこで規則が変わることはどこにも書かれていなかった ──
             姉妹の Bezique / Schnapsen は両方ともフェーズとして明示している
             (#6482)。切り替わりは読み上げにも届ける。 */}
-        {state.isEndgame && (
-          <div
-            className="text-center text-sm text-ds-warning font-semibold mb-2"
-            role="status"
-            data-testid="ga-endgame-notice"
-          >
-            {t('endgameNotice')}
-          </div>
-        )}
+            {state.isEndgame && (
+              <div
+                className="text-center text-sm text-ds-warning font-semibold mb-2"
+                role="status"
+                data-testid="ga-endgame-notice"
+              >
+                {t('endgameNotice')}
+              </div>
+            )}
 
-        {/* Face-up turn-up card that fixes the trump suit. It sits under the
+            {/* Face-up turn-up card that fixes the trump suit. It sits under the
             stock and is drawn last, so it disappears once the stock is empty. */}
-        {state.trumpCard && (
-          <div className="flex items-center justify-center gap-2 mb-3" data-testid="gaigel-trump-card">
-            <span className="text-ds-text-muted text-sm">{t('turnUpCard')}</span>
-            <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
-          </div>
-        )}
+            {state.trumpCard && (
+              <div className="flex items-center justify-center gap-2 mb-3" data-testid="gaigel-trump-card">
+                <span className="text-ds-text-muted text-sm">{t('turnUpCard')}</span>
+                <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+              </div>
+            )}
 
-        <div className={isLargeDesktop ? 'flex items-start gap-4 mb-3' : undefined} data-testid="gaigel-upper-layout">
-          {/* Player list */}
-          <div className={isLargeDesktop ? 'w-1/3 shrink-0' : 'mb-3'}>
-            {state.players
-              .filter((p) => p.isHuman)
-              .map((p) => (
-                <div
-                  key={p.id}
-                  data-testid={`gaigel-player-${p.id}`}
-                  className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                >
-                  <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
-                  {p.id === state.dealerIdx && (
-                    <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
-                      [{t('dealerBadge')}]
-                    </span>
-                  )}
-                  <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
-                  <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
-                  <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
-                    {t('trickCount', { count: p.trickCount })}
-                  </span>
-                </div>
-              ))}
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-              <div>
+            <div
+              className={isLargeDesktop ? 'flex items-start gap-4 mb-3' : undefined}
+              data-testid="gaigel-upper-layout"
+            >
+              {/* Player list */}
+              <div className={isLargeDesktop ? 'w-1/3 shrink-0' : 'mb-3'}>
                 {state.players
-                  .filter((p) => !p.isHuman)
+                  .filter((p) => p.isHuman)
                   .map((p) => (
                     <div
                       key={p.id}
@@ -287,174 +293,199 @@ function GaigelPageContent() {
                       </span>
                     </div>
                   ))}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div>
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          data-testid={`gaigel-player-${p.id}`}
+                          className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                        >
+                          <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
+                          {p.id === state.dealerIdx && (
+                            <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                              [{t('dealerBadge')}]
+                            </span>
+                          )}
+                          <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                          <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                          <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                            {t('trickCount', { count: p.trickCount })}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </CpuAccordion>
               </div>
-            </CpuAccordion>
+
+              {/* Current trick */}
+              <TrickDisplay
+                currentTrick={state.currentTrick}
+                players={state.players}
+                cardWidth={cardWidth}
+                label={t('currentTrick')}
+                winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
+                winnerLabel={t('winnerBadge')}
+                dataTutorial="gg-trick-display"
+              />
+            </div>
+
+            {/* Team scores */}
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
+              <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+              <div className="text-ds-text-muted text-xs mb-1">{t('target', { points: state.config.targetScore })}</div>
+              <table className="w-full text-sm text-ds-text-muted">
+                <thead>
+                  <tr>
+                    <th scope="col" />
+                    <th scope="col" className="text-left">
+                      {t('team', { n: 0 })}
+                    </th>
+                    <th scope="col" className="text-center">
+                      {t('team', { n: 1 })}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row" className="whitespace-nowrap text-left">
+                      {t('scoreRows.cumulative')}
+                    </th>
+                    <td className="text-ds-accent">{state.teamScores[0]}</td>
+                    <td className="text-center">{state.teamScores[1]}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" className="whitespace-nowrap text-left text-xs">
+                      {t('scoreRows.round')}
+                    </th>
+                    <td className="text-xs">{state.roundPoints[0]}</td>
+                    <td className="text-center text-xs">{state.roundPoints[1]}</td>
+                  </tr>
+                  {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
+                    <tr>
+                      <th scope="row" className="whitespace-nowrap text-left text-xs text-ds-warning">
+                        {t('scoreRows.marriage')}
+                      </th>
+                      <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
+                      <td className="text-center text-xs text-ds-warning">{state.roundMarriage[1]}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <div className="grid grid-cols-2 text-xs text-ds-text-muted">
+                {[0, 1].map((team) => (
+                  <div key={team} className={team === 1 ? 'text-center' : undefined}>
+                    {t('remainingTeam', {
+                      n: team,
+                      points: Math.max(0, state.config.targetScore - state.teamScores[team]),
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <RoundScoreAnnouncement
+              active={isRoundEnd || isGameEnd}
+              entries={[
+                {
+                  name: t('team', { n: 0 }),
+                  roundScore: state.roundPoints[0] + state.roundMarriage[0],
+                  cumulativeScore: state.teamScores[0],
+                },
+                {
+                  name: t('team', { n: 1 }),
+                  roundScore: state.roundPoints[1] + state.roundMarriage[1],
+                  cumulativeScore: state.teamScores[1],
+                },
+              ]}
+            />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            {isMobile && messageBox}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
 
-          {/* Current trick */}
-          <TrickDisplay
-            currentTrick={state.currentTrick}
-            players={state.players}
-            cardWidth={cardWidth}
-            label={t('currentTrick')}
-            winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
-            winnerLabel={t('winnerBadge')}
-            dataTutorial="gg-trick-display"
-          />
-        </div>
+          <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="gg"
+                cardBadgeFor={marriageBadgeFor}
+              />
+            )}
 
-        {/* Team scores */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
-          <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
-          <div className="text-ds-text-muted text-xs mb-1">{t('target', { points: state.config.targetScore })}</div>
-          <table className="w-full text-sm text-ds-text-muted">
-            <thead>
-              <tr>
-                <th scope="col" />
-                <th scope="col" className="text-left">
-                  {t('team', { n: 0 })}
-                </th>
-                <th scope="col" className="text-center">
-                  {t('team', { n: 1 })}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row" className="whitespace-nowrap text-left">
-                  {t('scoreRows.cumulative')}
-                </th>
-                <td className="text-ds-accent">{state.teamScores[0]}</td>
-                <td className="text-center">{state.teamScores[1]}</td>
-              </tr>
-              <tr>
-                <th scope="row" className="whitespace-nowrap text-left text-xs">
-                  {t('scoreRows.round')}
-                </th>
-                <td className="text-xs">{state.roundPoints[0]}</td>
-                <td className="text-center text-xs">{state.roundPoints[1]}</td>
-              </tr>
-              {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
-                <tr>
-                  <th scope="row" className="whitespace-nowrap text-left text-xs text-ds-warning">
-                    {t('scoreRows.marriage')}
-                  </th>
-                  <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
-                  <td className="text-center text-xs text-ds-warning">{state.roundMarriage[1]}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <div className="grid grid-cols-2 text-xs text-ds-text-muted">
-            {[0, 1].map((team) => (
-              <div key={team} className={team === 1 ? 'text-center' : undefined}>
-                {t('remainingTeam', {
-                  n: team,
-                  points: Math.max(0, state.config.targetScore - state.teamScores[team]),
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-        <RoundScoreAnnouncement
-          active={isRoundEnd || isGameEnd}
-          entries={[
-            {
-              name: t('team', { n: 0 }),
-              roundScore: state.roundPoints[0] + state.roundMarriage[0],
-              cumulativeScore: state.teamScores[0],
-            },
-            {
-              name: t('team', { n: 1 }),
-              roundScore: state.roundPoints[1] + state.roundMarriage[1],
-              cumulativeScore: state.teamScores[1],
-            },
-          ]}
-        />
-
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-        {isMobile && messageBox}
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
-        {humanPlayer && (
-          <PlayerHandSection
-            humanPlayer={humanPlayer}
-            selectedCardIndices={selectedCardIndices}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={isMobile}
-            dataTutorialPrefix="gg"
-            cardBadgeFor={marriageBadgeFor}
-          />
-        )}
-
-        <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
             付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
             読み上げられないことがある (#5955, #6663)。 */}
-        <div data-testid="gaigel-hint-live" role="status" aria-live="polite">
-          {hint && (
-            <div className="text-ds-warning text-sm mb-2">
-              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
+            <div data-testid="gaigel-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
-          {isHumanTurn && (
-            <>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                {tc('button.hint')}
-              </button>
-              {canDeclareMarriage && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => handleMarriage(selectedIdx)}
-                  disabled={loading}
-                  title={t('declareMarriage')}
-                >
-                  {t('marriageButton')}
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
+              {isHumanTurn && (
+                <>
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                    {tc('button.hint')}
+                  </button>
+                  {canDeclareMarriage && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleMarriage(selectedIdx)}
+                      disabled={loading}
+                      title={t('declareMarriage')}
+                    >
+                      {t('marriageButton')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                </>
+              )}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handlePlay}
-                disabled={loading || selectedCardIndices.length !== 1}
-              >
-                {t('playButton')}
-              </button>
-            </>
-          )}
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={!!isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="gg-reset-button"
-          />
-        </div>
-      </GameFooter>
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="gg-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

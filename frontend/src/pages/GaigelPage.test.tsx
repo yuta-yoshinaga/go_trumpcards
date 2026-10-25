@@ -432,4 +432,29 @@ describe('GaigelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('ga-endgame-notice')).not.toBeInTheDocument();
   });
+
+  it('shows the CLI terminal when the CLI toggle is enabled', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<GaigelPage />);
+    expect(await screen.findByAltText('♠ K')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByAltText('♠ K')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(await screen.findByAltText('♠ K')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'コマンドを入力...' })).not.toBeInTheDocument();
+  });
+
+  it('sends p 0 as a play command for hand index 0 in CLI mode', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<GaigelPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
+
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+  });
 });

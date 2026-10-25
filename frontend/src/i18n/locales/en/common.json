@@ -2400,6 +2400,8 @@
     "frenchtarot.roundEnd.win": "Deal over — contract made (declarer wins).",
     "frenchtarot.trickEnd": "Trick over — continue.",
     "gaigel.playPhase.follow": "Your turn — follow the led suit.",
+    "gaigel.hintRequested": "A hint is available",
+    "gaigel.noHint": "No hint available",
     "gaigel.playPhase.lead": "Your turn — pick a card to lead.",
     "gaigel.roundEnd": "Round complete — go to the next round.",
     "gaigel.trickEnd": "Trick complete — continue.",

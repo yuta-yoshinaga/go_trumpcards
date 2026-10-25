@@ -166,6 +166,10 @@ func TestGaigelWebPresenter_HintOutput(t *testing.T) {
 	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 	assert.NotNil(t, resObj.Hint)
 	assert.Equal(t, "follow_win", resObj.Hint.Reason)
+	assert.Equal(t, "gaigel.hintRequested", resObj.MessageCode)
+	assert.Len(t, resObj.Players, 4)
+	assert.NotNil(t, resObj.CurrentTrick)
+	assert.NotNil(t, resObj.MarriageIndices)
 }
 
 func TestGaigelWebPresenter_HintOutput_Nil(t *testing.T) {
@@ -177,6 +181,10 @@ func TestGaigelWebPresenter_HintOutput_Nil(t *testing.T) {
 	var resObj controller.GaigelWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 	assert.Nil(t, resObj.Hint)
+	assert.Equal(t, "gaigel.noHint", resObj.MessageCode)
+	assert.Len(t, resObj.Players, 4)
+	assert.NotNil(t, resObj.CurrentTrick)
+	assert.NotNil(t, resObj.MarriageIndices)
 }
 
 func TestGaigelWebPresenter_ActionLogOutput(t *testing.T) {

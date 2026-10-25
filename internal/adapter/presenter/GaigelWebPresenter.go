@@ -126,6 +126,9 @@ func (p *GaigelWebPresenter) HintOutput(g interfaces.GaigelGame) string {
 			Reason:     hint.Reason,
 			IsMarriage: hint.IsMarriage,
 		}
+		resObj.MessageCode = "gaigel.hintRequested"
+	} else {
+		resObj.MessageCode = "gaigel.noHint"
 	}
 	return marshalOrError(resObj)
 }
