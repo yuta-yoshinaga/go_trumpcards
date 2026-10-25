@@ -3473,6 +3473,8 @@
     "rummy500.playPhase": "Play a card or draw from the pile",
     "rummy500.roundEnd": "Round complete — go to the next round.",
     "russianbank.playing": "Playing",
+    "russianbank.hintRequested": "A hint is available",
+    "russianbank.noHint": "No hint available",
     "russianbank.result.cpuWin": "Game over! The CPU wins!",
     "russianbank.result.draw": "Game over! It's a draw!",
     "russianbank.result.humanWin": "Game over! You win!",

@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { russianbankApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeRussianBankState } from '../test/stateFactories';
@@ -38,7 +38,20 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(() => localStorage.removeItem('cli-mode-russianbank'));
+
 describe('RussianBankPage', () => {
+  it('switches to the terminal and executes a move with the page button arguments', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ foundationNext: Array.from({ length: 8 }, (_, i) => ({ design: '', value: i === 0 ? 7 : 1 })) }),
+    );
+    renderWithProviders(<RussianBankPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'pf 0 0 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pf', { zone: 0, fromOpp: false, col: 0 }));
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<RussianBankPage />);

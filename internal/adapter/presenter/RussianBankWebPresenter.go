@@ -141,6 +141,9 @@ func (p *RussianBankWebPresenter) HintOutput(g interfaces.RussianBankGame) strin
 			ToFoundation: hint.ToFoundation,
 			ToCol:        hint.ToCol,
 		}
+		resObj.MessageCode = "russianbank.hintRequested"
+	} else {
+		resObj.MessageCode = "russianbank.noHint"
 	}
 	return marshalOrError(resObj)
 }
