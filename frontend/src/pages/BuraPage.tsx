@@ -296,6 +296,9 @@ const buraDefinition: GameDefinition<BuraResponse, BuraGame, Parameters<typeof b
   actionLogDuringPlay: true,
   settingsPlacement: 'top',
   landscapeBanner: true,
+  // The hand-wired page drew both ahead of the CLI branch, so they stay visible in CLI mode (#12132).
+  landscapeBannerInCliMode: true,
+  settingsInCliMode: true,
   contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
   actionsTutorialId: 'bura-controls',
   resetTutorialId: 'bura-reset-button',
