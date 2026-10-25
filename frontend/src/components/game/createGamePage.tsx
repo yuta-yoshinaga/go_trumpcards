@@ -59,6 +59,8 @@ export interface GamePageContext<S, G extends GameHookBase<S, never>, V = undefi
   showActionLog: () => void;
   hideActionLog: () => void;
   view: V;
+  /** Renders the shared reset button; place it with `resetButton: 'custom'` so the factory does not add its own. */
+  renderResetButton: (className?: string) => ReactNode;
 }
 
 /** Card navigation used when a page has no `cardNav` or no state yet; the hook still runs to keep hook order. */
@@ -89,8 +91,14 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   useView?: (input: { game: G; t: TFunction; tc: TFunction }) => V;
   tutorial: TutorialStep[];
   skeleton: GameSkeletonProps['layout'];
-  /** Plain function returning CLI configuration and optional success callback. Must not call hooks. */
-  cli: (ctx: { game: G; state: S | null; view: V }) => Omit<CliGameConfig<S, A>, 'gameName'> & {
+  /**
+   * Plain function returning CLI configuration and optional success callback. Must not call hooks.
+   * `frontendHint` is the same hint state the board sees, so CLI commands honour the hint toggle.
+   */
+  cli: (ctx: { game: G; state: S | null; view: V; frontendHint: UseGameHintReturn }) => Omit<
+    CliGameConfig<S, A>,
+    'gameName'
+  > & {
     onCommandSuccess?: (args: A) => void;
   };
   busy?: (game: G) => boolean;
@@ -120,8 +128,17 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   resetTutorialId?: string;
   /** Tutorial identifier applied to the footer actions row. */
   actionsTutorialId?: string;
+  /** Replacement classes for the footer actions row. Defaults to "flex gap-2 items-center flex-wrap". */
+  actionsClassName?: string;
+  /**
+   * Where the reset button goes. `'end'` (default) appends it to the actions row; `'custom'` leaves it
+   * to the page, which places it with `renderResetButton` from the context.
+   */
+  resetButton?: 'end' | 'custom';
   HeaderExtra?: ComponentType<GamePageContext<S, G, V>>;
   LiveRegion?: ComponentType<GamePageContext<S, G, V>>;
+  /** Optional content rendered after top-placed settings and before the scrolling game content, so it does not scroll. */
+  AboveContent?: ComponentType<GamePageContext<S, G, V>>;
   Board: ComponentType<GamePageContext<S, G, V>>;
   /** Optional hand content rendered first in the game footer. */
   FooterHand?: ComponentType<GamePageContext<S, G, V>>;
@@ -131,7 +148,8 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   /** Plain function returning additional shell props spread into GamePageShell. Must not call hooks. */
   shell?: (
     ctx: GamePageContext<S, G, V>,
-  ) => Pick<GamePageShellProps, 'isHumanTurn' | 'onCelebrate' | 'lossShow' | 'headerEnd' | 'outerKey'>;
+  ) => Pick<GamePageShellProps, 'isHumanTurn' | 'onCelebrate' | 'lossShow' | 'headerEnd' | 'outerKey'> &
+    Partial<Pick<GamePageShellProps, 'gameThemeBg'>>;
   /** Plain function replacing game.handleReset on manual reset. Must not call hooks. */
   reset?: (ctx: GamePageContext<S, G, V>) => void;
   /** Replacement class for the main scrollable content area. Defaults to "pt-3 px-4 lg:px-8". */
@@ -151,7 +169,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const view = useView({ game, t: setup.t, tc: setup.tc });
     const frontendHint = useGameHint(def.key, state);
     const cliMode = useCliMode(def.key);
-    const { onCommandSuccess, ...rawCliConfig } = def.cli({ game, state, view });
+    const { onCommandSuccess, ...rawCliConfig } = def.cli({ game, state, view, frontendHint });
     const cliConfig = { gameName: def.key, ...rawCliConfig };
     const { handleCommand } = useCliGame(
       game.exec,
@@ -168,7 +186,28 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const rawConfirmGiveUpAction = useGiveUpConfirm(game.handleGiveUp ?? (() => undefined), setup.requestGiveUpConfirm);
     const confirmGiveUpAction = game.handleGiveUp !== undefined ? rawConfirmGiveUpAction : undefined;
     const busy = def.busy ? def.busy(game) : game.loading;
-    const context =
+    // Plain closures: the reset button and confirm dialog read `context` and the phase at click/render time.
+    let context: GamePageContext<S, G, V> | null = null;
+    const handleManualReset = () => {
+      setup.hideActionLog();
+      if (def.reset && context) {
+        def.reset(context);
+      } else {
+        game.handleReset?.();
+      }
+    };
+    const renderResetButton = (className?: string) =>
+      context ? (
+        <GameResetButton
+          isGameEnd={def.phase(context).ended}
+          onReset={handleManualReset}
+          requestConfirm={setup.requestConfirm}
+          loading={busy}
+          dataTutorial={def.resetTutorialId}
+          className={className}
+        />
+      ) : null;
+    context =
       state === null
         ? null
         : ({
@@ -183,23 +222,13 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
             showActionLog: setup.showActionLog,
             hideActionLog: setup.hideActionLog,
             view,
+            renderResetButton,
           } satisfies GamePageContext<S, G, V>);
     const shortcuts = context ? (def.shortcuts?.(context) ?? []) : [];
     const shortcutsEnabled = context ? (def.shortcutsEnabled?.(context) ?? true) : false;
     useActionKeyboardNav({ bindings: shortcuts, enabled: shortcutsEnabled && !busy });
     const cardNav = (context && def.cardNav?.(context)) || NO_CARD_NAV;
     useCardKeyboardNav({ ...cardNav, enabled: cardNav.enabled && !busy });
-    // `context` is rebuilt every render, so this is a plain closure; the reset
-    // button and confirm dialog read it at click time.
-    const handleManualReset = () => {
-      setup.hideActionLog();
-      if (def.reset && context) {
-        def.reset(context);
-      } else {
-        game.handleReset?.();
-      }
-    };
-
     if (!state || !context) return <GameSkeleton gameKey={def.key} layout={def.skeleton} />;
 
     const phase = def.phase(context);
@@ -210,6 +239,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     ];
     const HeaderExtra = def.HeaderExtra;
     const LiveRegion = def.LiveRegion;
+    const AboveContent = def.AboveContent;
     const Board = def.Board;
     const FooterHand = def.FooterHand;
     const FooterStatus = def.FooterStatus;
@@ -223,15 +253,12 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
       <>
         <ErrorAlert message={game.error ?? game.hintError ?? null} onRetry={game.retry} />
         {FooterStatus && <FooterStatus {...context} />}
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial={def.actionsTutorialId}>
+        <div
+          className={def.actionsClassName ?? 'flex gap-2 items-center flex-wrap'}
+          data-tutorial={def.actionsTutorialId}
+        >
           {FooterActions && <FooterActions {...context} />}
-          <GameResetButton
-            isGameEnd={phase.ended}
-            onReset={handleManualReset}
-            requestConfirm={setup.requestConfirm}
-            loading={busy}
-            dataTutorial={def.resetTutorialId}
-          />
+          {def.resetButton !== 'custom' && renderResetButton()}
         </div>
         {def.cardNav ? (
           <CardNavShortcutsPanel data-testid={def.shortcutsTestId} />
@@ -278,6 +305,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
           <>
             {def.landscapeBanner && <LandscapeBanner message={setup.t('landscapeBanner')} />}
             {def.settingsPlacement === 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
+            {AboveContent && <AboveContent {...context} />}
             <div className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}>
               <Board {...context} />
               <ActionLogSection

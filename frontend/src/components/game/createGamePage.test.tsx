@@ -667,4 +667,82 @@ describe('createGamePage', () => {
     if (bottomSettings)
       expect(bottomBoard.compareDocumentPosition(bottomSettings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
+
+  describe('page-shaped options (#12047 batch: OldMaid)', () => {
+    function makePage(over: Partial<GameDefinition<State, Game, unknown[]>>) {
+      currentGame = { ...defaultBaseGame };
+      return createGamePage<State, Game, unknown[]>({
+        key: 'acesup',
+        useGame: useFakeGame,
+        tutorial: [],
+        skeleton: { kind: 'centered', rows: [1] },
+        cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+        phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+        Board,
+        FooterActions,
+        ...over,
+      });
+    }
+
+    it('passes the frontend hint state to the cli definition', () => {
+      const cli = vi.fn((_ctx: { frontendHint?: { hintEnabled: boolean } }) => ({
+        parseCommand: () => ({ args: [] }),
+        formatResponse: () => 'state',
+        helpText: [],
+      }));
+      const Page = makePage({ cli });
+      renderWithProviders(<Page />);
+      expect(cli).toHaveBeenCalled();
+      const ctx = cli.mock.calls[0]?.[0];
+      expect(ctx?.frontendHint).toBeDefined();
+      expect(ctx?.frontendHint?.hintEnabled).toBe(false);
+    });
+
+    it('renders AboveContent after top settings and outside the scrolling content', () => {
+      const AboveContent = () => <div data-testid="above">above</div>;
+      const Page = makePage({ AboveContent, settingsPlacement: 'top' });
+      renderWithProviders(<Page />);
+      const above = screen.getByTestId('above');
+      const scroller = screen.getByTestId('board').closest('.overflow-y-auto');
+      expect(scroller).not.toBeNull();
+      expect(scroller?.contains(above)).toBe(false);
+      if (scroller) expect(above.compareDocumentPosition(scroller) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      const settings = document.querySelector('details');
+      expect(settings).not.toBeNull();
+      if (settings) expect(settings.compareDocumentPosition(above) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('replaces the action row classes with actionsClassName', () => {
+      const Page = makePage({ actionsClassName: 'text-center' });
+      renderWithProviders(<Page />);
+      const row = screen.getByRole('button', { name: 'Give up' }).parentElement;
+      expect(row).toHaveClass('text-center');
+      expect(row).not.toHaveClass('flex');
+    });
+
+    it("lets the page place the reset button itself when resetButton is 'custom'", () => {
+      const Actions = ({ renderResetButton }: GamePageContext<State, Game>) => (
+        <>
+          <button type="button">First</button>
+          {renderResetButton('min-w-[80px]')}
+          <button type="button">Last</button>
+        </>
+      );
+      const Page = makePage({ resetButton: 'custom', FooterActions: Actions, resetTutorialId: 'x-reset' });
+      renderWithProviders(<Page />);
+      const resets = screen.getAllByRole('button', { name: 'リセット' });
+      expect(resets).toHaveLength(1);
+      const [reset] = resets;
+      expect(reset).toHaveClass('min-w-[80px]');
+      expect(reset).toHaveAttribute('data-tutorial', 'x-reset');
+      const buttons = Array.from(reset.parentElement?.querySelectorAll('button') ?? []).map((b) => b.textContent);
+      expect(buttons).toEqual(['First', 'リセット', 'Last']);
+    });
+
+    it('lets shell override the theme background', () => {
+      const Page = makePage({ shell: () => ({ gameThemeBg: 'bg-test-override' }) });
+      const { container } = renderWithProviders(<Page />);
+      expect(container.querySelector('.bg-test-override')).not.toBeNull();
+    });
+  });
 });
