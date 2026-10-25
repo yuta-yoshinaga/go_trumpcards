@@ -118,6 +118,15 @@ describe('SultanPage', () => {
     expect(controls.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
   });
 
+  it('targets only the footer controls for the controls tutorial', async () => {
+    renderWithProviders(<SultanPage />);
+    await screen.findByTestId('phase-indicator');
+
+    const controls = document.querySelectorAll('[data-tutorial="sultan-controls"]');
+    expect(controls).toHaveLength(1);
+    expect(controls[0]).not.toContainElement(document.querySelector('[data-tutorial="sultan-reset-button"]'));
+  });
+
   it('marks only playable waste and divan cards', async () => {
     mockExec.mockResolvedValue(playablePreviewState);
     renderWithProviders(<SultanPage />);
@@ -184,6 +193,14 @@ describe('SultanPage', () => {
   it('renders move count', async () => {
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<SultanPage />);
+
+    expect(await screen.findByText('ゲームクリア', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('gameClear');
   });
 
   it('renders waste card', async () => {
