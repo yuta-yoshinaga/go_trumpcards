@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { doubleklondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -23,6 +27,9 @@ import { gameTheme } from '../styles/gameTheme';
 import { DoubleKlondikePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { DOUBLEKLONDIKE_HELP, parseDoubleKlondikeCommand } from '../utils/cli/commands/doubleklondikeCommands';
+import { formatDoubleKlondikeState } from '../utils/cli/formatters/doubleklondikeFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** 2 デッキの総枚数。`DoubleKlondikeTotalCards` (internal/domain/DoubleKlondike.go) と同じ。 */
@@ -77,6 +84,17 @@ function DoubleKlondikePageContent() {
     cancelGiveUp,
   } = useGamePageSetup('doubleklondike');
   const { state, loading, error, exec, retry } = useGameApi(doubleklondikeApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('doubleklondike');
+  const cliConfig: CliGameConfig<NonNullable<typeof state>, Parameters<typeof doubleklondikeApi.exec>> = useMemo(
+    () => ({
+      gameName: 'doubleklondike',
+      parseCommand: (input) => parseDoubleKlondikeCommand(input, state),
+      formatResponse: formatDoubleKlondikeState,
+      helpText: DOUBLEKLONDIKE_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
   // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
   // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
@@ -282,218 +300,231 @@ function DoubleKlondikePageContent() {
       giveUpConfirmOpen={giveUpConfirmOpen}
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
-        <div role="status" aria-live="polite" className="sr-only">
-          {state.isStalemate ? t('stalemateGuidance') : ''}
-        </div>
-        <div aria-live="polite" className="sr-only" data-testid="progress-announcement">
-          {progressAnnouncementText}
-        </div>
-        {state.isStalemate && (
-          <div className="mb-3 rounded border border-ds-border bg-ds-surface p-3 text-ds-text-primary">
-            {t('stalemateGuidance')}
-          </div>
-        )}
-        <div className="text-ds-text-muted text-xs mb-1">
-          {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })} ·{' '}
-          <span data-testid="dk-progress">
-            {t('progress', { count: foundationCount, total: DOUBLE_KLONDIKE_TOTAL_CARDS })}
-          </span>
-        </div>
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
+            <div role="status" aria-live="polite" className="sr-only">
+              {state.isStalemate ? t('stalemateGuidance') : ''}
+            </div>
+            <div aria-live="polite" className="sr-only" data-testid="progress-announcement">
+              {progressAnnouncementText}
+            </div>
+            {state.isStalemate && (
+              <div className="mb-3 rounded border border-ds-border bg-ds-surface p-3 text-ds-text-primary">
+                {t('stalemateGuidance')}
+              </div>
+            )}
+            <div className="text-ds-text-muted text-xs mb-1">
+              {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })} ·{' '}
+              <span data-testid="dk-progress">
+                {t('progress', { count: foundationCount, total: DOUBLE_KLONDIKE_TOTAL_CARDS })}
+              </span>
+            </div>
 
-        {/* Stock / waste / foundations row. On mobile it stacks so the 8
+            {/* Stock / waste / foundations row. On mobile it stacks so the 8
             foundations scroll on their own row instead of crushing the waste. */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-start mb-3" data-tutorial="dk-stock">
-          <div className="flex gap-2 items-start">
-            <button
-              type="button"
-              className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-ds-text-muted text-xs"
-              style={{ width: w, height: cardH }}
-              onClick={canAct ? clickStock : undefined}
-              disabled={!canAct}
-              title={t('stock')}
-              aria-label={
-                state.stockCount > 0 ? t('stockDrawAriaLabel', { count: state.stockCount }) : t('stockEmptyAriaLabel')
-              }
-              data-testid="stock"
-            >
-              {state.stockCount}
-            </button>
-            {wasteDisplay.length > 0 ? (
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-start mb-3" data-tutorial="dk-stock">
+              <div className="flex gap-2 items-start">
+                <button
+                  type="button"
+                  className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-ds-text-muted text-xs"
+                  style={{ width: w, height: cardH }}
+                  onClick={canAct ? clickStock : undefined}
+                  disabled={!canAct}
+                  title={t('stock')}
+                  aria-label={
+                    state.stockCount > 0
+                      ? t('stockDrawAriaLabel', { count: state.stockCount })
+                      : t('stockEmptyAriaLabel')
+                  }
+                  data-testid="stock"
+                >
+                  {state.stockCount}
+                </button>
+                {wasteDisplay.length > 0 ? (
+                  <div
+                    className="relative"
+                    style={{ width: w + (wasteDisplay.length - 1) * wasteFan, height: cardH }}
+                    data-testid="waste-fan"
+                  >
+                    {wasteDisplay.map((c, i) => {
+                      const isTop = i === wasteDisplay.length - 1;
+                      return isTop ? (
+                        <button
+                          key={`waste-${i.toString()}`}
+                          type="button"
+                          className={`absolute top-0 rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
+                          style={{ left: i * wasteFan }}
+                          onClick={canAct ? clickWaste : undefined}
+                          disabled={!canAct}
+                          title={t('waste')}
+                          aria-pressed={selected?.zone === 'waste'}
+                          data-testid="waste"
+                        >
+                          <CardImage card={c} width={w} />
+                        </button>
+                      ) : (
+                        <div
+                          key={`waste-${i.toString()}`}
+                          className="absolute top-0 rounded opacity-60"
+                          style={{ left: i * wasteFan }}
+                          aria-hidden="true"
+                          data-testid={`waste-under-${i.toString()}`}
+                        >
+                          <CardImage card={c} width={w} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div
+                    className="rounded border border-dashed border-white/25 bg-black/20"
+                    style={{ width: w, height: cardH }}
+                    data-testid="waste-empty"
+                  />
+                )}
+              </div>
               <div
-                className="relative"
-                style={{ width: w + (wasteDisplay.length - 1) * wasteFan, height: cardH }}
-                data-testid="waste-fan"
+                className={`gap-1 ${isMobile ? 'flex overflow-x-auto pb-1 max-w-full' : 'ml-auto grid grid-cols-4'}`}
+                data-testid="foundation-row"
               >
-                {wasteDisplay.map((c, i) => {
-                  const isTop = i === wasteDisplay.length - 1;
-                  return isTop ? (
+                {state.foundation.map((f, i) => {
+                  const top = f.length > 0 ? f[f.length - 1] : null;
+                  return (
                     <button
-                      key={`waste-${i.toString()}`}
                       type="button"
-                      className={`absolute top-0 rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
-                      style={{ left: i * wasteFan }}
-                      onClick={canAct ? clickWaste : undefined}
+                      key={`foundation-${i}`}
+                      className={`rounded shrink-0 ${isFoundationTarget(i) ? 'ring-2 ring-ds-success' : ''}`}
+                      data-move-target={isFoundationTarget(i) || undefined}
+                      onClick={canAct ? clickFoundation : undefined}
                       disabled={!canAct}
-                      title={t('waste')}
-                      aria-pressed={selected?.zone === 'waste'}
-                      data-testid="waste"
+                      title={t('foundation')}
+                      aria-label={
+                        top
+                          ? t('foundationTopAriaLabel', { col: i, card: cardAlt(top) })
+                          : t('foundationAriaLabel', { col: i })
+                      }
+                      data-testid={`foundation-${i}`}
                     >
-                      <CardImage card={c} width={w} />
+                      {top ? (
+                        <CardImage card={top} width={w} />
+                      ) : (
+                        <div
+                          className="rounded border border-dashed border-white/25 bg-black/20"
+                          style={{ width: w, height: cardH }}
+                        />
+                      )}
                     </button>
-                  ) : (
-                    <div
-                      key={`waste-${i.toString()}`}
-                      className="absolute top-0 rounded opacity-60"
-                      style={{ left: i * wasteFan }}
-                      aria-hidden="true"
-                      data-testid={`waste-under-${i.toString()}`}
-                    >
-                      <CardImage card={c} width={w} />
-                    </div>
                   );
                 })}
               </div>
-            ) : (
-              <div
-                className="rounded border border-dashed border-white/25 bg-black/20"
-                style={{ width: w, height: cardH }}
-                data-testid="waste-empty"
-              />
+            </div>
+
+            <div
+              className={`gap-1 items-start ${isMobile ? 'flex overflow-x-auto pb-1' : 'grid grid-cols-9'}`}
+              data-tutorial="dk-board"
+            >
+              {state.tableau.map((column, i) => renderTableau(column, i))}
+            </div>
+            {canAct && (
+              <div className="mt-2 text-ds-text-primary text-xs">
+                {selected === null ? t('selectSource') : t('selectDestination')}
+              </div>
             )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-          <div
-            className={`gap-1 ${isMobile ? 'flex overflow-x-auto pb-1 max-w-full' : 'ml-auto grid grid-cols-4'}`}
-            data-testid="foundation-row"
-          >
-            {state.foundation.map((f, i) => {
-              const top = f.length > 0 ? f[f.length - 1] : null;
-              return (
+
+          <GameFooter className={`${gameTheme.doubleklondike.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center" data-tutorial="dk-controls">
+              {canAct && (
                 <button
                   type="button"
-                  key={`foundation-${i}`}
-                  className={`rounded shrink-0 ${isFoundationTarget(i) ? 'ring-2 ring-ds-success' : ''}`}
-                  data-move-target={isFoundationTarget(i) || undefined}
-                  onClick={canAct ? clickFoundation : undefined}
-                  disabled={!canAct}
-                  title={t('foundation')}
-                  aria-label={
-                    top
-                      ? t('foundationTopAriaLabel', { col: i, card: cardAlt(top) })
-                      : t('foundationAriaLabel', { col: i })
-                  }
-                  data-testid={`foundation-${i}`}
+                  className={btnPrimary}
+                  onClick={clickStock}
+                  disabled={loading}
+                  data-testid="draw-button"
                 >
-                  {top ? (
-                    <CardImage card={top} width={w} />
-                  ) : (
-                    <div
-                      className="rounded border border-dashed border-white/25 bg-black/20"
-                      style={{ width: w, height: cardH }}
-                    />
-                  )}
+                  {t('draw')}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div
-          className={`gap-1 items-start ${isMobile ? 'flex overflow-x-auto pb-1' : 'grid grid-cols-9'}`}
-          data-tutorial="dk-board"
-        >
-          {state.tableau.map((column, i) => renderTableau(column, i))}
-        </div>
-        {canAct && (
-          <div className="mt-2 text-ds-text-primary text-xs">
-            {selected === null ? t('selectSource') : t('selectDestination')}
-          </div>
-        )}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.doubleklondike.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center" data-tutorial="dk-controls">
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={clickStock}
-              disabled={loading}
-              data-testid="draw-button"
-            >
-              {t('draw')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('ac')}
-              disabled={loading}
-              data-testid="auto-button"
-            >
-              {t('auto')}
-            </button>
-          )}
-          {canAct && state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('u')}
-              disabled={loading}
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={() => exec('hint')}
-              disabled={loading}
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={confirmGiveUpAction}
-              disabled={loading}
-              data-testid="giveup-button"
-            >
-              {t('giveup')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="dk-reset-button"
-          />
-        </div>
-      </GameFooter>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => exec('ac')}
+                  disabled={loading}
+                  data-testid="auto-button"
+                >
+                  {t('auto')}
+                </button>
+              )}
+              {canAct && state.canUndo && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => exec('u')}
+                  disabled={loading}
+                  data-testid="undo-button"
+                >
+                  {t('undo')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => exec('hint')}
+                  disabled={loading}
+                  data-testid="hint-button"
+                >
+                  {t('hint')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={confirmGiveUpAction}
+                  disabled={loading}
+                  data-testid="giveup-button"
+                >
+                  {t('giveup')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="dk-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

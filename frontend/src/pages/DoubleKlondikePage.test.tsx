@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubleklondikeApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -43,7 +43,19 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(() => localStorage.removeItem('cli-mode-doubleklondike'));
+
 describe('DoubleKlondikePage', () => {
+  it('switches to the terminal and dispatches a CLI draw like the page button', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    const input = await screen.findByRole('textbox');
+    expect(screen.queryByTestId('column-0')).not.toBeInTheDocument();
+    fireEvent.change(input, { target: { value: 'd' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('d'));
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoubleKlondikePage />);
