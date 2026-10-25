@@ -49,6 +49,33 @@ describe('LaBelleLuciePage', () => {
     expect(screen.queryByTestId('fan-0')).not.toBeInTheDocument();
   });
 
+  it('executes undo from the CLI while playing when undo is available', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, canUndo: true }));
+    localStorage.setItem('cli-mode-labellelucie', 'true');
+    renderWithProviders(<LaBelleLuciePage />);
+
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'u' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(await screen.findByText('> u')).toBeInTheDocument();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('u'));
+  });
+
+  it('rejects CLI undo after the game has ended even when undo is available', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, canUndo: true }));
+    localStorage.setItem('cli-mode-labellelucie', 'true');
+    renderWithProviders(<LaBelleLuciePage />);
+
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'u' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(await screen.findByText('> u')).toBeInTheDocument();
+    expect(mockExec).toHaveBeenCalledTimes(1);
+    expect(mockExec).toHaveBeenCalledWith('reset');
+  });
+
   it('blocks fan and foundation actions while a request is loading, then restores them', async () => {
     renderWithProviders(<LaBelleLuciePage />);
 

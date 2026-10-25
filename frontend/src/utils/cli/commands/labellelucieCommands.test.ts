@@ -8,9 +8,11 @@ describe('parseLaBelleLucieCommand', () => {
   it('maps every supported command and alias to the page API operations', () => {
     const cases: [string, unknown[]][] = [
       ['p 2 4', ['mf', 2, 4]],
+      ['p 0 17', ['mf', 0, 17]],
       ['p 17 4', ['mf', 17, 4]],
       ['play 2 4', ['mf', 2, 4]],
       ['f 3', ['ff', 3]],
+      ['f 17', ['ff', 17]],
       ['foundation 3', ['ff', 3]],
       ['rd', ['rd']],
       ['redeal', ['rd']],
@@ -30,16 +32,17 @@ describe('parseLaBelleLucieCommand', () => {
   });
 
   it('rejects missing arguments, invalid fan indices, and invalid undo counts', () => {
-    for (const input of ['p', 'p 2', 'p -1 2', 'p 18 2', 'p x 2'])
+    for (const input of ['p', 'p 2', 'p -1 2', 'p 2 -1', 'p 18 2', 'p x 2'])
       expect(parseLaBelleLucieCommand(input)).toHaveProperty('error');
     for (const input of ['f', 'f -1', 'f 18', 'f x']) expect(parseLaBelleLucieCommand(input)).toHaveProperty('error');
-    for (const input of ['undo_n', 'undo_n 0', 'undo_n x'])
+    for (const input of ['undo_n', 'undo_n 0', 'undo_n -1', 'undo_n x'])
       expect(parseLaBelleLucieCommand(input)).toHaveProperty('error');
   });
 
   it('checks fan indices against the current fan count, which shrinks after a redeal', () => {
     expect(parseLaBelleLucieCommand('p 0 5', { ...playingState, fanCount: 6 })).toEqual({ args: ['mf', 0, 5] });
     expect(parseLaBelleLucieCommand('p 0 6', { ...playingState, fanCount: 6 })).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('p 0 18', playingState)).toHaveProperty('error');
     expect(parseLaBelleLucieCommand('f 6', { ...playingState, fanCount: 6 })).toHaveProperty('error');
     expect(parseLaBelleLucieCommand('f 0', { ...playingState, fanCount: 0 })).toHaveProperty('error');
   });
