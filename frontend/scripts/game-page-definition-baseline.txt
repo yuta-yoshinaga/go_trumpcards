@@ -202,7 +202,6 @@ PerseverancePage.tsx
 PigPage.tsx
 PigsTailPage.tsx
 PineapplePage.tsx
-PinochlePage.tsx
 PiquetPage.tsx
 PishtiPage.tsx
 PitchPage.tsx
