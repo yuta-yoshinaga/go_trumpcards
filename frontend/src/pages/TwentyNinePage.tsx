@@ -1,38 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { twentyNineApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useTwentyNineGame } from '../hooks/useTwentyNineGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { TwentyNineResponse } from '../types/card';
 import { TwentyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbol, suitSymbolAt } from '../utils/cardAlt';
 import { parseTwentyNineCommand, TWENTY_NINE_HELP } from '../utils/cli/commands/twentyNineCommands';
 import { formatTwentyNineState } from '../utils/cli/formatters/twentyNineFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -78,54 +63,18 @@ const TWENTY_NINE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [TwentyNinePhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Twenty-Nine (29) game page: an Indian/Bangladeshi 4-player (2 vs 2) hidden-trump bidding trick-taker. */
-export const TwentyNinePage = withTutorial(TwentyNinePageContent, 'twentynine', TWENTY_NINE_TUTORIAL_STEPS);
+type TwentyNineGame = ReturnType<typeof useTwentyNineGame>;
+type TwentyNineContext = GamePageContext<TwentyNineResponse, TwentyNineGame, TwentyNineView>;
 
-/** Inner content of the Twenty-Nine (29) page, wrapped by TutorialProvider. */
-function TwentyNinePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('twentynine');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    twentyNineConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handleBid,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useTwentyNineGame();
+function useTwentyNineView({ game }: { game: TwentyNineGame }) {
+  const { state } = game;
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('twentynine');
-  const cliConfig: CliGameConfig<TwentyNineResponse, Parameters<typeof twentyNineApi.exec>> = useMemo(
-    () => ({
-      gameName: 'twentynine',
-      parseCommand: parseTwentyNineCommand,
-      formatResponse: formatTwentyNineState,
-      helpText: TWENTY_NINE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('twentynine', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('twentynine', TWENTY_NINE_PHASE_KEYS);
 
@@ -145,22 +94,31 @@ function TwentyNinePageContent() {
     }
   }, [state?.trumpRevealed]);
 
-  if (!state)
-    return <GameSkeleton gameKey="twentynine" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
+  const humanIdx = state?.players.findIndex((p) => p.isHuman) ?? -1;
+  const humanTeam = humanIdx >= 0 ? humanIdx % 2 : -1;
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const messageBox = (
-    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-  );
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const humanTeam = humanIdx % 2;
-  const isHumanTurn = state.isHumanTurn;
-  const isHumanBidTurn = state.isHumanBidTurn;
+  return { cardWidth, isMobile, phaseNames, showTrumpBanner, humanTeam, humanIdx };
+}
+
+type TwentyNineView = ReturnType<typeof useTwentyNineView>;
+
+function AboveContent({ game, state, t }: TwentyNineContext) {
+  if (
+    game.twentyNineConfig.cpuDifficulty === state.config.cpuDifficulty &&
+    game.twentyNineConfig.targetPoints === state.config.targetPoints
+  ) {
+    return null;
+  }
+  return <p className="px-4 text-sm text-ds-warning">{t('settings.pendingReset')}</p>;
+}
+
+function Board({ state, t, view }: TwentyNineContext) {
+  const { isMobile, cardWidth, showTrumpBanner, humanTeam, humanIdx } = view;
 
   const isBidPhase = state.phase === TwentyNinePhase.BID;
   const isPlayPhase = state.phase === TwentyNinePhase.PLAY;
-  const isTrickEnd = state.phase === TwentyNinePhase.TRICK_END;
   const isRoundEnd = state.phase === TwentyNinePhase.ROUND_END;
+  const isGameEnd = state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag;
   const contractProgress = twentyNineContractProgress(state.declarerIdx, state.contract, state.roundTeamPoints);
   const contractStatusColor =
     contractProgress?.status === 'made'
@@ -168,9 +126,7 @@ function TwentyNinePageContent() {
       : contractProgress?.status === 'failed'
         ? 'text-ds-error-text'
         : 'text-ds-warning';
-  const isGameEnd = state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag;
 
-  const canPlay = isPlayPhase && isHumanTurn;
   // The trump suit is hidden until trumpRevealed flips true mid-play.
   const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
   const isHumanDeclarer = state.declarerIdx >= 0 && humanIdx === state.declarerIdx;
@@ -179,11 +135,6 @@ function TwentyNinePageContent() {
     !state.trumpRevealed && isHumanDeclarer ? t('trumpVisibleToYou', { suit: trumpSymbol }) : trumpSymbol;
   const leadCard = state.currentTrick[0]?.card;
 
-  // The current highest (non-pass) bid; a new non-pass bid must beat it.
-  const highestBid = Math.max(0, ...state.bids);
-  // The seat holding that highest bid, so the bidder's name can be surfaced during bidding.
-  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
-  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
   const bidHistory = state.players.map((player, seat) => {
     let committed = !isBidPhase;
     if (isBidPhase) {
@@ -197,363 +148,8 @@ function TwentyNinePageContent() {
 
   const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
 
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
-  return (
-    <GamePageShell
-      title={tc('nav.twentynine')}
-      gameThemeBg={gameTheme.twentynine.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={(isHumanTurn || isHumanBidTurn) && !isGameEnd}
-      gamePath="/twentynine"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerTeam === humanTeam}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: twentyNineConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetPoints',
-                    label: t('settings.targetPoints'),
-                    value: twentyNineConfig.targetPoints,
-                    options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetPoints', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-          {(twentyNineConfig.cpuDifficulty !== state.config.cpuDifficulty ||
-            twentyNineConfig.targetPoints !== state.config.targetPoints) && (
-            <p className="px-4 text-sm text-ds-warning">{t('settings.pendingReset')}</p>
-          )}
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="twentynine-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpDisplay })}</span>
-              <span>{t('target', { points: state.config.targetPoints })}</span>
-            </div>
-
-            <details className="mb-3 text-sm">
-              <summary className="cursor-pointer select-none text-ds-text-primary hover:text-ds-accent">
-                {t('strengthReference.title')}
-              </summary>
-              <div className="mt-2 rounded-lg bg-ds-surface p-3 text-ds-text-primary">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <div className="mb-1 font-semibold">{t('strengthReference.trump')}</div>
-                    <div>{t('strengthReference.order')}</div>
-                  </div>
-                  <div>
-                    <div className="mb-1 font-semibold">{t('strengthReference.plain')}</div>
-                    <div>{t('strengthReference.order')}</div>
-                  </div>
-                </div>
-                <div className="mt-2 text-ds-text-muted">{t('strengthReference.points')}</div>
-              </div>
-            </details>
-
-            {showTrumpBanner && (
-              <div
-                role="status"
-                data-testid="tn-trump-reveal-banner"
-                className={`mx-auto mb-2 w-fit rounded-lg px-4 py-1.5 text-center font-semibold motion-safe:animate-pulse ${badgeWarningColors}`}
-              >
-                {t('trumpRevealBanner', { suit: revealedTrumpSymbol })}
-              </div>
-            )}
-
-            <div className="text-ds-text-muted text-center mb-2 text-sm">
-              {state.declarerIdx >= 0
-                ? t('contractLine', {
-                    name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
-                    team: state.declarerIdx % 2 === 0 ? t('team.a') : t('team.b'),
-                    contract: contractLabel,
-                  })
-                : t('contractUndecided')}
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
-              <div>
-                <div data-testid="tn29-lead-suit" className="mb-2 text-center text-ds-text-primary text-sm">
-                  {isPlayPhase && leadCard && (
-                    <span className="inline-flex items-center gap-2 rounded-lg bg-ds-surface px-3 py-1.5">
-                      {t('leadSuit', {
-                        symbol: suitSymbol(leadCard.design),
-                        suit: t(`suits.${leadCard.design.toLowerCase()}`),
-                      })}
-                    </span>
-                  )}
-                </div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  cardDetailFor={(_card, trickCard) => {
-                    const index = state.currentTrick.findIndex((card) => card.playerIdx === trickCard.playerIdx);
-                    return t('trickCardPoints', { points: state.currentTrickPoints[index] ?? 0 });
-                  }}
-                  dataTutorial="twentynine-trick-display"
-                />
-                {state.isLastTrick && <p className="mt-1 text-center text-sm text-ds-warning">{t('lastTrickBonus')}</p>}
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* Team match scores */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
-                  <div className="mt-1">
-                    {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
-                  </div>
-                </div>
-
-                <details
-                  open={!isMobile || undefined}
-                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                  data-testid="tn29-bid-history"
-                >
-                  <summary className="cursor-pointer select-none text-ds-text-primary text-xs">
-                    {t('bidHistory.title')}
-                  </summary>
-                  {bidHistory.map(({ player, seat, committed, bid }) => (
-                    <div key={seat} className="py-0.5">
-                      {t('bidHistory.player', {
-                        seat,
-                        player: playerName(player.id, player.isHuman),
-                        team: seat % 2 === 0 ? t('team.a') : t('team.b'),
-                      })}
-                      : {committed ? (bid === 0 ? t('bid.pass') : bid) : t('bidHistory.pending')}
-                    </div>
-                  ))}
-                </details>
-
-                {/* Players grouped by team, with the declarer badge */}
-                {state.players
-                  .filter((p) => p.isHuman)
-                  .map((p) => (
-                    <section
-                      key={p.id}
-                      className="mb-2 px-2 py-1 rounded bg-black/30 flex items-center gap-2 text-ds-text-muted text-sm"
-                      data-testid="tn29-human-seat"
-                      data-tutorial="twentynine-human-seat"
-                      aria-label={t('yourTeam')}
-                    >
-                      <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </span>
-                      {p.isDeclarer && (
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                          {t('declarerBadge')}
-                        </span>
-                      )}
-                    </section>
-                  ))}
-                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                  <div className="flex flex-wrap sm:block">
-                    {([0, 1] as const).map(
-                      (team) =>
-                        state.players.some((p) => !p.isHuman && p.id % 2 === team) && (
-                          <div key={team} className="mb-2 p-2 rounded bg-black/30">
-                            <div className="text-ds-text-primary text-xs mb-1">
-                              {team === 0 ? t('team.a') : t('team.b')}
-                            </div>
-                            {renderTeamPlayers(team, true)}
-                          </div>
-                        ),
-                    )}
-                  </div>
-                </CpuAccordion>
-
-                {/* Live round card points during bidding/play (matches the CUI's roundPoints
-                    readout); the round-result block below takes over once the round ends. */}
-                {!(isRoundEnd || isGameEnd) && (
-                  <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="tn29-round-points"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
-                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] })}</div>
-                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] })}</div>
-                    {/* 契約に届くかは目標点・現在点・場に残る点を突き合わせないと
-                        分からない。姉妹ゲームの FortyFives は #4724 で出している (#5644)。 */}
-                    {contractProgress && (
-                      <div className="mt-1 text-ds-text-primary" data-testid="tn29-contract-progress">
-                        {t('contractProgress', {
-                          team: contractProgress.declarerTeam === 0 ? t('team.a') : t('team.b'),
-                          got: contractProgress.points,
-                          contract: contractProgress.contract,
-                        })}
-                        {' — '}
-                        <span className={contractStatusColor}>
-                          {t(`contractStatus.${contractProgress.status}`, {
-                            remaining: contractProgress.remaining,
-                          })}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Round result: card points per team */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] ?? 0 })}</div>
-                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] ?? 0 })}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {isMobile && messageBox}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.twentynine.footer} px-4 py-2.5`}
-            message={isMobile ? undefined : messageBox}
-          >
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="twentynine"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="twentynine-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="twentynine-action-buttons">
-              {isBidPhase && isHumanBidTurn && (
-                <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="tn29-highest-bid">
-                    {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
-                  </span>
-                  {BIDS.map((b) => {
-                    // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const tooLow = b.value !== 0 && b.value <= highestBid;
-                    const disabled = loading || tooLow;
-                    const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
-                    // The title lives on the wrapping span: browsers suppress native tooltips on
-                    // disabled buttons, so hovering the span still surfaces the reason.
-                    return (
-                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
-                        <button
-                          type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
-                          onClick={() => handleBid(b.value)}
-                          disabled={disabled}
-                          aria-disabled={disabled}
-                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
-                          data-testid={`bid-${b.value}`}
-                        >
-                          {t(b.key)}
-                        </button>
-                      </span>
-                    );
-                  })}
-                </>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="twentynine-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
-  );
-
   /** Renders the per-player rows for one team (seats with seat%2 === team). */
   function renderTeamPlayers(team: number, cpuOnly = false) {
-    if (!state) return null;
     return state.players
       .filter((p) => p.id % 2 === team && (!cpuOnly || !p.isHuman))
       .map((p) => (
@@ -567,4 +163,373 @@ function TwentyNinePageContent() {
         </div>
       ));
   }
+
+  return (
+    <>
+      <div className="text-ds-text-primary text-center mb-2" data-tutorial="twentynine-info">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span className="mr-4">{t('trump', { suit: trumpDisplay })}</span>
+        <span>{t('target', { points: state.config.targetPoints })}</span>
+      </div>
+
+      <details className="mb-3 text-sm">
+        <summary className="cursor-pointer select-none text-ds-text-primary hover:text-ds-accent">
+          {t('strengthReference.title')}
+        </summary>
+        <div className="mt-2 rounded-lg bg-ds-surface p-3 text-ds-text-primary">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <div className="mb-1 font-semibold">{t('strengthReference.trump')}</div>
+              <div>{t('strengthReference.order')}</div>
+            </div>
+            <div>
+              <div className="mb-1 font-semibold">{t('strengthReference.plain')}</div>
+              <div>{t('strengthReference.order')}</div>
+            </div>
+          </div>
+          <div className="mt-2 text-ds-text-muted">{t('strengthReference.points')}</div>
+        </div>
+      </details>
+
+      {showTrumpBanner && (
+        <div
+          role="status"
+          data-testid="tn-trump-reveal-banner"
+          className={`mx-auto mb-2 w-fit rounded-lg px-4 py-1.5 text-center font-semibold motion-safe:animate-pulse ${badgeWarningColors}`}
+        >
+          {t('trumpRevealBanner', { suit: revealedTrumpSymbol })}
+        </div>
+      )}
+
+      <div className="text-ds-text-muted text-center mb-2 text-sm">
+        {state.declarerIdx >= 0
+          ? t('contractLine', {
+              name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
+              team: state.declarerIdx % 2 === 0 ? t('team.a') : t('team.b'),
+              contract: contractLabel,
+            })
+          : t('contractUndecided')}
+      </div>
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <div data-testid="tn29-lead-suit" className="mb-2 text-center text-ds-text-primary text-sm">
+            {isPlayPhase && leadCard && (
+              <span className="inline-flex items-center gap-2 rounded-lg bg-ds-surface px-3 py-1.5">
+                {t('leadSuit', {
+                  symbol: suitSymbol(leadCard.design),
+                  suit: t(`suits.${leadCard.design.toLowerCase()}`),
+                })}
+              </span>
+            )}
+          </div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            cardDetailFor={(_card, trickCard) => {
+              const index = state.currentTrick.findIndex((card) => card.playerIdx === trickCard.playerIdx);
+              return t('trickCardPoints', { points: state.currentTrickPoints[index] ?? 0 });
+            }}
+            dataTutorial="twentynine-trick-display"
+          />
+          {state.isLastTrick && <p className="mt-1 text-center text-sm text-ds-warning">{t('lastTrickBonus')}</p>}
+        </div>
+
+        {/* Right: info sidebar */}
+        <div>
+          {/* Team match scores */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+            <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
+            <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
+            <div className="mt-1">
+              {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
+            </div>
+          </div>
+
+          <details
+            open={!isMobile || undefined}
+            className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+            data-testid="tn29-bid-history"
+          >
+            <summary className="cursor-pointer select-none text-ds-text-primary text-xs">
+              {t('bidHistory.title')}
+            </summary>
+            {bidHistory.map(({ player, seat, committed, bid }) => (
+              <div key={seat} className="py-0.5">
+                {t('bidHistory.player', {
+                  seat,
+                  player: playerName(player.id, player.isHuman),
+                  team: seat % 2 === 0 ? t('team.a') : t('team.b'),
+                })}
+                : {committed ? (bid === 0 ? t('bid.pass') : bid) : t('bidHistory.pending')}
+              </div>
+            ))}
+          </details>
+
+          {/* Players grouped by team, with the declarer badge */}
+          {state.players
+            .filter((p) => p.isHuman)
+            .map((p) => (
+              <section
+                key={p.id}
+                className="mb-2 px-2 py-1 rounded bg-black/30 flex items-center gap-2 text-ds-text-muted text-sm"
+                data-testid="tn29-human-seat"
+                data-tutorial="twentynine-human-seat"
+                aria-label={t('yourTeam')}
+              >
+                <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
+                  {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                  {t('tricks', { count: p.trickCount })}
+                </span>
+                {p.isDeclarer && (
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('declarerBadge')}</span>
+                )}
+              </section>
+            ))}
+          <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+            <div className="flex flex-wrap sm:block">
+              {([0, 1] as const).map(
+                (team) =>
+                  state.players.some((p) => !p.isHuman && p.id % 2 === team) && (
+                    <div key={team} className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-ds-text-primary text-xs mb-1">{team === 0 ? t('team.a') : t('team.b')}</div>
+                      {renderTeamPlayers(team, true)}
+                    </div>
+                  ),
+              )}
+            </div>
+          </CpuAccordion>
+
+          {/* Live round card points during bidding/play (matches the CUI's roundPoints
+              readout); the round-result block below takes over once the round ends. */}
+          {!(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tn29-round-points">
+              <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
+              <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] })}</div>
+              <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] })}</div>
+              {/* 契約に届くかは目標点・現在点・場に残る点を突き合わせないと
+                  分からない。姉妹ゲームの FortyFives は #4724 で出している (#5644)。 */}
+              {contractProgress && (
+                <div className="mt-1 text-ds-text-primary" data-testid="tn29-contract-progress">
+                  {t('contractProgress', {
+                    team: contractProgress.declarerTeam === 0 ? t('team.a') : t('team.b'),
+                    got: contractProgress.points,
+                    contract: contractProgress.contract,
+                  })}
+                  {' — '}
+                  <span className={contractStatusColor}>
+                    {t(`contractStatus.${contractProgress.status}`, {
+                      remaining: contractProgress.remaining,
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Round result: card points per team */}
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] ?? 0 })}</div>
+              <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] ?? 0 })}</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {isMobile && (
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      )}
+    </>
+  );
 }
+
+function FooterHand({ state, game, t, view }: TwentyNineContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+  const canPlay = state.phase === TwentyNinePhase.PLAY && state.isHumanTurn;
+  return (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="twentynine"
+      validIndices={canPlay ? state.playableIndices : undefined}
+      restrictedTooltip={t('playButton')}
+    />
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: TwentyNineContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="twentynine-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices &&
+              state.hint.cardIndices.length > 0 &&
+              ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ state, game, t, busy }: TwentyNineContext) {
+  const loading = busy;
+  const isBidPhase = state.phase === TwentyNinePhase.BID;
+  const isPlayPhase = state.phase === TwentyNinePhase.PLAY;
+  const isTrickEnd = state.phase === TwentyNinePhase.TRICK_END;
+  const isRoundEnd = state.phase === TwentyNinePhase.ROUND_END;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  const highestBid = Math.max(0, ...state.bids);
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
+
+  return (
+    <>
+      {isBidPhase && state.isHumanBidTurn && (
+        <>
+          <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+          <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="tn29-highest-bid">
+            {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
+          </span>
+          {BIDS.map((b) => {
+            // Pass (0) is always allowed; a non-pass bid must beat the current highest.
+            const tooLow = b.value !== 0 && b.value <= highestBid;
+            const disabled = loading || tooLow;
+            const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
+            // The title lives on the wrapping span: browsers suppress native tooltips on
+            // disabled buttons, so hovering the span still surfaces the reason.
+            return (
+              <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
+                  onClick={() => game.handleBid(b.value)}
+                  disabled={disabled}
+                  aria-disabled={disabled}
+                  aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                  data-testid={`bid-${b.value}`}
+                >
+                  {t(b.key)}
+                </button>
+              </span>
+            );
+          })}
+        </>
+      )}
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={loading || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={loading}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={loading}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const twentyNineDefinition: GameDefinition<
+  TwentyNineResponse,
+  TwentyNineGame,
+  Parameters<typeof twentyNineApi.exec>,
+  TwentyNineView
+> = {
+  key: 'twentynine',
+  useGame: useTwentyNineGame,
+  useView: useTwentyNineView,
+  tutorial: TWENTY_NINE_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 8 },
+  cli: () => ({
+    parseCommand: parseTwentyNineCommand,
+    formatResponse: formatTwentyNineState,
+    helpText: TWENTY_NINE_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerTeam === view.humanTeam,
+    };
+  },
+  shell: ({ state }) => ({
+    isHumanTurn:
+      (state.isHumanTurn || state.isHumanBidTurn) && !(state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag),
+  }),
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settingsPlacement: 'top',
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.twentyNineConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetPoints',
+          label: t('settings.targetPoints'),
+          value: game.twentyNineConfig.targetPoints,
+          options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetPoints', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  message: ({ state, view }) =>
+    !view.isMobile && (
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    ),
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  actionsTutorialId: 'twentynine-action-buttons',
+  resetTutorialId: 'twentynine-reset-button',
+  AboveContent,
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Twenty-Nine (29) game page: an Indian/Bangladeshi 4-player (2 vs 2) hidden-trump bidding trick-taker. */
+export const TwentyNinePage = createGamePage(twentyNineDefinition);

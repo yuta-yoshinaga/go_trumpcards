@@ -341,7 +341,6 @@ TriPeaksPage.tsx
 TrogguPage.tsx
 TrucoPage.tsx
 TuSacPage.tsx
-TwentyNinePage.tsx
 TwoTenJackPage.tsx
 TysiacPage.tsx
 UltiPage.tsx
