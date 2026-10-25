@@ -494,4 +494,10 @@ describe('JassPage', () => {
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
     expect(screen.queryByTestId('ja-last-trick-bonus')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<JassPage />);
+    expect(await screen.findByText('切り札を選ぶ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bidTrump', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
