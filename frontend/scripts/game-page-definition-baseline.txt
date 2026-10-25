@@ -260,7 +260,6 @@ RussianSolitairePage.tsx
 SakuraPage.tsx
 SalicLawPage.tsx
 SambaPage.tsx
-ScartoPage.tsx
 SchnapsenPage.tsx
 ScopaPage.tsx
 ScoponePage.tsx
