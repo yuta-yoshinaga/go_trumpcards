@@ -479,4 +479,10 @@ describe('CinchPage', () => {
     expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 4 });
     expect(mockExec.mock.calls.filter(([command]) => command === 'trump')).toHaveLength(1);
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CinchPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
