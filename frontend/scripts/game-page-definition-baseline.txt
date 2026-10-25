@@ -126,7 +126,6 @@ FourSeasonsPage.tsx
 FourteenOutPage.tsx
 FreeBetPage.tsx
 FreeCellPage.tsx
-FrenchTarotPage.tsx
 GaigelPage.tsx
 GapsPage.tsx
 GermanSoloPage.tsx
