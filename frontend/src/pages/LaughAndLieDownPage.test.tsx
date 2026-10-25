@@ -497,3 +497,16 @@ describe('LaughAndLieDownPage hand card aria and tooltip reasons', () => {
     expect(unmatchableBtn2.getAttribute('aria-label')).not.toContain('手番ではありません');
   });
 });
+
+describe('LaughAndLieDownPage phase display', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<LaughAndLieDownPage />);
+    expect(await screen.findByText('進行中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+});
