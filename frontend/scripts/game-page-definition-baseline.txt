@@ -308,7 +308,6 @@ SutdaPage.tsx
 TablanetPage.tsx
 TappTarockPage.tsx
 TarabishPage.tsx
-TarocchiniPage.tsx
 TeenDoPaanchPage.tsx
 TeenPattiPage.tsx
 TehonbikiPage.tsx

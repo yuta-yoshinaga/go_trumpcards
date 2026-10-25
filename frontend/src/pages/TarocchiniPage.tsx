@@ -1,35 +1,20 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { tarocchiniApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, useTarocchiniGame } from '../hooks/useTarocchiniGame';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import { TAROCCHINI_SURPLUS, type TarocchiniResponse } from '../types/card';
 import { TarocchiniPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseTarocchiniCommand, TAROCCHINI_HELP } from '../utils/cli/commands/tarocchiniCommands';
 import { formatTarocchiniState } from '../utils/cli/formatters/tarocchiniFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -68,75 +53,171 @@ const TAROCCHINI_PHASE_KEYS: Readonly<Record<number, string>> = {
   [TarocchiniPhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Tarocchini game page: a Bolognese 4-player 2v2 tarot trick-taker. */
-export const TarocchiniPage = withTutorial(TarocchiniPageContent, 'tarocchini', TAROCCHINI_TUTORIAL_STEPS);
+type TarocchiniGame = ReturnType<typeof useTarocchiniGame>;
+type TarocchiniView = ReturnType<typeof useTarocchiniView>;
+type TarocchiniContext = GamePageContext<TarocchiniResponse, TarocchiniGame, TarocchiniView>;
 
-/** Inner content of the Tarocchini page, wrapped by TutorialProvider. */
-function TarocchiniPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('tarocchini');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    tarocchiniConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handleScarto,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    handleHint,
-  } = useTarocchiniGame();
-
+function useTarocchiniView({ game }: { game: TarocchiniGame }) {
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tarocchini');
-  const cliConfig: CliGameConfig<TarocchiniResponse, Parameters<typeof tarocchiniApi.exec>> = useMemo(
-    () => ({
-      gameName: 'tarocchini',
-      parseCommand: parseTarocchiniCommand,
-      formatResponse: formatTarocchiniState,
-      helpText: TAROCCHINI_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('tarocchini', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('tarocchini', TAROCCHINI_PHASE_KEYS);
 
-  if (!state)
-    return <GameSkeleton gameKey="tarocchini" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 15 }} />;
+  return { cardWidth, isMobile, phaseNames };
+}
 
+function Board({ state, t, view }: TarocchiniContext) {
+  const { cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;
-  const isHumanTurn = state.isHumanTurn;
-
-  const isScartoPhase = state.phase === TarocchiniPhase.SCARTO;
-  const isPlayPhase = state.phase === TarocchiniPhase.PLAY;
-  const isTrickEnd = state.phase === TarocchiniPhase.TRICK_END;
   const isRoundEnd = state.phase === TarocchiniPhase.ROUND_END;
+  const isGameEnd = state.phase === TarocchiniPhase.GAME_END || state.gameEndFlag;
   // チーム分けはサーバの player.team を使う (席番号から計算し直さない)。
   const teamOfSeat = (seat: number) => state.players.find((p) => p.id === seat)?.team ?? null;
   const lastTrickTeam = state.lastTrickWinner >= 0 ? teamOfSeat(state.lastTrickWinner) : null;
   const dealerTeam = teamOfSeat(state.dealerIdx);
-  const isGameEnd = state.phase === TarocchiniPhase.GAME_END || state.gameEndFlag;
 
+  return (
+    <>
+      <div className="text-ds-text-primary text-center mb-2" data-tutorial="tarocchini-info">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span>{t('target', { rounds: state.config.targetRounds })}</span>
+      </div>
+
+      {/*
+        The papi rule is the one thing a player cannot infer from the cards,
+        so it gets a permanent line rather than a tooltip: four trumps rank
+        equal, and the LATER-played one takes the trick.
+      */}
+      <div className="text-center mb-2 text-sm font-semibold text-ds-warning" data-testid="tarocchini-papi-note">
+        {t('papiNote')}
+      </div>
+
+      <div className={lgTwoColGrid}>
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="tarocchini-trick-display"
+          />
+        </div>
+
+        <div>
+          {/* Team scores — this is a team game, not an individual one. */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tarocchini-team-scores">
+            {state.teamScores.map((score, team) => (
+              <div key={team} className={`py-0.5 ${team === humanTeam ? 'text-ds-text-primary font-semibold' : ''}`}>
+                {t('teamScore', { n: team, score })}
+              </div>
+            ))}
+          </div>
+
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
+                    {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                  {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
+                  {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
+                  {t('tricks', { count: p.trickCount })}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {state.scartoCount > 0 && (
+            <div className="mb-2 text-ds-text-muted text-sm" data-testid="tarocchini-scarto-done">
+              {t('scartoDone', { count: state.scartoCount })}
+            </div>
+          )}
+
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              {state.players.map((p) => (
+                <div key={p.id}>
+                  {t('roundResult.tricks', {
+                    name: playerName(p.id, p.isHuman),
+                    count: state.roundTricks[p.id] ?? 0,
+                  })}
+                </div>
+              ))}
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.breakdownTitle')}</div>
+              {state.roundBreakdown.map((breakdown, team) => (
+                <div key={`round-breakdown-${team}`} data-testid={`tarocchini-team-round-breakdown-${team}`}>
+                  {t('roundResult.breakdown', { team, ...breakdown })}
+                </div>
+              ))}
+              {lastTrickTeam !== null && (
+                <div data-testid="tarocchini-last-trick-bonus">
+                  {t('roundResult.lastTrick', {
+                    team: lastTrickTeam,
+                    bonus: TAROCCHINI_LAST_TRICK_BONUS,
+                  })}
+                </div>
+              )}
+              {state.scartoCount > 0 && dealerTeam !== null && (
+                <div data-testid="tarocchini-scarto-bonus">
+                  {t('roundResult.scarto', { team: dealerTeam, count: state.scartoCount })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: TarocchiniContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="tarocchini-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices &&
+              state.hint.cardIndices.length > 0 &&
+              ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterHand({ game, state, t, view }: TarocchiniContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isHumanTurn = state.isHumanTurn;
+  const isScartoPhase = state.phase === TarocchiniPhase.SCARTO;
+  const isPlayPhase = state.phase === TarocchiniPhase.PLAY;
   const canPlay = isPlayPhase && isHumanTurn;
   const canScarto = isScartoPhase && state.isHumanScarto;
   const scartoValidIndices =
@@ -144,295 +225,169 @@ function TarocchiniPageContent() {
       ? humanPlayer.cards.flatMap((card, idx) => (card.design !== 'JOKER' ? [idx] : []))
       : undefined;
 
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
   return (
-    <GamePageShell
-      title={tc('nav.tarocchini')}
-      gameThemeBg={gameTheme.tarocchini.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={(isHumanTurn || canScarto) && !isGameEnd}
-      gamePath="/tarocchini"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerTeam === humanTeam}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: tarocchiniConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'number',
-                    id: 'targetRounds',
-                    label: t('settings.targetRounds'),
-                    value: tarocchiniConfig.targetRounds,
-                    min: 4,
-                    step: 4,
-                    description: t('settings.targetRoundsGuide'),
-                    onSelect: (v) => handleConfigChange('targetRounds', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="tarocchini-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('target', { rounds: state.config.targetRounds })}</span>
-            </div>
-
-            {/*
-              The papi rule is the one thing a player cannot infer from the cards,
-              so it gets a permanent line rather than a tooltip: four trumps rank
-              equal, and the LATER-played one takes the trick.
-            */}
-            <div className="text-center mb-2 text-sm font-semibold text-ds-warning" data-testid="tarocchini-papi-note">
-              {t('papiNote')}
-            </div>
-
-            <div className={lgTwoColGrid}>
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="tarocchini-trick-display"
-                />
-              </div>
-
-              <div>
-                {/* Team scores — this is a team game, not an individual one. */}
-                <div
-                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                  data-testid="tarocchini-team-scores"
-                >
-                  {state.teamScores.map((score, team) => (
-                    <div
-                      key={team}
-                      className={`py-0.5 ${team === humanTeam ? 'text-ds-text-primary font-semibold' : ''}`}
-                    >
-                      {t('teamScore', { n: team, score })}
-                    </div>
-                  ))}
-                </div>
-
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
-                          {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}
-                        {p.isDealer ? ` / ${t('dealerBadge')}` : ''}): {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {state.scartoCount > 0 && (
-                  <div className="mb-2 text-ds-text-muted text-sm" data-testid="tarocchini-scarto-done">
-                    {t('scartoDone', { count: state.scartoCount })}
-                  </div>
-                )}
-
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    {state.players.map((p) => (
-                      <div key={p.id}>
-                        {t('roundResult.tricks', {
-                          name: playerName(p.id, p.isHuman),
-                          count: state.roundTricks[p.id] ?? 0,
-                        })}
-                      </div>
-                    ))}
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.breakdownTitle')}</div>
-                    {state.roundBreakdown.map((breakdown, team) => (
-                      <div key={`round-breakdown-${team}`} data-testid={`tarocchini-team-round-breakdown-${team}`}>
-                        {t('roundResult.breakdown', { team, ...breakdown })}
-                      </div>
-                    ))}
-                    {lastTrickTeam !== null && (
-                      <div data-testid="tarocchini-last-trick-bonus">
-                        {t('roundResult.lastTrick', {
-                          team: lastTrickTeam,
-                          bonus: TAROCCHINI_LAST_TRICK_BONUS,
-                        })}
-                      </div>
-                    )}
-                    {state.scartoCount > 0 && dealerTeam !== null && (
-                      <div data-testid="tarocchini-scarto-bonus">
-                        {t('roundResult.scarto', { team: dealerTeam, count: state.scartoCount })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="tarocchini-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tarocchini-reset-button"
-              />
-            </div>
+    <>
+      {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+          変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+      <div data-testid="tarocchini-prompt-live" role="status" aria-live="polite">
+        {canScarto && (
+          <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
+            {t('scartoPrompt', { count: game.selectedCardIndices.length, total: TAROCCHINI_SURPLUS })}
           </div>
+        )}
+      </div>
 
-          {/* Footer */}
-          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
-          <GameFooter
-            tall
-            className={`${gameTheme.tarocchini.footer} px-4 py-2.5`}
-            actions={
-              (canScarto || canPlay || isTrickEnd || isRoundEnd) && (
-                <div className="flex flex-wrap gap-2 items-center" data-tutorial="tarocchini-action-buttons">
-                  {canScarto && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleScarto}
-                      disabled={loading || selectedCardIndices.length !== TAROCCHINI_SURPLUS}
-                    >
-                      {t('scartoButton')}
-                    </button>
-                  )}
-                  {canPlay && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {/* 同格のパパ 4 枚をどう使うかがこのゲームの難所。CUI と CLI からは
-                    呼べるのに、盤面には要求する手段が無かった (#4820)。 */}
-                  {(canScarto || canPlay) && (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handleHint}
-                      disabled={loading}
-                      data-testid="tarocchini-hint-button"
-                    >
-                      {t('hintButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
-                </div>
-              )
-            }
-          >
-            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
-                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
-            <div data-testid="tarocchini-prompt-live" role="status" aria-live="polite">
-              {canScarto && (
-                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
-                  {t('scartoPrompt', { count: selectedCardIndices.length, total: TAROCCHINI_SURPLUS })}
-                </div>
-              )}
-            </div>
-
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="tarocchini"
-                stackRows
-                validIndices={canPlay ? state.playableIndices : scartoValidIndices}
-                restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
-              />
-            )}
-          </GameFooter>
-        </>
+      {humanPlayer && (
+        <PlayerHandSection
+          humanPlayer={humanPlayer}
+          selectedCardIndices={game.selectedCardIndices}
+          toggleCard={game.toggleCard}
+          cardWidth={view.cardWidth}
+          isMobile={view.isMobile}
+          dataTutorialPrefix="tarocchini"
+          stackRows
+          validIndices={canPlay ? state.playableIndices : scartoValidIndices}
+          restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
+        />
       )}
-    </GamePageShell>
+    </>
   );
 }
+
+function primaryActions({ game, state, t, busy }: TarocchiniContext) {
+  const isScartoPhase = state.phase === TarocchiniPhase.SCARTO;
+  const isPlayPhase = state.phase === TarocchiniPhase.PLAY;
+  const isTrickEnd = state.phase === TarocchiniPhase.TRICK_END;
+  const isRoundEnd = state.phase === TarocchiniPhase.ROUND_END;
+  const canPlay = isPlayPhase && state.isHumanTurn;
+  const canScarto = isScartoPhase && state.isHumanScarto;
+
+  if (!canScarto && !canPlay && !isTrickEnd && !isRoundEnd) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 items-center" data-tutorial="tarocchini-action-buttons">
+      {canScarto && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handleScarto}
+          disabled={busy || game.selectedCardIndices.length !== TAROCCHINI_SURPLUS}
+        >
+          {t('scartoButton')}
+        </button>
+      )}
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {/* 同格のパパ 4 枚をどう使うかがこのゲームの難所。CUI と CLI からは
+        呼べるのに、盤面には要求する手段が無かった (#4820)。 */}
+      {(canScarto || canPlay) && (
+        <button
+          type="button"
+          className={btnSuccess}
+          onClick={game.handleHint}
+          disabled={busy}
+          data-testid="tarocchini-hint-button"
+        >
+          {t('hintButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const tarocchiniDefinition: GameDefinition<
+  TarocchiniResponse,
+  TarocchiniGame,
+  Parameters<typeof tarocchiniApi.exec>,
+  TarocchiniView
+> = {
+  key: 'tarocchini',
+  useGame: useTarocchiniGame,
+  useView: useTarocchiniView,
+  tutorial: TAROCCHINI_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 15 },
+  cli: () => ({
+    parseCommand: parseTarocchiniCommand,
+    formatResponse: formatTarocchiniState,
+    helpText: TAROCCHINI_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const humanPlayer = state.players.find((p) => p.isHuman);
+    const humanTeam = humanPlayer?.team ?? 0;
+    const isGameEnd = state.phase === TarocchiniPhase.GAME_END || state.gameEndFlag;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerTeam === humanTeam,
+    };
+  },
+  shell: ({ state }) => {
+    const isScartoPhase = state.phase === TarocchiniPhase.SCARTO;
+    const canScarto = isScartoPhase && state.isHumanScarto;
+    const isGameEnd = state.phase === TarocchiniPhase.GAME_END || state.gameEndFlag;
+    return {
+      isHumanTurn: (state.isHumanTurn || canScarto) && !isGameEnd,
+    };
+  },
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.tarocchiniConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'number',
+          id: 'targetRounds',
+          label: t('settings.targetRounds'),
+          value: game.tarocchiniConfig.targetRounds,
+          min: 4,
+          step: 4,
+          description: t('settings.targetRoundsGuide'),
+          onSelect: (v) => game.handleConfigChange('targetRounds', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  footerTall: true,
+  resetTutorialId: 'tarocchini-reset-button',
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Tarocchini game page: a Bolognese 4-player 2v2 tarot trick-taker. */
+export const TarocchiniPage = createGamePage(tarocchiniDefinition);
