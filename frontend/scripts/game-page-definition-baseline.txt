@@ -141,7 +141,6 @@ GoofspielPage.tsx
 GrandfathersClockPage.tsx
 GuandanPage.tsx
 HachiHachiPage.tsx
-HandAndFootPage.tsx
 HasenpfefferPage.tsx
 HighCardFlushPage.tsx
 HokmPage.tsx

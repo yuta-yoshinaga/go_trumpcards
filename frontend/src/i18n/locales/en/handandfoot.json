@@ -12,7 +12,6 @@
   "discardPhase": "Discard a card or go out.",
   "roundEnd": "Round over. Proceed to the next round.",
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "pointLimit": "Point Limit",
     "easy": "Easy",

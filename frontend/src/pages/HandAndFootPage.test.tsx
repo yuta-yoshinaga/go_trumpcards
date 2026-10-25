@@ -741,4 +741,11 @@ describe('HandAndFootPage', () => {
     expect(cpuHandInfo).not.toHaveTextContent('cards');
     expect(screen.queryByText(/15 cards/)).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
