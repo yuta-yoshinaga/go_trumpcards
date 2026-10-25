@@ -52,7 +52,6 @@ BuraPage.tsx
 BurracoPage.tsx
 CalabresellaPage.tsx
 CalculationPage.tsx
-CanastaPage.tsx
 CanfieldPage.tsx
 CaribbeanDrawPage.tsx
 CaribbeanStudPage.tsx
