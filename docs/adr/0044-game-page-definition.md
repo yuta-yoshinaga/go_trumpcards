@@ -24,7 +24,7 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, actionLogDuringPlay?, actionLogEndPhase?, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, footerTall?, controlsInFooter?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, actionLogDuringPlay?, actionLogEndPhase?, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, footerTall?, controlsInFooter?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, landscapeBannerInCliMode?, settingsInCliMode?, resetTutorialId?, footerTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterLead?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
@@ -60,6 +60,8 @@ Issue #11912。
 上の「まだ表現できないもの」は #11915 で解消済み。CPU ログも分割サイドバーも `Board` の中に置けるので、定義に口は足していない (2026-10-20、NOT_PLANNED)。
 
 ## 追記 (2026-10-25): 系統移行 2 回目で見つかったファクトリの不足
+
+帯や上置きの設定パネルを CLI モードでも出していたページ (40 ページ) 用に `landscapeBannerInCliMode` / `settingsInCliMode` を追加。
 
 OldMaid、Ecarte、Jass、Belote を移した。監査を通ったのは Ecarte だけだった。残りの 3 ページは委譲の誤りではなく、ファクトリ側の不足で振る舞いが変わった。上の「CPU ログも分割サイドバーも `Board` に置ける」は正しかった（OldMaid の CPU ログは Board の中で同じ位置に出た）。ただし、`Board` だけでは表せない形が 4 つあった。そこで次の口を足した:
 

@@ -139,6 +139,10 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   settingsPlacement?: 'top' | 'bottom';
   /** Whether to render the landscape recommendation banner. Defaults to false. */
   landscapeBanner?: boolean;
+  /** Keeps the landscape recommendation banner visible in CLI mode; requires `landscapeBanner: true`. */
+  landscapeBannerInCliMode?: boolean;
+  /** Keeps top-placed settings visible in CLI mode; applies only with `settingsPlacement: 'top'`. */
+  settingsInCliMode?: boolean;
   resetTutorialId?: string;
   /**
    * Tutorial identifier on the fixed `<footer>` element itself (present even on turns with no actions).
@@ -326,12 +330,23 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
         {...shellProps}
       >
         {LiveRegion && <LiveRegion {...context} />}
+        {/* Rendered ahead of the CLI branch so the same element survives toggling CLI mode. */}
+        {def.landscapeBanner && def.landscapeBannerInCliMode && (
+          <LandscapeBanner message={setup.t('landscapeBanner')} />
+        )}
+        {def.settingsPlacement === 'top' && def.settingsInCliMode && (
+          <SettingsPanel title={setup.tc('settings.title')} groups={settings} />
+        )}
         {cliMode.cliEnabled ? (
           <CliTerminal logEntries={cliMode.logEntries} onCommand={handleCommand} disabled={game.loading} />
         ) : (
           <>
-            {def.landscapeBanner && <LandscapeBanner message={setup.t('landscapeBanner')} />}
-            {def.settingsPlacement === 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
+            {def.landscapeBanner && !def.landscapeBannerInCliMode && (
+              <LandscapeBanner message={setup.t('landscapeBanner')} />
+            )}
+            {def.settingsPlacement === 'top' && !def.settingsInCliMode && (
+              <SettingsPanel title={setup.tc('settings.title')} groups={settings} />
+            )}
             {AboveContent && <AboveContent {...context} />}
             <div className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}>
               <Board {...context} />
