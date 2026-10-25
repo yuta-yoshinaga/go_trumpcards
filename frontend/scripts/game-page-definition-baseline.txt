@@ -21,7 +21,6 @@ BarbuPage.tsx
 BaseballPokerPage.tsx
 BasraPage.tsx
 BassetPage.tsx
-BatakPage.tsx
 BeggarMyNeighbourPage.tsx
 BeleagueredCastlePage.tsx
 BeziquePage.tsx
