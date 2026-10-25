@@ -44,7 +44,6 @@ BotifarraPage.tsx
 BouillottePage.tsx
 BourrePage.tsx
 BraidPage.tsx
-BridgePage.tsx
 BriscolaPage.tsx
 BristolPage.tsx
 BrusquembillePage.tsx
