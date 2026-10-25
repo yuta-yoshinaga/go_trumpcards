@@ -757,6 +757,18 @@ describe('createGamePage', () => {
       expect(actionLogSection?.nextElementSibling).toBe(screen.getByRole('alert'));
     });
 
+    it('shows the action log during play only when actionLogDuringPlay is enabled', () => {
+      currentGame = { ...defaultBaseGame, state: { ended: false } };
+      const Enabled = makePage({ actionLogDuringPlay: true });
+      const first = renderWithProviders(<Enabled />);
+      expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+      first.unmount();
+
+      const Default = makePage({});
+      renderWithProviders(<Default />);
+      expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+    });
+
     it('renders AboveContent after top settings and outside the scrolling content', () => {
       const AboveContent = () => <div data-testid="above">above</div>;
       const Page = makePage({ AboveContent, settingsPlacement: 'top' });

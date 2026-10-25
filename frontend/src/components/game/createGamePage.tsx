@@ -104,6 +104,8 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   busy?: (game: G) => boolean;
   /** Plain function computing the current phase display. Must not call hooks. */
   phase: (ctx: GamePageContext<S, G, V>) => { name: string; ended: boolean; won?: boolean };
+  /** Whether the action log can be opened during play, matching `ActionLogSection`'s `availableDuringPlay` prop. Defaults to false. */
+  actionLogDuringPlay?: boolean;
   /** Plain function returning action shortcuts. Must not call hooks. */
   shortcuts?: (ctx: GamePageContext<S, G, V>) => ActionBinding[];
   /** Plain function returning pinned primary footer actions. Must not call hooks. Its presence selects the pinned footer layout. Return null (not undefined) on turns with no actions. */
@@ -324,6 +326,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
               <Board {...context} />
               <ActionLogSection
                 isEndPhase={phase.ended}
+                availableDuringPlay={def.actionLogDuringPlay}
                 actionLog={setup.actionLog}
                 showActionLog={setup.showActionLog}
                 hideActionLog={setup.hideActionLog}
