@@ -316,6 +316,12 @@ describe('BuraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText('切札 ハート（指示カードは引かれた）')).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BuraPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('BuraPage action log during play', () => {
