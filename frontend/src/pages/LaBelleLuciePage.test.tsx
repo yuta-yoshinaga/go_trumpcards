@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { labellelucieApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -36,7 +36,19 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(() => {
+  localStorage.removeItem('cli-mode-labellelucie');
+});
+
 describe('LaBelleLuciePage', () => {
+  it('shows the CLI terminal when CLI mode is enabled', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    expect(await screen.findByTestId('fan-0')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('fan-0')).not.toBeInTheDocument();
+  });
+
   it('blocks fan and foundation actions while a request is loading, then restores them', async () => {
     renderWithProviders(<LaBelleLuciePage />);
 
