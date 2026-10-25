@@ -19,11 +19,13 @@ describe('parseTehonbikiCommand', () => {
     ['next', ['next']],
     ['hint', ['hint']],
     ['h', ['hint']],
-    ['log', ['log']],
     ['reset', ['reset']],
     ['r', ['reset']],
   ])('maps %s to the page API action', (input, expected) => {
     expect(parseTehonbikiCommand(input)).toEqual({ args: expected });
+  });
+  it('treats log as an unknown command', () => {
+    expect(parseTehonbikiCommand('log')).toEqual({ error: 'Unknown command: log' });
   });
   it.each([
     'bet',

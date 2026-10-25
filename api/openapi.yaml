@@ -73234,6 +73234,13 @@ components:
         sessionId:
           type: string
 
+    TehonbikiHint:
+      type: object
+      description: Suggested next action for Tehonbiki
+      required: [reason]
+      properties:
+        reason:
+          type: string
     TehonbikiResponse:
       type: object
       description: Current state of the Tehonbiki game
@@ -73243,6 +73250,8 @@ components:
           description: Present only in the reply to the `log` command.
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        hint:
+          $ref: '#/components/schemas/TehonbikiHint'
         phase:
           type: integer
           description: "Game phase: 0 Bet, 1 Result, 2 GameEnd"

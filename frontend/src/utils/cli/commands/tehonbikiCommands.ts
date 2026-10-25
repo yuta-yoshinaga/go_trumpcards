@@ -3,7 +3,7 @@ import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase'
 import type { CliParseResult } from '../types';
 
 type Args = Parameters<typeof tehonbikiApi.exec>;
-const VALID_COMMANDS = ['bet', 'b', 'half', 'next', 'hint', 'h', 'log', 'reset', 'r'];
+const VALID_COMMANDS = ['bet', 'b', 'half', 'next', 'hint', 'h', 'reset', 'r'];
 const MIN_BET = 10;
 const MAX_BET = 500;
 /** CLI help for Tehonbiki. */
@@ -12,13 +12,12 @@ export const TEHONBIKI_CLI_HELP = [
   'half <numbers...> <amount> (10..500)',
   'next',
   'hint (h)',
-  'log',
   'reset (r)',
 ];
 /** Parses a Tehonbiki CLI command. */
 export function parseTehonbikiCommand(input: string): CliParseResult<Args> {
   const { cmd, args } = splitCommand(input);
-  if (cmd === 'next' || cmd === 'hint' || cmd === 'h' || cmd === 'log' || cmd === 'reset' || cmd === 'r')
+  if (cmd === 'next' || cmd === 'hint' || cmd === 'h' || cmd === 'reset' || cmd === 'r')
     return { args: [cmd === 'r' ? 'reset' : cmd === 'h' ? 'hint' : cmd] };
   if (cmd === 'bet' || cmd === 'b' || cmd === 'half') {
     const betArgs = cmd === 'half' ? ['half', ...args] : args;
