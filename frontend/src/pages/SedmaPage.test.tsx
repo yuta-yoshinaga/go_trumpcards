@@ -234,6 +234,12 @@ describe('SedmaPage', () => {
     );
     await waitFor(() => expect(screen.queryByText('設定変更は次回リセット時に適用されます。')).not.toBeInTheDocument());
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SedmaPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **7 はどのスートでもトリックを奪える。**フォロー義務が無い捕獲ゲームなのに、
