@@ -1533,6 +1533,13 @@ export const MississippiStudPhase = {
   END: 5,
 } as const;
 
+/** Mississippi Stud result values (sync: internal/domain/game_result.go). */
+export const MississippiStudResult = {
+  LOSE: -1,
+  DRAW: 0,
+  WIN: 1,
+} as const;
+
 /** Doubt phase constants (sync: internal/domain/Doubt.go). */
 export const DoubtPhase = {
   PLAY: 0,

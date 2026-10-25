@@ -122,6 +122,58 @@ afterEach(() => {
 });
 
 describe('MississippiStudPage', () => {
+  it('toggles the GUI to the CLI terminal and back', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    expect(await screen.findByTestId('card-area')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('card-area')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(await screen.findByTestId('card-area')).toBeInTheDocument();
+  });
+
+  it('answers h with a local CLI hint without calling the API', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    mockApi.mockClear();
+    fireEvent.change(input, { target: { value: 'h' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect((await screen.findAllByText('ヒントはありません')).length).toBeGreaterThan(0);
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('rejects an ante above the page maximum without calling exec', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    mockApi.mockClear();
+    fireEvent.change(input, { target: { value: 'bet 260' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getAllByText(/range/).length).toBeGreaterThan(0));
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('dispatches a valid CLI ante with the same arguments as the ante button', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(antePhaseState);
+    fireEvent.change(input, { target: { value: 'bet 250' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 250));
+  });
+
   it('renders skeleton before state loads', () => {
     mockApi.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<MississippiStudPage />);
@@ -429,12 +481,11 @@ describe('MississippiStudPage', () => {
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 
-  it('does not render CLI toggle (CLI not yet implemented)', async () => {
+  it('renders the CLI toggle', async () => {
     mockApi.mockResolvedValue(antePhaseState);
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
-    // CLI toggle is intentionally hidden until CLI command parsing is implemented
-    expect(screen.queryByRole('button', { name: /CLI/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /CLI/i })).toBeInTheDocument();
   });
 });
 
