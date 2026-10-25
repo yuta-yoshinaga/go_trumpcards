@@ -557,4 +557,10 @@ describe('ViraPage pot settlement', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<ViraPage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
