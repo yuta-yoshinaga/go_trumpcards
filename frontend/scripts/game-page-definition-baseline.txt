@@ -147,7 +147,6 @@ MaoPage.tsx
 MarjapussiPage.tsx
 MarriagePage.tsx
 MatrimonyPage.tsx
-MemoryPage.tsx
 MendikotPage.tsx
 MightyPage.tsx
 MinibridgePage.tsx
