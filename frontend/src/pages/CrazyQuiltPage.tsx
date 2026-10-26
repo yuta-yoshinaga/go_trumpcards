@@ -1,41 +1,23 @@
 import { useCallback, useId, useMemo } from 'react';
 import type { crazyquiltApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useCrazyQuiltGame } from '../hooks/useCrazyQuiltGame';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { CrazyQuiltMoveZone, CrazyQuiltResponse } from '../types/card';
 import { CrazyQuiltPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CRAZYQUILT_HELP, parseCrazyQuiltCommand } from '../utils/cli/commands/crazyquiltCommands';
 import { formatCrazyQuiltState } from '../utils/cli/formatters/crazyquiltFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isCrazyQuiltVertical } from '../utils/crazyQuiltCells';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 /** The quilt is 8x8. */
@@ -57,8 +39,15 @@ const CG_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="cg-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
 
-/** Renders the CrazyQuilt page: eight single-card piles flanking eight foundations. */
-export const CrazyQuiltPage = withTutorial(CrazyQuiltPageContent, 'crazyquilt', CG_TUTORIAL_STEPS);
+const CRAZYQUILT_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [CrazyQuiltPhase.PLAYING]: 'playing',
+  [CrazyQuiltPhase.GAME_CLEAR]: 'gameClear',
+  [CrazyQuiltPhase.GAME_OVER]: 'gameOver',
+};
+
+type CrazyQuiltGame = ReturnType<typeof useCrazyQuiltGame>;
+type CrazyQuiltView = ReturnType<typeof useCrazyQuiltView>;
+type CrazyQuiltContext = GamePageContext<CrazyQuiltResponse, CrazyQuiltGame, CrazyQuiltView>;
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, idx: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation', { idx });
@@ -67,42 +56,8 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   return t('frontendHint.tableau', { pile: idx });
 }
 
-function CrazyQuiltPageContent() {
+function useCrazyQuiltView({ game }: { game: CrazyQuiltGame }) {
   const selectSourceHintId = useId();
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('crazyquilt');
-  const game = useCrazyQuiltGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('crazyquilt', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('crazyquilt');
-  const cliConfig: CliGameConfig<CrazyQuiltResponse, Parameters<typeof crazyquiltApi.exec>> = useMemo(
-    () => ({
-      gameName: 'crazyquilt',
-      parseCommand: parseCrazyQuiltCommand,
-      formatResponse: formatCrazyQuiltState,
-      helpText: CRAZYQUILT_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useIsLargeDesktop();
   const dims = useMemo(() => {
@@ -116,7 +71,7 @@ function CrazyQuiltPageContent() {
     return { cw, ch, co };
   }, [isMobile, isLargeDesktop, cardWidth, cardHeight, cardOverlap]);
 
-  const isPlayingForKbd = state?.phase === CrazyQuiltPhase.PLAYING;
+  const isPlayingForKbd = game.state?.phase === CrazyQuiltPhase.PLAYING;
 
   const dispatchMove = useCallback(
     (source: CrazyQuiltMoveZone, target: CrazyQuiltMoveZone) => {
@@ -132,44 +87,36 @@ function CrazyQuiltPageContent() {
   const dnd = useSolitaireDragDrop<CrazyQuiltMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: game.loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+  const phaseNames = usePhaseNames('crazyquilt', CRAZYQUILT_PHASE_KEYS);
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+  return { selectSourceHintId, dims, isLargeDesktop, isMobile, dnd, phaseNames };
+}
+
+function HeaderExtra({ state, t }: CrazyQuiltContext) {
+  return (
+    <span className="text-sm text-ds-text-muted">
+      {t('moveCount')}: {state.moveCount}
+    </span>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: game.handleDraw, label: 'draw' },
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
+function AboveContent({ view, tc }: CrazyQuiltContext) {
+  return (
+    <span id={view.selectSourceHintId} className="sr-only">
+      {tc('label.selectSourceFirst')}
+    </span>
   );
+}
 
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
-
-  if (!state) {
-    return <GameSkeleton gameKey="crazyquilt" layout={{ kind: 'tableau', topRow: 8, tableau: QUILT_SIZE }} />;
-  }
-
+function Board({ game, state, t, view, frontendHint }: CrazyQuiltContext) {
+  const { dims, isLargeDesktop, dnd, selectSourceHintId } = view;
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
   const isPlaying = state.phase === CrazyQuiltPhase.PLAYING;
-  const isGameClear = state.phase === CrazyQuiltPhase.GAME_CLEAR;
   const isGameOver = state.phase === CrazyQuiltPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
   const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -245,349 +192,329 @@ function CrazyQuiltPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.crazyquilt')}
-      gameThemeBg={gameTheme.crazyquilt.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/crazyquilt"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <LandscapeBanner message={t('landscapeBanner')} />
-
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <span id={selectSourceHintId} className="sr-only">
-            {tc('label.selectSourceFirst')}
-          </span>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 min-[1024px]:pt-0">
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3 min-[1024px]:mb-0">
-              <div
-                className="flex flex-nowrap sm:flex-wrap justify-center gap-1 sm:gap-2"
-                data-tutorial="cg-foundation"
-              >
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: CrazyQuiltMoveZone = { zone: 'foundation', col: idx };
-                  // **A 始まりと K 始まりが混在する。**向きが出ていないと、
-                  // 途中から見て「次に何が要るのか」が読めない。CUI は
-                  // ↑/↓ を出しているのに Web は foundationAscending を
-                  // 一度も参照していなかった (#5743)。
-                  const ascending = state.foundationAscending?.[idx] !== false;
-                  const directionMark = ascending ? '↑' : '↓';
-                  const directionText = t(ascending ? 'directionAscending' : 'directionDescending');
-                  return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1" data-testid={`cq-foundation-head-${idx}`}>
-                        {FOUNDATION_SUITS[idx]}
-                        <span className="ml-0.5" title={directionText} aria-hidden="true">
-                          {directionMark}
-                        </span>
-                      </div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t(
-                              ascending ? 'foundationAscendingAriaLabel' : 'foundationDescendingAriaLabel',
-                              { suit: FOUNDATION_SUITS[idx], idx, count: pile.length },
-                            )}
-                            data-valid-destination={validFoundationTargets?.includes(idx) ? 'true' : undefined}
-                            data-testid={`cq-foundation-${idx}`}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${validFoundationTargets?.includes(idx) ? 'ring-2 ring-ds-success' : ''}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={dims.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.1 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t(
-                              ascending ? 'emptyFoundationAscendingAriaLabel' : 'emptyFoundationDescendingAriaLabel',
-                              { suit: FOUNDATION_SUITS[idx], idx },
-                            )}
-                            style={{ width: dims.cw, height: dims.ch }}
-                            data-valid-destination={validFoundationTargets?.includes(idx) ? 'true' : undefined}
-                            data-testid={`cq-foundation-${idx}`}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${validFoundationTargets?.includes(idx) ? 'ring-2 ring-ds-success' : ''}`}
-                          >
-                            {/* 空の組札は「何から始まるか」がそのまま次に要る札。 */}
-                            {ascending ? 'A' : 'K'}
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-2 items-start" data-tutorial="cg-stock">
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
-                  {/* The stock only ever draws. Once it empties the same
-                      button performs the single redeal, so it stays enabled
-                      while a redeal remains. */}
-                  <button
-                    type="button"
-                    onClick={() => game.handleDraw()}
-                    disabled={
-                      !isPlaying || loading || isAutoCompleting || (state.stockCount === 0 && state.redealsLeft === 0)
-                    }
-                    aria-label={
-                      state.stockCount === 0
-                        ? // **空になった山札は「終わり」とは限らない。**組み直しが
-                          // 残っていればこのボタンがそれを行う。
-                          state.redealsLeft > 0
-                          ? t('emptyStockAriaLabel', { count: state.redealsLeft })
-                          : t('emptyStockNoRedealAriaLabel')
-                        : t('stockAriaLabel', { count: state.stockCount })
-                    }
-                    aria-pressed={isSourceSelected('stock', undefined)}
-                    style={{ width: dims.cw, height: dims.ch }}
-                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isSourceSelected('stock', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                  >
-                    {state.stockCount}
-                  </button>
-                  {/* CUI の redealLine と同じ情報。残り回数が見えないと、山札が
-                      空になった瞬間に打ち切りなのか組み直せるのか判断できない。 */}
-                  <div className="text-game-text-muted text-xs mt-1 min-[1024px]:mt-0" data-testid="crazyquilt-redeals">
-                    {t('redealLine', { count: state.redealsLeft })}
-                  </div>
+    <>
+      <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3 min-[1024px]:mb-0">
+        <div className="flex flex-nowrap sm:flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
+          {state.foundation.map((pile, idx) => {
+            const foundationZone: CrazyQuiltMoveZone = { zone: 'foundation', col: idx };
+            // **A 始まりと K 始まりが混在する。**向きが出ていないと、
+            // 途中から見て「次に何が要るのか」が読めない。CUI は
+            // ↑/↓ を出しているのに Web は foundationAscending を
+            // 一度も参照していなかった (#5743)。
+            const ascending = state.foundationAscending?.[idx] !== false;
+            const directionMark = ascending ? '↑' : '↓';
+            const directionText = t(ascending ? 'directionAscending' : 'directionDescending');
+            return (
+              <div key={`f-${idx.toString()}`} className="text-center">
+                <div className="text-game-text-muted text-xs mb-1" data-testid={`cq-foundation-head-${idx}`}>
+                  {FOUNDATION_SUITS[idx]}
+                  <span className="ml-0.5" title={directionText} aria-hidden="true">
+                    {directionMark}
+                  </span>
                 </div>
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-                  {wasteTop ? (
-                    <DropZone
-                      isDropTarget={dnd.isDropTarget(wasteZone)}
-                      onDragOver={dnd.handleDragOver(wasteZone)}
-                      onDrop={dnd.handleDrop(wasteZone)}
-                      onDragLeave={dnd.handleDragLeave}
-                    >
-                      <button
-                        type="button"
-                        // **捨て札は移動元にも移動先にもなる。** キルトの札を
-                        // 選んでいるときは連番置きの置き先（キルトを崩す主要な
-                        // 手）で、それ以外は移動元。片方しか繋がないと、その手が
-                        // UI から一切出せなくなる。
-                        onClick={() =>
-                          quiltSelected ? game.handleSelectTarget(wasteZone) : game.handleSelectSource(wasteZone)
-                        }
-                        disabled={!isPlaying || loading}
-                        aria-label={
-                          quiltSelected ? t('wasteDropAriaLabel', { card: cardAlt(wasteTop) }) : cardAlt(wasteTop)
-                        }
-                        aria-pressed={isSourceSelected('waste', undefined)}
-                        draggable={isPlaying && !loading && !quiltSelected}
-                        onDragStart={dnd.handleDragStart(wasteZone)}
-                        onDragEnd={dnd.handleDragEnd}
-                        data-testid="cq-waste"
-                        data-valid-destination={canReachWaste ? 'true' : undefined}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''} ${quiltSelected ? 'ring-2 ring-ds-info/70' : ''} ${canReachWaste ? 'ring-2 ring-ds-success' : ''}`}
-                      >
-                        <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
-                      </button>
-                    </DropZone>
-                  ) : (
-                    <div
-                      role="img"
-                      aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: dims.cw, height: dims.ch }}
-                      className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
-                    >
-                      {t('empty')}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {isPlaying && (
-              <div
-                className="text-center text-ds-text-muted text-sm mb-3 min-[1024px]:mb-0"
-                role="progressbar"
-                aria-label={t('foundationProgressLabel')}
-                aria-valuemin={0}
-                aria-valuemax={TOTAL_CARDS}
-                aria-valuenow={foundationCount}
-                aria-valuetext={t('foundationProgress', { count: foundationCount })}
-              >
-                {t('foundationProgress', { count: foundationCount })}
-              </div>
-            )}
-
-            <div
-              className="flex flex-col items-center gap-y-0.5 sm:gap-y-1"
-              data-tutorial="cg-tableau"
-              data-testid="cq-quilt"
-            >
-              {Array.from({ length: QUILT_SIZE }, (_, row) => (
-                <div
-                  key={`row-${row.toString()}`}
-                  className="grid gap-0.5 sm:gap-1 justify-center"
-                  // Preserve a 52px visible card edge while deriving overlap from card height and row gap.
-                  style={{
-                    gridTemplateColumns: `repeat(${QUILT_SIZE}, minmax(0, 1fr))`,
-                    marginTop: isLargeDesktop && row > 0 ? -(dims.ch + ROW_GAP_PX - QUILT_VISIBLE_EDGE_PX) : undefined,
-                  }}
-                  data-testid={`cq-quilt-row-${row}`}
+                <DropZone
+                  isDropTarget={dnd.isDropTarget(foundationZone)}
+                  onDragOver={dnd.handleDragOver(foundationZone)}
+                  onDrop={dnd.handleDrop(foundationZone)}
+                  onDragLeave={dnd.handleDragLeave}
                 >
-                  {Array.from({ length: QUILT_SIZE }, (_, col) => row * QUILT_SIZE + col).map(renderCell)}
-                </div>
-              ))}
-            </div>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
-              {destinationSummary && (
-                <span className="sr-only" data-testid="cq-destinations">
-                  {destinationSummary}
-                </span>
-              )}
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toIdx)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="cg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-          />
-
-          <GameFooter className={`${gameTheme.crazyquilt.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="cg-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleDraw}
-                    disabled={loading || isAutoCompleting || (state.stockCount === 0 && state.redealsLeft === 0)}
-                    aria-label={state.stockCount === 0 && state.redealsLeft > 0 ? t('redealAction') : t('draw')}
-                  >
-                    {state.stockCount === 0 && state.redealsLeft > 0 ? t('redealAction') : t('draw')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
+                  {pile.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t(ascending ? 'foundationAscendingAriaLabel' : 'foundationDescendingAriaLabel', {
+                        suit: FOUNDATION_SUITS[idx],
+                        idx,
+                        count: pile.length,
+                      })}
+                      data-valid-destination={validFoundationTargets?.includes(idx) ? 'true' : undefined}
+                      data-testid={`cq-foundation-${idx}`}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${validFoundationTargets?.includes(idx) ? 'ring-2 ring-ds-success' : ''}`}
+                    >
+                      <AnimatedCard
+                        card={pile[pile.length - 1]}
+                        width={dims.cw}
+                        draggable={false}
+                        dealDelay={isAutoCompleting ? idx * 0.1 : 0}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t(
+                        ascending ? 'emptyFoundationAscendingAriaLabel' : 'emptyFoundationDescendingAriaLabel',
+                        { suit: FOUNDATION_SUITS[idx], idx },
+                      )}
+                      style={{ width: dims.cw, height: dims.ch }}
+                      data-valid-destination={validFoundationTargets?.includes(idx) ? 'true' : undefined}
+                      data-testid={`cq-foundation-${idx}`}
+                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${validFoundationTargets?.includes(idx) ? 'ring-2 ring-ds-success' : ''}`}
+                    >
+                      {/* 空の組札は「何から始まるか」がそのまま次に要る札。 */}
+                      {ascending ? 'A' : 'K'}
+                    </button>
                   )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="cg-reset-button"
-              />
+                </DropZone>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-2 items-start" data-tutorial="cg-stock">
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
+            {/* The stock only ever draws. Once it empties the same
+                button performs the single redeal, so it stays enabled
+                while a redeal remains. */}
+            <button
+              type="button"
+              onClick={() => game.handleDraw()}
+              disabled={
+                !isPlaying || loading || isAutoCompleting || (state.stockCount === 0 && state.redealsLeft === 0)
+              }
+              aria-label={
+                state.stockCount === 0
+                  ? // **空になった山札は「終わり」とは限らない。**組み直しが
+                    // 残っていればこのボタンがそれを行う。
+                    state.redealsLeft > 0
+                    ? t('emptyStockAriaLabel', { count: state.redealsLeft })
+                    : t('emptyStockNoRedealAriaLabel')
+                  : t('stockAriaLabel', { count: state.stockCount })
+              }
+              aria-pressed={isSourceSelected('stock', undefined)}
+              style={{ width: dims.cw, height: dims.ch }}
+              className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isSourceSelected('stock', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+            >
+              {state.stockCount}
+            </button>
+            {/* CUI の redealLine と同じ情報。残り回数が見えないと、山札が
+                空になった瞬間に打ち切りなのか組み直せるのか判断できない。 */}
+            <div className="text-game-text-muted text-xs mt-1 min-[1024px]:mt-0" data-testid="crazyquilt-redeals">
+              {t('redealLine', { count: state.redealsLeft })}
             </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="crazyquilt-kbd-shortcuts" />
-          </GameFooter>
-        </>
+          </div>
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+            {wasteTop ? (
+              <DropZone
+                isDropTarget={dnd.isDropTarget(wasteZone)}
+                onDragOver={dnd.handleDragOver(wasteZone)}
+                onDrop={dnd.handleDrop(wasteZone)}
+                onDragLeave={dnd.handleDragLeave}
+              >
+                <button
+                  type="button"
+                  // **捨て札は移動元にも移動先にもなる。** キルトの札を
+                  // 選んでいるときは連番置きの置き先（キルトを崩す主要な
+                  // 手）で、それ以外は移動元。片方しか繋がないと、その手が
+                  // UI から一切出せなくなる。
+                  onClick={() =>
+                    quiltSelected ? game.handleSelectTarget(wasteZone) : game.handleSelectSource(wasteZone)
+                  }
+                  disabled={!isPlaying || loading}
+                  aria-label={quiltSelected ? t('wasteDropAriaLabel', { card: cardAlt(wasteTop) }) : cardAlt(wasteTop)}
+                  aria-pressed={isSourceSelected('waste', undefined)}
+                  draggable={isPlaying && !loading && !quiltSelected}
+                  onDragStart={dnd.handleDragStart(wasteZone)}
+                  onDragEnd={dnd.handleDragEnd}
+                  data-testid="cq-waste"
+                  data-valid-destination={canReachWaste ? 'true' : undefined}
+                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''} ${quiltSelected ? 'ring-2 ring-ds-info/70' : ''} ${canReachWaste ? 'ring-2 ring-ds-success' : ''}`}
+                >
+                  <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                </button>
+              </DropZone>
+            ) : (
+              <div
+                role="img"
+                aria-label={t('emptyWasteAriaLabel')}
+                style={{ width: dims.cw, height: dims.ch }}
+                className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+              >
+                {t('empty')}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isPlaying && (
+        <div
+          className="text-center text-ds-text-muted text-sm mb-3 min-[1024px]:mb-0"
+          role="progressbar"
+          aria-label={t('foundationProgressLabel')}
+          aria-valuemin={0}
+          aria-valuemax={TOTAL_CARDS}
+          aria-valuenow={foundationCount}
+          aria-valuetext={t('foundationProgress', { count: foundationCount })}
+        >
+          {t('foundationProgress', { count: foundationCount })}
+        </div>
       )}
-    </GamePageShell>
+
+      <div
+        className="flex flex-col items-center gap-y-0.5 sm:gap-y-1"
+        data-tutorial="cg-tableau"
+        data-testid="cq-quilt"
+      >
+        {Array.from({ length: QUILT_SIZE }, (_, row) => (
+          <div
+            key={`row-${row.toString()}`}
+            className="grid gap-0.5 sm:gap-1 justify-center"
+            // Preserve a 52px visible card edge while deriving overlap from card height and row gap.
+            style={{
+              gridTemplateColumns: `repeat(${QUILT_SIZE}, minmax(0, 1fr))`,
+              marginTop: isLargeDesktop && row > 0 ? -(dims.ch + ROW_GAP_PX - QUILT_VISIBLE_EDGE_PX) : undefined,
+            }}
+            data-testid={`cq-quilt-row-${row}`}
+          >
+            {Array.from({ length: QUILT_SIZE }, (_, col) => row * QUILT_SIZE + col).map(renderCell)}
+          </div>
+        ))}
+      </div>
+
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
+        {destinationSummary && (
+          <span className="sr-only" data-testid="cq-destinations">
+            {destinationSummary}
+          </span>
+        )}
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toIdx)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="cg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
+          })}
+        </p>
+      )}
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction }: CrazyQuiltContext) {
+  const { loading, isAutoCompleting } = game;
+  const isPlaying = state.phase === CrazyQuiltPhase.PLAYING;
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+
+  if (!isPlaying) return null;
+
+  return (
+    <div data-tutorial="cg-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleDraw}
+        disabled={loading || isAutoCompleting || (state.stockCount === 0 && state.redealsLeft === 0)}
+        aria-label={state.stockCount === 0 && state.redealsLeft > 0 ? t('redealAction') : t('draw')}
+      >
+        {state.stockCount === 0 && state.redealsLeft > 0 ? t('redealAction') : t('draw')}
+      </button>
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={loading || isAutoCompleting || !state.canUndo}
+      >
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={loading || isAutoCompleting}
+        />
+      )}
+      <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={loading || isAutoCompleting}>
+        {t('hint')}
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={loading || isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+      >
+        {t('autoComplete')}
+      </button>
+      <button
+        type="button"
+        className={btnDanger}
+        onClick={confirmGiveUpAction ?? game.handleGiveUp}
+        disabled={loading || isAutoCompleting}
+      >
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const crazyQuiltDefinition: GameDefinition<
+  CrazyQuiltResponse,
+  CrazyQuiltGame,
+  Parameters<typeof crazyquiltApi.exec>,
+  CrazyQuiltView
+> = {
+  key: 'crazyquilt',
+  useGame: useCrazyQuiltGame,
+  useView: useCrazyQuiltView,
+  tutorial: CG_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 8, tableau: QUILT_SIZE },
+  cli: () => ({
+    parseCommand: parseCrazyQuiltCommand,
+    formatResponse: formatCrazyQuiltState,
+    helpText: CRAZYQUILT_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === CrazyQuiltPhase.GAME_CLEAR || state.phase === CrazyQuiltPhase.GAME_OVER,
+    won: state.phase === CrazyQuiltPhase.GAME_CLEAR,
+  }),
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'd', action: game.handleDraw, label: 'draw' },
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+    { key: 'g', action: confirmGiveUpAction ?? game.handleGiveUp, label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === CrazyQuiltPhase.PLAYING,
+  shortcutsTestId: 'crazyquilt-kbd-shortcuts',
+  landscapeBanner: true,
+  landscapeBannerInCliMode: true,
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8 min-[1024px]:pt-0',
+  resetTutorialId: 'cg-reset-button',
+  HeaderExtra,
+  AboveContent,
+  Board,
+  FooterActions,
+};
+
+/** Renders the CrazyQuilt page: eight single-card piles flanking eight foundations. */
+export const CrazyQuiltPage = createGamePage(crazyQuiltDefinition);

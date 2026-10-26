@@ -66,7 +66,6 @@ CourchevelHiLoPage.tsx
 CourchevelPage.tsx
 CrazyEightsPage.tsx
 CrazyFourPokerPage.tsx
-CrazyQuiltPage.tsx
 CrescentPage.tsx
 CribbagePage.tsx
 CribbageSquaresPage.tsx
