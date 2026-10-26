@@ -87,3 +87,7 @@ CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する�
 未移行の標準レイアウトのページのうち 40 余りは、横向き推奨の帯 (うち 13 は上置きの設定パネルも) を CLI モードの分岐の前に描いており、CLI モードでも表示される。ファクトリはどちらも GUI 側だけで描くので、移行すると CLI モードで消える。振る舞いを変えないために `landscapeBannerInCliMode` / `settingsInCliMode` を追加した (分岐の前に描き、モードを切り替えても同じ要素のまま)。CLI モードで出すべきかどうか自体は #12132 で決める。
 
 共通の設定パネルを使わず、設定をページ固有の場所に置いているページ (6 ページ) 用に `settingsPlacement: 'none'` を追加した。ファクトリは設定パネルを描かず、ページが自分の設定 UI を Board などに描く。
+
+## 追記 (2026-10-26): 操作ログ表示中のショートカット
+
+Briscola、Canfield、Congress、Cuckoo の 4 ページは操作ログ表示中にキーボードショートカットを止めていた。`GamePageContext` に `actionLogOpen` を追加し、各ページの `shortcutsEnabled` から同じ条件を表せるようにした。ファクトリ全体では止めない。Sultan や AcesUp など既存の移行済みページのショートカット挙動を変えないためである。

@@ -53,6 +53,8 @@ export interface GamePageContext<S, G extends GameHookBase<S, never>, V = undefi
   t: TFunction;
   tc: TFunction;
   busy: boolean;
+  /** True while the action log panel is open (`useGamePageSetup`'s `actionLog` is non-null). Pages can use this in `shortcutsEnabled` to suppress shortcuts while the log is displayed. */
+  actionLogOpen: boolean;
   requestConfirm: (action: () => void) => void;
   confirmGiveUpAction: (() => void) | undefined;
   frontendHint: UseGameHintReturn;
@@ -248,6 +250,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
             t: setup.t,
             tc: setup.tc,
             busy,
+            actionLogOpen: setup.actionLog !== null,
             requestConfirm: setup.requestConfirm,
             confirmGiveUpAction,
             frontendHint,
