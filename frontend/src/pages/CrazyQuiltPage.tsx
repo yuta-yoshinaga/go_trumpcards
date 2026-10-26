@@ -462,12 +462,7 @@ function FooterActions({ game, state, t, confirmGiveUpAction }: CrazyQuiltContex
       >
         {t('autoComplete')}
       </button>
-      <button
-        type="button"
-        className={btnDanger}
-        onClick={confirmGiveUpAction ?? game.handleGiveUp}
-        disabled={loading || isAutoCompleting}
-      >
+      <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading || isAutoCompleting}>
         {t('giveup')}
       </button>
     </div>
@@ -501,7 +496,7 @@ const crazyQuiltDefinition: GameDefinition<
     { key: 'd', action: game.handleDraw, label: 'draw' },
     { key: 'h', action: game.handleHint, label: 'hint' },
     { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-    { key: 'g', action: confirmGiveUpAction ?? game.handleGiveUp, label: 'giveUp' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
     { key: 'z', action: game.handleUndo, label: 'undo' },
   ],
   shortcutsEnabled: ({ state }) => state.phase === CrazyQuiltPhase.PLAYING,
