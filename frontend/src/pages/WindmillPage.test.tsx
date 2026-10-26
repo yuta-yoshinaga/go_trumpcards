@@ -64,6 +64,14 @@ describe('WindmillPage', () => {
     vi.restoreAllMocks();
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WindmillPage />);
+
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('keeps an empty center target focusable and explains that a source must be selected', async () => {
     mockExec.mockResolvedValue({ ...playingState, center: [] });
     renderWithProviders(<WindmillPage />);

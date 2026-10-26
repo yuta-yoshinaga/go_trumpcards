@@ -265,7 +265,6 @@ WaspPage.tsx
 WhistPage.tsx
 WhiteheadPage.tsx
 WillOTheWispPage.tsx
-WindmillPage.tsx
 WizardPage.tsx
 YanivPage.tsx
 YukonPage.tsx

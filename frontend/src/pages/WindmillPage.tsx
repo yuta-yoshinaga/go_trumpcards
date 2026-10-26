@@ -1,40 +1,22 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { windmillApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
+import type { TFunction } from 'i18next';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useWindmillGame } from '../hooks/useWindmillGame';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { WindmillMoveZone, WindmillResponse } from '../types/card';
 import { WindmillPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseWindmillCommand, WINDMILL_HELP } from '../utils/cli/commands/windmillCommands';
 import { formatWindmillState } from '../utils/cli/formatters/windmillFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SAIL_CNT = 8;
 const CORNER_CNT = 4;
@@ -55,10 +37,11 @@ const WM_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="wm-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
 
-/** Renders the Windmill page: eight sails, one centre foundation, and four corner foundations. */
-export const WindmillPage = withTutorial(WindmillPageContent, 'windmill', WM_TUTORIAL_STEPS);
+type WindmillGame = ReturnType<typeof useWindmillGame>;
+type WindmillView = ReturnType<typeof useWindmillView>;
+type WindmillContext = GamePageContext<WindmillResponse, WindmillGame, WindmillView>;
 
-function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, idx: number): string {
+function formatHintZone(t: TFunction, zone: string, idx: number): string {
   if (zone === 'center') return t('frontendHint.center');
   if (zone === 'corner') return t('frontendHint.corner', { idx });
   if (zone === 'sail') return t('frontendHint.sail', { idx });
@@ -66,58 +49,14 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   return t('frontendHint.waste');
 }
 
-function WindmillPageContent() {
+function useWindmillView({ game, t, tc }: { game: WindmillGame; t: TFunction; tc: TFunction }) {
   const selectSourceHintId = useId();
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('windmill');
-  const game = useWindmillGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   const [moveAnnouncement, setMoveAnnouncement] = useState('');
   const pendingMove = useRef<{ source: WindmillMoveZone; target: WindmillMoveZone } | null>(null);
   const previousMoveCount = useRef<number | null>(null);
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('windmill', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('windmill');
-  const cliConfig: CliGameConfig<WindmillResponse, Parameters<typeof windmillApi.exec>> = useMemo(
-    () => ({
-      gameName: 'windmill',
-      parseCommand: parseWindmillCommand,
-      formatResponse: formatWindmillState,
-      helpText: WINDMILL_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const { state, loading, error, isAutoCompleting } = game;
   const { cardHeight, cardWidth } = useCardDimensions();
-
-  const isPlayingForKbd = state?.phase === WindmillPhase.PLAYING;
-
-  const zoneLabel = useCallback(
-    (zone: WindmillMoveZone) => {
-      if (zone.zone === 'center') return t('frontendHint.center');
-      if (zone.zone === 'corner') return t('frontendHint.corner', { idx: zone.col });
-      if (zone.zone === 'sail') return t('frontendHint.sail', { idx: zone.col });
-      return t('frontendHint.waste');
-    },
-    [t],
-  );
+  const zoneLabel = useCallback((zone: WindmillMoveZone) => formatHintZone(t, zone.zone, zone.col ?? 0), [t]);
   const moveCards = useCallback(
     async (source: WindmillMoveZone, target: WindmillMoveZone) => {
       pendingMove.current = { source, target };
@@ -143,9 +82,7 @@ function WindmillPageContent() {
     [game],
   );
   useEffect(() => {
-    if (error) {
-      pendingMove.current = null;
-    }
+    if (error) pendingMove.current = null;
     if (!state) return;
     if (pendingMove.current) {
       const move = pendingMove.current;
@@ -168,48 +105,97 @@ function WindmillPageContent() {
   }, [error, state, t, zoneLabel]);
   const dnd = useSolitaireDragDrop<WindmillMoveZone>({
     onMove: dispatchMove,
-    isPlaying: !!isPlayingForKbd,
+    isPlaying: state?.phase === WindmillPhase.PLAYING,
     disabled: loading || isAutoCompleting,
   });
+  const isGameClear = state?.phase === WindmillPhase.GAME_CLEAR;
+  const isGameOver = state?.phase === WindmillPhase.GAME_OVER;
+  return {
+    selectSourceHintId,
+    moveAnnouncement,
+    cardHeight,
+    cardWidth,
+    dnd,
+    handleSelectedTarget,
+    foundationCount: state ? state.center.length + state.corners.reduce((sum, pile) => sum + pile.length, 0) : 0,
+    phaseName: isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing'),
+    isEnded: isGameClear || isGameOver,
+    isGameClear,
+    tc,
+  };
+}
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+const windmillDefinition: GameDefinition<
+  WindmillResponse,
+  WindmillGame,
+  Parameters<WindmillGame['exec']>,
+  WindmillView
+> = {
+  key: 'windmill',
+  useGame: useWindmillGame,
+  useView: useWindmillView,
+  tutorial: WM_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 5, tableau: SAIL_CNT },
+  cli: () => ({ parseCommand: parseWindmillCommand, formatResponse: formatWindmillState, helpText: WINDMILL_HELP }),
+  phase: ({ view }) => ({ name: view.phaseName, ended: view.isEnded, won: view.isGameClear }),
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'd', action: game.handleDraw, label: 'draw' },
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+    // Give-up is irreversible, so route both the button and the `g` key through
+    // the confirm dialog — matching reset's guard (issue #2099).
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === WindmillPhase.PLAYING,
+  shortcutsTestId: 'windmill-kbd-shortcuts',
+  actionsClassName: 'flex gap-2 items-center flex-wrap',
+  resetTutorialId: 'wm-reset-button',
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  HeaderExtra: WindmillHeaderExtra,
+  LiveRegion: WindmillLiveRegion,
+  Board: WindmillBoard,
+  FooterActions: WindmillFooterActions,
+};
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+/** Renders the Windmill page: eight sails, one centre foundation, and four corner foundations. */
+export const WindmillPage = createGamePage(windmillDefinition);
+
+function WindmillHeaderExtra({ state, t, view }: WindmillContext) {
+  const foundationPercent = Math.round((view.foundationCount / TOTAL_CARDS) * 100);
+  return (
+    <>
+      <span className="text-sm text-ds-text-muted">
+        {t('moveCount')}: {state.moveCount}
+      </span>
+      <span className="text-sm text-ds-text-muted" data-testid="wm-foundation-progress">
+        {t('foundationProgress', { count: view.foundationCount, total: TOTAL_CARDS, percent: foundationPercent })}
+      </span>
+    </>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: game.handleDraw, label: 'draw' },
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
+function WindmillLiveRegion({ tc, t, view }: WindmillContext) {
+  return (
+    <>
+      <span id={view.selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+      <LandscapeBanner message={t('landscapeBanner')} />
+      <div data-testid="wm-move-announcement" role="status" aria-live="polite" className="sr-only">
+        {view.moveAnnouncement}
+      </div>
+    </>
   );
+}
 
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
-
-  if (!state) {
-    return <GameSkeleton gameKey="windmill" layout={{ kind: 'tableau', topRow: 5, tableau: SAIL_CNT }} />;
-  }
-
+function WindmillBoard({ state, game, t, frontendHint, view }: WindmillContext) {
+  const { loading, isAutoCompleting, hint, selectedSource } = game;
+  const { selectSourceHintId, cardHeight, cardWidth, dnd, handleSelectedTarget } = view;
   const isPlaying = state.phase === WindmillPhase.PLAYING;
-  const isGameClear = state.phase === WindmillPhase.GAME_CLEAR;
   const isGameOver = state.phase === WindmillPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
   const foundationCount = state.center.length + state.corners.reduce((sum, pile) => sum + pile.length, 0);
   const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
-  // Auto-complete only ever moves sail and waste cards, so it is pointless until
-  // one of those piles holds something.
-  const autoCompleteReady = state.sails.some((c) => c !== null) || state.waste.length > 0;
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -331,268 +317,201 @@ function WindmillPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.windmill')}
-      gameThemeBg={gameTheme.windmill.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/windmill"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <span className="text-sm text-ds-text-muted" data-testid="wm-foundation-progress">
-            {t('foundationProgress', {
-              count: foundationCount,
-              total: TOTAL_CARDS,
-              percent: foundationPercent,
-            })}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <span id={selectSourceHintId} className="sr-only">
-        {tc('label.selectSourceFirst')}
-      </span>
-      <LandscapeBanner message={t('landscapeBanner')} />
-      <div data-testid="wm-move-announcement" role="status" aria-live="polite" className="sr-only">
-        {moveAnnouncement}
+    <>
+      <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+        <div className="text-center" data-tutorial="wm-center">
+          <div className="text-game-text-muted text-xs mb-1">{t('center')}</div>
+          <DropZone
+            isDropTarget={dnd.isDropTarget(centerZone)}
+            onDragOver={dnd.handleDragOver(centerZone)}
+            onDrop={dnd.handleDrop(centerZone)}
+            onDragLeave={dnd.handleDragLeave}
+          >
+            {centerTop ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedSource) return;
+                  handleSelectedTarget(selectedSource, centerZone);
+                }}
+                disabled={!isPlaying || loading || isAutoCompleting}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                aria-label={t('centerAriaLabel', { count: state.center.length, card: cardAlt(centerTop) })}
+                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+              >
+                <AnimatedCard card={centerTop} width={cardWidth} draggable={false} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedSource) return;
+                  handleSelectedTarget(selectedSource, centerZone);
+                }}
+                disabled={!isPlaying || loading || isAutoCompleting}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                aria-label={t('emptyCenterAriaLabel')}
+                style={{ width: cardWidth, height: cardHeight }}
+                className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+              >
+                A
+              </button>
+            )}
+          </DropZone>
+          <div className="text-game-text-muted text-xs mt-1">{state.center.length}/52</div>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="wm-corners">
+          {Array.from({ length: CORNER_CNT }, (_, i) => i).map(renderCorner)}
+        </div>
+
+        <div className="flex gap-2 items-start" data-tutorial="wm-stock">
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
+            <button
+              type="button"
+              onClick={game.handleDraw}
+              disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0}
+              aria-label={t('stockAriaLabel', { count: state.stockCount })}
+              style={{ width: cardWidth, height: cardHeight }}
+              className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+            >
+              {state.stockCount}
+            </button>
+          </div>
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+            {wasteTop ? (
+              <button
+                type="button"
+                onClick={() => game.handleSelectSource(wasteZone)}
+                disabled={!isPlaying || loading || isAutoCompleting}
+                aria-label={cardAlt(wasteTop)}
+                aria-pressed={isSourceSelected('waste', undefined)}
+                draggable={isPlaying && !loading}
+                onDragStart={dnd.handleDragStart(wasteZone)}
+                onDragEnd={dnd.handleDragEnd}
+                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+              >
+                <AnimatedCard card={wasteTop} width={cardWidth} draggable={false} />
+              </button>
+            ) : (
+              <div
+                role="img"
+                aria-label={t('emptyWasteAriaLabel')}
+                style={{ width: cardWidth, height: cardHeight }}
+                className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+              >
+                {t('empty')}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
-              <div className="text-center" data-tutorial="wm-center">
-                <div className="text-game-text-muted text-xs mb-1">{t('center')}</div>
-                <DropZone
-                  isDropTarget={dnd.isDropTarget(centerZone)}
-                  onDragOver={dnd.handleDragOver(centerZone)}
-                  onDrop={dnd.handleDrop(centerZone)}
-                  onDragLeave={dnd.handleDragLeave}
-                >
-                  {centerTop ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedSource) return;
-                        handleSelectedTarget(selectedSource, centerZone);
-                      }}
-                      disabled={!isPlaying || loading || isAutoCompleting}
-                      aria-disabled={!selectedSource || undefined}
-                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                      aria-label={t('centerAriaLabel', { count: state.center.length, card: cardAlt(centerTop) })}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                    >
-                      <AnimatedCard card={centerTop} width={cardWidth} draggable={false} />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedSource) return;
-                        handleSelectedTarget(selectedSource, centerZone);
-                      }}
-                      disabled={!isPlaying || loading || isAutoCompleting}
-                      aria-disabled={!selectedSource || undefined}
-                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                      aria-label={t('emptyCenterAriaLabel')}
-                      style={{ width: cardWidth, height: cardHeight }}
-                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                    >
-                      A
-                    </button>
-                  )}
-                </DropZone>
-                <div className="text-game-text-muted text-xs mt-1">{state.center.length}/52</div>
-              </div>
+      {/* The block is invisible in the layout, so the board has to state it. */}
+      <div
+        role="status"
+        aria-live="polite"
+        className={isPlaying && state.transferBlocked ? 'text-ds-warning text-sm text-center mb-2' : 'sr-only'}
+      >
+        {isPlaying && state.transferBlocked ? t('transferBlocked') : ''}
+      </div>
 
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="wm-corners">
-                {Array.from({ length: CORNER_CNT }, (_, i) => i).map(renderCorner)}
-              </div>
+      <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="wm-sails">
+        {Array.from({ length: SAIL_CNT }, (_, i) => i).map(renderSail)}
+      </div>
 
-              <div className="flex gap-2 items-start" data-tutorial="wm-stock">
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
-                  <button
-                    type="button"
-                    onClick={game.handleDraw}
-                    disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0}
-                    aria-label={t('stockAriaLabel', { count: state.stockCount })}
-                    style={{ width: cardWidth, height: cardHeight }}
-                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                  >
-                    {state.stockCount}
-                  </button>
-                </div>
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-                  {wasteTop ? (
-                    <button
-                      type="button"
-                      onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading || isAutoCompleting}
-                      aria-label={cardAlt(wasteTop)}
-                      aria-pressed={isSourceSelected('waste', undefined)}
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart(wasteZone)}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                    >
-                      <AnimatedCard card={wasteTop} width={cardWidth} draggable={false} />
-                    </button>
-                  ) : (
-                    <div
-                      role="img"
-                      aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: cardWidth, height: cardHeight }}
-                      className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
-                    >
-                      {t('empty')}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* The block is invisible in the layout, so the board has to state it. */}
-            <div
-              role="status"
-              aria-live="polite"
-              className={isPlaying && state.transferBlocked ? 'text-ds-warning text-sm text-center mb-2' : 'sr-only'}
-            >
-              {isPlaying && state.transferBlocked ? t('transferBlocked') : ''}
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="wm-sails">
-              {Array.from({ length: SAIL_CNT }, (_, i) => i).map(renderSail)}
-            </div>
-
-            {/*
+      {/*
               ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
               領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
               られないことがある (#5955)。
             */}
-            <div data-tutorial="wm-hint-display" data-testid="wm-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toIdx)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="wm-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: foundationPercent,
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+      <div data-tutorial="wm-hint-display" data-testid="wm-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toIdx)}
           </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
 
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-          />
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-          <GameFooter className={`${gameTheme.windmill.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="wm-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleDraw}
-                    disabled={loading || isAutoCompleting || state.stockCount === 0}
-                  >
-                    {t('draw')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="wm-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="windmill-kbd-shortcuts" />
-          </GameFooter>
-        </>
+      {isGameOver && (
+        <p data-testid="wm-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: foundationPercent,
+          })}
+        </p>
       )}
-    </GamePageShell>
+    </>
+  );
+}
+
+function WindmillFooterActions({ state, game, t, busy, confirmGiveUpAction }: WindmillContext) {
+  const { isAutoCompleting } = game;
+  const loading = busy;
+  const isPlaying = state.phase === WindmillPhase.PLAYING;
+  // Auto-complete only ever moves sail and waste cards, so it is pointless until
+  // one of those piles holds something.
+  const autoCompleteReady = state.sails.some((c) => c !== null) || state.waste.length > 0;
+  return (
+    <>
+      {isPlaying && (
+        <div data-tutorial="wm-controls">
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handleDraw}
+            disabled={loading || isAutoCompleting || state.stockCount === 0}
+          >
+            {t('draw')}
+          </button>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handleUndo}
+            disabled={loading || isAutoCompleting || !state.canUndo}
+          >
+            {t('undo')}
+          </button>
+          {state.isStalemate && (
+            <StalemateEscapeButton
+              undoToEscape={state.undoToEscape ?? 0}
+              onEscape={game.handleUndoEscape}
+              disabled={loading || isAutoCompleting}
+            />
+          )}
+          <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={loading || isAutoCompleting}>
+            {t('hint')}
+          </button>
+          <button
+            type="button"
+            className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+            onClick={game.handleAutoComplete}
+            disabled={loading || isAutoCompleting || !autoCompleteReady}
+            data-testid="autocomplete-button"
+            title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+          >
+            {t('autoComplete')}
+          </button>
+          <button
+            type="button"
+            className={btnDanger}
+            onClick={confirmGiveUpAction ?? (() => undefined)}
+            disabled={loading || isAutoCompleting}
+          >
+            {t('giveup')}
+          </button>
+        </div>
+      )}
+    </>
   );
 }
