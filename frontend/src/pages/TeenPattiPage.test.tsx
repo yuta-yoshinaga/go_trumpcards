@@ -368,4 +368,10 @@ describe('TeenPattiPage', () => {
     fireEvent.click(increase);
     expect(screen.getByText('レイズ額: 3')).toHaveAttribute('aria-live', 'polite');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('betting', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
