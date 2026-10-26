@@ -249,7 +249,6 @@ StHelenaPage.tsx
 StalactitesPage.tsx
 StealingBundlesPage.tsx
 StreetsAndAlleysPage.tsx
-SuecaPage.tsx
 TablanetPage.tsx
 TappTarockPage.tsx
 TarabishPage.tsx
