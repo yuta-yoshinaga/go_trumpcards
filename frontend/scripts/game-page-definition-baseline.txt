@@ -240,7 +240,6 @@ SomersetPage.tsx
 SpeculationPage.tsx
 SpeedPage.tsx
 SpiderPage.tsx
-SpiderettePage.tsx
 SpiteAndMalicePage.tsx
 SpoonsPage.tsx
 StHelenaPage.tsx
