@@ -1,41 +1,26 @@
+import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { StreetsAndAlleysMoveZone, streetsAndAlleysApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useStreetsAndAlleysGame } from '../hooks/useStreetsAndAlleysGame';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { StreetsAndAlleysResponse } from '../types/card';
 import { StreetsAndAlleysPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseStreetsAndAlleysCommand, STREETSANDALLEYS_HELP } from '../utils/cli/commands/streetsandalleysCommands';
 import { formatStreetsAndAlleysState } from '../utils/cli/formatters/streetsandalleysFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -66,34 +51,25 @@ const SA_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the Streets and Alleys solitaire game page with 8 tableau columns and 4 foundations. */
-export const StreetsAndAlleysPage = withTutorial(StreetsAndAlleysPageContent, 'streetsandalleys', SA_TUTORIAL_STEPS);
+const SA_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [StreetsAndAlleysPhase.PLAYING]: 'playing',
+  [StreetsAndAlleysPhase.GAME_CLEAR]: 'gameClear',
+  [StreetsAndAlleysPhase.GAME_OVER]: 'gameOver',
+};
+
+type StreetsAndAlleysGame = ReturnType<typeof useStreetsAndAlleysGame>;
+type StreetsAndAlleysView = ReturnType<typeof useStreetsAndAlleysView>;
+type StreetsAndAlleysContext = GamePageContext<StreetsAndAlleysResponse, StreetsAndAlleysGame, StreetsAndAlleysView>;
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation');
   return t('frontendHint.tableau', { col });
 }
 
-function StreetsAndAlleysPageContent() {
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('streetsandalleys');
-  const game = useStreetsAndAlleysGame();
-  const previousMoveCount = useRef(game.state?.moveCount);
+function useStreetsAndAlleysView({ game, t }: { game: StreetsAndAlleysGame; t: TFunction; tc: TFunction }) {
+  const { state, loading, selectedSource } = game;
+  const previousMoveCount = useRef(state?.moveCount);
   const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   useEffect(() => {
     if (!state) return;
     if (previousMoveCount.current !== undefined && previousMoveCount.current !== state.moveCount) {
@@ -103,27 +79,6 @@ function StreetsAndAlleysPageContent() {
   }, [state]);
   const selectSourceHintId = useId();
 
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('streetsandalleys', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('streetsandalleys');
-  const cliConfig: CliGameConfig<StreetsAndAlleysResponse, Parameters<typeof streetsAndAlleysApi.exec>> = useMemo(
-    () => ({
-      gameName: 'streetsandalleys',
-      parseCommand: parseStreetsAndAlleysCommand,
-      formatResponse: formatStreetsAndAlleysState,
-      helpText: STREETSANDALLEYS_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, {
-    addInput,
-    addOutput,
-    addError,
-    clearLog,
-  });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
 
@@ -154,60 +109,14 @@ function StreetsAndAlleysPageContent() {
     disabled: loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
-
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
-  );
-
-  const actionBindings = useMemo(
-    () => [
-      { key: 'h', action: game.handleHint },
-      { key: 'a', action: game.handleAutoComplete },
-      { key: 'g', action: confirmGiveUpAction },
-      { key: 'z', action: game.handleUndo },
-    ],
-    [game, confirmGiveUpAction],
-  );
-
-  useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
-  });
-
   // Keep this hook before the early return so its hook order stays stable while
   // the game state is loading.
   const preview = useDestinationPreview<StreetsAndAlleysMoveZone>(selectedSource);
 
-  if (!state) return <GameSkeleton gameKey="streetsandalleys" layout={{ kind: 'tableau', topRow: 4, tableau: 8 }} />;
-
-  const isPlaying = state.phase === StreetsAndAlleysPhase.PLAYING;
-  const isGameClear = state.phase === StreetsAndAlleysPhase.GAME_CLEAR;
-  const isGameOver = state.phase === StreetsAndAlleysPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
-  // How many of the 52 cards reached a foundation — only needed on game over, so skip the
-  // reduce during normal (frequently re-rendered) play.
-  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  // Auto-complete becomes useful once a foundation has built past its ace, so
-  // pulse the button only then (mirrors Crescent / Spiderette).
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
-
-  const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
-    selectedSource !== null &&
-    selectedSource.zone === zone &&
-    selectedSource.col === col &&
-    selectedSource.cardIndex === cardIndex;
-
   // 選択中、またはホバー/フォーカス中の札そのもの。列の末尾しか動かせない。
   const previewSource = preview.source;
   const legalForSource =
-    previewSource?.zone === 'tableau' && previewSource.col !== undefined
+    state && previewSource?.zone === 'tableau' && previewSource.col !== undefined
       ? state.legalTargets[`tableau-${previewSource.col}`]
       : undefined;
   // 判定は StreetsAndAlleys.go の canPlaceOn* を通してサーバーが計算する (ADR-0045)。
@@ -216,12 +125,79 @@ function StreetsAndAlleysPageContent() {
     foundation: new Set(legalForSource?.foundation ?? []),
   };
   const selectedTargetCount = selectedSource ? legalTargets.tableau.size + legalTargets.foundation.size : null;
-  const hasSelectedSource = selectedSource !== null;
-  const destinationStatus = (isLegal: boolean) => t(isLegal ? 'legalDestinationStatus' : 'illegalDestinationStatus');
+
+  const destinationStatus = useCallback(
+    (isLegal: boolean) => t(isLegal ? 'legalDestinationStatus' : 'illegalDestinationStatus'),
+    [t],
+  );
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview
     ? ' rounded ring-1 ring-ds-info/70 motion-safe:hover:ring-2 focus:ring-2'
     : ' rounded ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2';
+
+  const phaseNames = usePhaseNames('streetsandalleys', SA_PHASE_KEYS);
+
+  return {
+    announcedMoveCount,
+    selectSourceHintId,
+    dims,
+    isMobile,
+    dnd,
+    preview,
+    legalTargets,
+    selectedTargetCount,
+    destinationStatus,
+    targetRing,
+    phaseNames,
+  };
+}
+
+function LiveRegion({ t, tc, view }: StreetsAndAlleysContext) {
+  return (
+    <>
+      <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={view.selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-destination-announcement">
+        {view.selectedTargetCount === null
+          ? ''
+          : t(view.selectedTargetCount === 0 ? 'noLegalDestinations' : 'legalDestinationCount', {
+              count: view.selectedTargetCount,
+            })}
+      </div>
+      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-move-count-announcement">
+        {view.announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: view.announcedMoveCount })}
+      </div>
+    </>
+  );
+}
+
+function HeaderExtra({ state, t }: StreetsAndAlleysContext) {
+  return (
+    <span className="text-sm text-ds-text-muted">
+      {t('moveCount')}: {state.moveCount}
+    </span>
+  );
+}
+
+function Board({ game, state, t, frontendHint, view }: StreetsAndAlleysContext) {
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
+  const { dims, isMobile, dnd, preview, legalTargets, destinationStatus, targetRing, selectSourceHintId } = view;
+
+  const isPlaying = state.phase === StreetsAndAlleysPhase.PLAYING;
+  const isGameOver = state.phase === StreetsAndAlleysPhase.GAME_OVER;
+  // How many of the 52 cards reached a foundation — only needed on game over, so skip the
+  // reduce during normal (frequently re-rendered) play.
+  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
+
+  const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
+    selectedSource !== null &&
+    selectedSource.zone === zone &&
+    selectedSource.col === col &&
+    selectedSource.cardIndex === cardIndex;
+
+  const hasSelectedSource = selectedSource !== null;
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
@@ -317,261 +293,232 @@ function StreetsAndAlleysPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.streetsandalleys')}
-      gameThemeBg={gameTheme.streetsandalleys.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/streetsandalleys"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <LandscapeBanner message={t('landscapeBanner')} />
-      <span id={selectSourceHintId} className="sr-only">
-        {tc('label.selectSourceFirst')}
-      </span>
-      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-destination-announcement">
-        {selectedTargetCount === null
-          ? ''
-          : t(selectedTargetCount === 0 ? 'noLegalDestinations' : 'legalDestinationCount', {
-              count: selectedTargetCount,
-            })}
-      </div>
-      <div role="status" aria-live="polite" className="sr-only" data-testid="sa-move-count-announcement">
-        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
-      </div>
+    <>
+      <div
+        className="flex gap-2 sm:gap-3 items-start"
+        data-testid="sa-board-content"
+        // 9 card columns + gaps: 2 outer gap-2 (8px) + 6 inner gap-1 (4px) = 40px.
+        style={{ minWidth: isMobile ? `${9 * dims.cw + 40}px` : undefined }}
+      >
+        <div className="flex-1 flex gap-1 sm:gap-2" data-tutorial="sa-tableau">
+          {[0, 1, 2, 3].map(renderTableauColumn)}
+        </div>
 
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div
-            className="flex-1 overflow-x-auto overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8"
-            data-testid="sa-board-scroll"
-          >
-            <div
-              className="flex gap-2 sm:gap-3 items-start"
-              data-testid="sa-board-content"
-              // 9 card columns + gaps: 2 outer gap-2 (8px) + 6 inner gap-1 (4px) = 40px.
-              style={{ minWidth: isMobile ? `${9 * dims.cw + 40}px` : undefined }}
-            >
-              <div className="flex-1 flex gap-1 sm:gap-2" data-tutorial="sa-tableau">
-                {[0, 1, 2, 3].map(renderTableauColumn)}
-              </div>
-
-              <div
-                className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
-                data-tutorial="sa-foundation"
-              >
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: StreetsAndAlleysMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              count: pile.length,
-                            })}
-                            aria-description={
-                              hasSelectedSource ? destinationStatus(legalTargets.foundation.has(idx)) : undefined
-                            }
-                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            data-preview-target={
-                              legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined
-                            }
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${
-                              legalTargets.foundation.has(idx) ? targetRing : ''
-                            }`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={dims.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            aria-description={
-                              hasSelectedSource ? destinationStatus(legalTargets.foundation.has(idx)) : undefined
-                            }
-                            style={{ width: dims.cw, height: dims.ch }}
-                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            data-preview-target={
-                              legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined
-                            }
-                            className={`border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${
-                              legalTargets.foundation.has(idx) ? targetRing : ' rounded'
-                            }`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                      <div
-                        data-testid={`sa-foundation-progress-${idx.toString()}`}
-                        className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
-                      >
-                        {pile.length === 13 && <span aria-hidden="true">✓ </span>}
-                        {t('foundationProgress', { count: pile.length })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex-1 flex gap-1 sm:gap-2">{[4, 5, 6, 7].map(renderTableauColumn)}</div>
-            </div>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで現れるので変化として扱われず、読み上げられない
-              ことがある (#5597)。
-            */}
-            <div data-tutorial="sa-hint-display" data-testid="sa-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="sa-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / 52) * 100),
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
-
-          <GameFooter className={`${gameTheme.streetsandalleys.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="sa-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                    aria-keyshortcuts="z"
-                  >
-                    {t('undo')}
-                    <KbdBadge label={t('kbd.undo')} />
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
+        <div
+          className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
+          data-tutorial="sa-foundation"
+        >
+          {state.foundation.map((pile, idx) => {
+            const foundationZone: StreetsAndAlleysMoveZone = { zone: 'foundation', col: idx };
+            return (
+              <div key={`f-${idx.toString()}`} className="text-center">
+                <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                <DropZone
+                  isDropTarget={dnd.isDropTarget(foundationZone)}
+                  onDragOver={dnd.handleDragOver(foundationZone)}
+                  onDrop={dnd.handleDrop(foundationZone)}
+                  onDragLeave={dnd.handleDragLeave}
+                >
+                  {pile.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('foundationAriaLabel', {
+                        suit: FOUNDATION_SUITS[idx],
+                        count: pile.length,
+                      })}
+                      aria-description={
+                        hasSelectedSource ? destinationStatus(legalTargets.foundation.has(idx)) : undefined
+                      }
+                      data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                      data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${
+                        legalTargets.foundation.has(idx) ? targetRing : ''
+                      }`}
+                    >
+                      <AnimatedCard
+                        card={pile[pile.length - 1]}
+                        width={dims.cw}
+                        draggable={false}
+                        dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                      aria-description={
+                        hasSelectedSource ? destinationStatus(legalTargets.foundation.has(idx)) : undefined
+                      }
+                      style={{ width: dims.cw, height: dims.ch }}
+                      data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                      data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
+                      className={`border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${
+                        legalTargets.foundation.has(idx) ? targetRing : ' rounded'
+                      }`}
+                    >
+                      A
+                    </button>
                   )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                    aria-keyshortcuts="h"
-                  >
-                    {t('hint')}
-                    <KbdBadge label={t('kbd.hint')} />
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                    aria-keyshortcuts="a"
-                  >
-                    {t('autoComplete')}
-                    <KbdBadge label={t('kbd.autoComplete')} />
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                    aria-keyshortcuts="g"
-                  >
-                    {t('giveup')}
-                    <KbdBadge label={t('kbd.giveUp')} />
-                  </button>
+                </DropZone>
+                <div
+                  data-testid={`sa-foundation-progress-${idx.toString()}`}
+                  className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
+                >
+                  {pile.length === 13 && <span aria-hidden="true">✓ </span>}
+                  {t('foundationProgress', { count: pile.length })}
                 </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sa-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex-1 flex gap-1 sm:gap-2">{[4, 5, 6, 7].map(renderTableauColumn)}</div>
+      </div>
+
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで現れるので変化として扱われず、読み上げられない
+        ことがある (#5597)。
+      */}
+      <div data-tutorial="sa-hint-display" data-testid="sa-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toCol)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="sa-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: Math.round((foundationCount / 52) * 100),
+          })}
+        </p>
       )}
-    </GamePageShell>
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction }: StreetsAndAlleysContext) {
+  const isPlaying = state.phase === StreetsAndAlleysPhase.PLAYING;
+  if (!isPlaying) return null;
+
+  // Auto-complete becomes useful once a foundation has built past its ace, so
+  // pulse the button only then (mirrors Crescent / Spiderette).
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
+
+  return (
+    <div data-tutorial="sa-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={game.loading || game.isAutoCompleting || !state.canUndo}
+        aria-keyshortcuts="z"
+      >
+        {t('undo')}
+        <KbdBadge label={t('kbd.undo')} />
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={game.loading || game.isAutoCompleting}
+        />
+      )}
+      <button
+        type="button"
+        className={btnSuccess}
+        onClick={game.handleHint}
+        disabled={game.loading || game.isAutoCompleting}
+        aria-keyshortcuts="h"
+      >
+        {t('hint')}
+        <KbdBadge label={t('kbd.hint')} />
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !game.loading && !game.isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={game.loading || game.isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+        aria-keyshortcuts="a"
+      >
+        {t('autoComplete')}
+        <KbdBadge label={t('kbd.autoComplete')} />
+      </button>
+      <button
+        type="button"
+        className={btnDanger}
+        onClick={confirmGiveUpAction ?? (() => undefined)}
+        disabled={game.loading || game.isAutoCompleting}
+        aria-keyshortcuts="g"
+      >
+        {t('giveup')}
+        <KbdBadge label={t('kbd.giveUp')} />
+      </button>
+    </div>
+  );
+}
+
+const streetsAndAlleysDefinition: GameDefinition<
+  StreetsAndAlleysResponse,
+  StreetsAndAlleysGame,
+  Parameters<typeof streetsAndAlleysApi.exec>,
+  StreetsAndAlleysView
+> = {
+  key: 'streetsandalleys',
+  useGame: useStreetsAndAlleysGame,
+  useView: useStreetsAndAlleysView,
+  tutorial: SA_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 4, tableau: 8 },
+  cli: () => ({
+    parseCommand: parseStreetsAndAlleysCommand,
+    formatResponse: formatStreetsAndAlleysState,
+    helpText: STREETSANDALLEYS_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameClear = state.phase === StreetsAndAlleysPhase.GAME_CLEAR;
+    const isGameOver = state.phase === StreetsAndAlleysPhase.GAME_OVER;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameClear || isGameOver,
+      won: isGameClear,
+    };
+  },
+  contentClassName: 'overflow-x-auto pt-3 px-2 sm:px-4 lg:px-8',
+  contentTestId: 'sa-board-scroll',
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'h', action: game.handleHint },
+    { key: 'a', action: game.handleAutoComplete },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined) },
+    { key: 'z', action: game.handleUndo },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === StreetsAndAlleysPhase.PLAYING,
+  resetTutorialId: 'sa-reset-button',
+  HeaderExtra,
+  LiveRegion,
+  Board,
+  FooterActions,
+};
+
+/** Renders the Streets and Alleys solitaire game page with 8 tableau columns and 4 foundations. */
+export const StreetsAndAlleysPage = createGamePage(streetsAndAlleysDefinition);

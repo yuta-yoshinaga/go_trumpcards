@@ -236,7 +236,6 @@ SpoonsPage.tsx
 StHelenaPage.tsx
 StalactitesPage.tsx
 StealingBundlesPage.tsx
-StreetsAndAlleysPage.tsx
 TablanetPage.tsx
 TappTarockPage.tsx
 TarabishPage.tsx
