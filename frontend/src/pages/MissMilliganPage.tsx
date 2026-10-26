@@ -1,40 +1,22 @@
 import { useCallback, useId, useMemo } from 'react';
 import type { missMilliganApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMissMilliganGame } from '../hooks/useMissMilliganGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { MissMilliganMoveZone, MissMilliganResponse } from '../types/card';
 import { MissMilliganPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MISSMILLIGAN_HELP, parseMissMilliganCommand } from '../utils/cli/commands/missmilliganCommands';
 import { formatMissMilliganState } from '../utils/cli/formatters/missmilliganFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 const TABLEAU_COLS = 8;
@@ -53,8 +35,11 @@ const MM_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="mm-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
 
-/** Renders the Miss Milligan page: eight columns, eight foundations, and the waived slot. */
-export const MissMilliganPage = withTutorial(MissMilliganPageContent, 'missmilligan', MM_TUTORIAL_STEPS);
+const MISSMILLIGAN_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [MissMilliganPhase.PLAYING]: 'playing',
+  [MissMilliganPhase.GAME_CLEAR]: 'gameClear',
+  [MissMilliganPhase.GAME_OVER]: 'gameOver',
+};
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, idx: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation', { idx });
@@ -64,42 +49,13 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   return t('frontendHint.tableau', { col: idx });
 }
 
-function MissMilliganPageContent() {
-  const selectSourceHintId = useId();
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('missmilligan');
-  const game = useMissMilliganGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+type MissMilliganGame = ReturnType<typeof useMissMilliganGame>;
+type MissMilliganView = ReturnType<typeof useMissMilliganView>;
+type MissMilliganContext = GamePageContext<MissMilliganResponse, MissMilliganGame, MissMilliganView>;
 
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('missmilligan', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('missmilligan');
-  const cliConfig: CliGameConfig<MissMilliganResponse, Parameters<typeof missMilliganApi.exec>> = useMemo(
-    () => ({
-      gameName: 'missmilligan',
-      parseCommand: parseMissMilliganCommand,
-      formatResponse: formatMissMilliganState,
-      helpText: MISSMILLIGAN_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+function useMissMilliganView({ game }: { game: MissMilliganGame }) {
+  const selectSourceHintId = useId();
+  const phaseNames = usePhaseNames('missmilligan', MISSMILLIGAN_PHASE_KEYS);
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
@@ -109,7 +65,7 @@ function MissMilliganPageContent() {
     return { cw, ch, co };
   }, [isMobile, cardWidth, cardHeight, cardOverlap]);
 
-  const isPlayingForKbd = state?.phase === MissMilliganPhase.PLAYING;
+  const isPlayingForKbd = game.state?.phase === MissMilliganPhase.PLAYING;
 
   const dispatchMove = useCallback(
     (source: MissMilliganMoveZone, target: MissMilliganMoveZone) => {
@@ -120,46 +76,36 @@ function MissMilliganPageContent() {
   const dnd = useSolitaireDragDrop<MissMilliganMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: game.loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+  return {
+    selectSourceHintId,
+    phaseNames,
+    dims,
+    isMobile,
+    dnd,
+  };
+}
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+function HeaderExtra({ state, t }: MissMilliganContext) {
+  return (
+    <span className="text-sm text-ds-text-muted">
+      {t('moveCount')}: {state.moveCount}
+    </span>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: game.handleDeal, label: 'deal' },
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
-  );
-
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
-
-  if (!state) {
-    return <GameSkeleton gameKey="missmilligan" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_COLS }} />;
-  }
+function Board({ game, state, t, tc, frontendHint, view }: MissMilliganContext) {
+  const { dims, isMobile, dnd, selectSourceHintId } = view;
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
+  const { hint: frontendHintData, hintEnabled: frontendHintEnabled } = frontendHint;
 
   const isPlaying = state.phase === MissMilliganPhase.PLAYING;
-  const isGameClear = state.phase === MissMilliganPhase.GAME_CLEAR;
   const isGameOver = state.phase === MissMilliganPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
   const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
   const dealsRemaining = Math.ceil(state.stockCount / TABLEAU_COLS);
   const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
   const isHolding = state.waived.length > 0;
   const selectedTableauRunIsLegal =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
@@ -299,277 +245,256 @@ function MissMilliganPageContent() {
   const waivedZone: MissMilliganMoveZone = { zone: 'waived' };
 
   return (
-    <GamePageShell
-      title={tc('nav.missmilligan')}
-      gameThemeBg={gameTheme.missmilligan.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/missmilligan"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <LandscapeBanner message={t('landscapeBanner')} />
-
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <span id={selectSourceHintId} className="sr-only">
-              {tc('label.selectSourceFirst')}
-            </span>
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="mm-foundation">
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: MissMilliganMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div
-                      key={`f-${idx.toString()}`}
-                      className={`text-center ${legalTargets.foundation.has(idx) ? 'rounded ring-2 ring-ds-success' : ''}`}
-                      data-testid={`mm-foundation-${idx}`}
-                    >
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              idx,
-                              count: pile.length,
-                            })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={dims.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.1 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
-                            style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-2 items-start" data-tutorial="mm-stock">
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
-                  <button
-                    type="button"
-                    onClick={game.handleDeal}
-                    disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0 || isHolding}
-                    aria-label={t('stockAriaLabel', { count: state.stockCount })}
-                    title={isHolding ? t('dealBlockedByWaive') : undefined}
-                    style={{ width: dims.cw, height: dims.ch }}
-                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                  >
-                    {state.stockCount}
-                  </button>
-                  <div className="text-game-text-muted text-xs mt-1">
-                    {t('dealsRemaining', { count: dealsRemaining })}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waived')}</div>
-                  {isHolding ? (
+    <>
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+      <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="mm-foundation">
+          {state.foundation.map((pile, idx) => {
+            const foundationZone: MissMilliganMoveZone = { zone: 'foundation', col: idx };
+            return (
+              <div
+                key={`f-${idx.toString()}`}
+                className={`text-center ${legalTargets.foundation.has(idx) ? 'rounded ring-2 ring-ds-success' : ''}`}
+                data-testid={`mm-foundation-${idx}`}
+              >
+                <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                <DropZone
+                  isDropTarget={dnd.isDropTarget(foundationZone)}
+                  onDragOver={dnd.handleDragOver(foundationZone)}
+                  onDrop={dnd.handleDrop(foundationZone)}
+                  onDragLeave={dnd.handleDragLeave}
+                >
+                  {pile.length > 0 ? (
                     <button
                       type="button"
-                      onClick={() => game.handleSelectSource(waivedZone)}
-                      disabled={!isPlaying || loading}
-                      aria-label={t('waivedAriaLabel', { count: state.waived.length })}
-                      aria-pressed={isSourceSelected('waived', undefined, undefined)}
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart(waivedZone)}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waived', undefined, undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('foundationAriaLabel', {
+                        suit: FOUNDATION_SUITS[idx],
+                        idx,
+                        count: pile.length,
+                      })}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                     >
-                      <AnimatedCard card={state.waived[0]} width={dims.cw} draggable={false} />
-                      <span className="mt-1 block text-ds-text-primary text-xs" data-testid="mm-waived-count">
-                        {t('waivedCount', { count: state.waived.length })}
-                      </span>
+                      <AnimatedCard
+                        card={pile[pile.length - 1]}
+                        width={dims.cw}
+                        draggable={false}
+                        dealDelay={isAutoCompleting ? idx * 0.1 : 0}
+                      />
                     </button>
                   ) : (
-                    <div
-                      role="img"
-                      aria-label={state.canWaive ? t('waiveReadyAriaLabel') : t('emptyWaivedAriaLabel')}
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
                       style={{ width: dims.cw, height: dims.ch }}
-                      className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >
-                      {state.canWaive ? t('waiveReady') : t('empty')}
-                    </div>
+                      A
+                    </button>
                   )}
-                </div>
+                </DropZone>
               </div>
-            </div>
+            );
+          })}
+        </div>
 
-            <div className={isMobile ? 'overflow-x-auto' : ''} data-tutorial="mm-tableau">
-              <div className={`flex gap-1 sm:gap-2 items-start ${isMobile ? 'flex-nowrap w-max' : ''}`}>
-                {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
-              </div>
-            </div>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="mm-hint-display" data-testid="mm-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toIdx)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            {isPlaying && (
-              <p
-                data-testid="mm-foundation-progress"
-                className="text-ds-text-muted text-sm text-center mt-1 tabular-nums"
-              >
-                {t('foundationProgress', { count: foundationCount, percent: foundationPercent })}
-              </p>
-            )}
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="mm-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: foundationPercent,
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+        <div className="flex gap-2 items-start" data-tutorial="mm-stock">
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
+            <button
+              type="button"
+              onClick={game.handleDeal}
+              disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0 || isHolding}
+              aria-label={t('stockAriaLabel', { count: state.stockCount })}
+              title={isHolding ? t('dealBlockedByWaive') : undefined}
+              style={{ width: dims.cw, height: dims.ch }}
+              className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+            >
+              {state.stockCount}
+            </button>
+            <div className="text-game-text-muted text-xs mt-1">{t('dealsRemaining', { count: dealsRemaining })}</div>
           </div>
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('waived')}</div>
+            {isHolding ? (
+              <button
+                type="button"
+                onClick={() => game.handleSelectSource(waivedZone)}
+                disabled={!isPlaying || loading}
+                aria-label={t('waivedAriaLabel', { count: state.waived.length })}
+                aria-pressed={isSourceSelected('waived', undefined, undefined)}
+                draggable={isPlaying && !loading}
+                onDragStart={dnd.handleDragStart(waivedZone)}
+                onDragEnd={dnd.handleDragEnd}
+                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waived', undefined, undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+              >
+                <AnimatedCard card={state.waived[0]} width={dims.cw} draggable={false} />
+                <span className="mt-1 block text-ds-text-primary text-xs" data-testid="mm-waived-count">
+                  {t('waivedCount', { count: state.waived.length })}
+                </span>
+              </button>
+            ) : (
+              <div
+                role="img"
+                aria-label={state.canWaive ? t('waiveReadyAriaLabel') : t('emptyWaivedAriaLabel')}
+                style={{ width: dims.cw, height: dims.ch }}
+                className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+              >
+                {state.canWaive ? t('waiveReady') : t('empty')}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-          />
+      <div className={isMobile ? 'overflow-x-auto' : ''} data-tutorial="mm-tableau">
+        <div className={`flex gap-1 sm:gap-2 items-start ${isMobile ? 'flex-nowrap w-max' : ''}`}>
+          {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
+        </div>
+      </div>
 
-          <GameFooter className={`${gameTheme.missmilligan.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="mm-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleDeal}
-                    disabled={loading || isAutoCompleting || state.stockCount === 0 || isHolding}
-                    title={isHolding ? t('dealBlockedByWaive') : undefined}
-                  >
-                    {t('deal')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mm-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="missmilligan-kbd-shortcuts" />
-          </GameFooter>
-        </>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="mm-hint-display" data-testid="mm-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toIdx)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHintData} enabled={frontendHintEnabled} t={t} />
+      </div>
+
+      {isPlaying && (
+        <p data-testid="mm-foundation-progress" className="text-ds-text-muted text-sm text-center mt-1 tabular-nums">
+          {t('foundationProgress', { count: foundationCount, percent: foundationPercent })}
+        </p>
       )}
-    </GamePageShell>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="mm-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: foundationPercent,
+          })}
+        </p>
+      )}
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction, busy }: MissMilliganContext) {
+  const isPlaying = state.phase === MissMilliganPhase.PLAYING;
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+  const isHolding = state.waived.length > 0;
+  if (!isPlaying) return null;
+  return (
+    <div data-tutorial="mm-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleDeal}
+        disabled={busy || game.isAutoCompleting || state.stockCount === 0 || isHolding}
+        title={isHolding ? t('dealBlockedByWaive') : undefined}
+      >
+        {t('deal')}
+      </button>
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={busy || game.isAutoCompleting || !state.canUndo}
+      >
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={busy || game.isAutoCompleting}
+        />
+      )}
+      <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.isAutoCompleting}>
+        {t('hint')}
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !busy && !game.isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={busy || game.isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+      >
+        {t('autoComplete')}
+      </button>
+      <button
+        type="button"
+        className={btnDanger}
+        onClick={confirmGiveUpAction}
+        disabled={busy || game.isAutoCompleting}
+      >
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const missMilliganDefinition: GameDefinition<
+  MissMilliganResponse,
+  MissMilliganGame,
+  Parameters<typeof missMilliganApi.exec>,
+  MissMilliganView
+> = {
+  key: 'missmilligan',
+  useGame: useMissMilliganGame,
+  useView: useMissMilliganView,
+  tutorial: MM_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 8, tableau: TABLEAU_COLS },
+  landscapeBanner: true,
+  landscapeBannerInCliMode: true,
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  cli: () => ({
+    parseCommand: parseMissMilliganCommand,
+    formatResponse: formatMissMilliganState,
+    helpText: MISSMILLIGAN_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === MissMilliganPhase.GAME_CLEAR || state.phase === MissMilliganPhase.GAME_OVER,
+    won: state.phase === MissMilliganPhase.GAME_CLEAR,
+  }),
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'd', action: game.handleDeal, label: 'deal' },
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === MissMilliganPhase.PLAYING,
+  shortcutsTestId: 'missmilligan-kbd-shortcuts',
+  resetTutorialId: 'mm-reset-button',
+  HeaderExtra,
+  Board,
+  FooterActions,
+};
+
+/** Renders the Miss Milligan page: eight columns, eight foundations, and the waived slot. */
+export const MissMilliganPage = createGamePage(missMilliganDefinition);

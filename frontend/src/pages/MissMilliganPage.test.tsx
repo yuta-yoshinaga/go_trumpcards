@@ -570,4 +570,11 @@ describe('MissMilliganPage waiving', () => {
 
     await waitFor(() => expect(screen.getByText('色違い交互の降順に並んでいません')).toBeInTheDocument());
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

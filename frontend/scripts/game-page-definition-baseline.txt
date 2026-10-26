@@ -152,7 +152,6 @@ MemoryPage.tsx
 MendikotPage.tsx
 MightyPage.tsx
 MinibridgePage.tsx
-MissMilliganPage.tsx
 MississippiStudPage.tsx
 MonteBankPage.tsx
 MonteCarloPage.tsx
