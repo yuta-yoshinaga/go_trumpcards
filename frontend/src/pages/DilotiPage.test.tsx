@@ -375,4 +375,46 @@ describe('DilotiPage', () => {
       expect(takes[0].textContent).not.toMatch(/[♠♥♦♣]/);
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<DilotiPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('applies updated settings when reset is confirmed', async () => {
+    renderWithProviders(<DilotiPage />);
+    await screen.findByTestId('diloti-table');
+    fireEvent.click(screen.getByText('設定', { selector: 'summary' }));
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('目標点'), { target: { value: '101' } });
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 2, targetScore: 101 },
+      }),
+    );
+  });
+
+  it('shows empty table message when there are no table cards', async () => {
+    mockExec.mockResolvedValue(makeDilotiState({ table: [] }));
+    renderWithProviders(<DilotiPage />);
+    expect(await screen.findByText('（無し）')).toBeInTheDocument();
+  });
+
+  it('shows no capture message when selected card can only trail', async () => {
+    mockExec.mockResolvedValue(
+      makeDilotiState({
+        takeOptions: [[], [{ tableIdxs: [], declIdxs: [0] }], [{ tableIdxs: [1], declIdxs: [] }]],
+        declareOptions: [[], [{ value: 8, tableIdxs: [0] }], []],
+        canTrail: [true, true, false],
+      }),
+    );
+    renderWithProviders(<DilotiPage />);
+    await pickHand(0);
+    expect(await screen.findByText('この札では取れません')).toBeInTheDocument();
+    expect(screen.getByTestId('diloti-lay-off')).toBeInTheDocument();
+  });
 });

@@ -81,7 +81,6 @@ DehlaPakadPage.tsx
 DesmochePage.tsx
 DeuceToSevenPage.tsx
 DeucesWildPage.tsx
-DilotiPage.tsx
 DiplomatPage.tsx
 DoubleAttackPage.tsx
 DoubleKlondikePage.tsx
