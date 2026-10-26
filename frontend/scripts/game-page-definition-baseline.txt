@@ -160,7 +160,6 @@ MonteCarloPage.tsx
 MrsMopPage.tsx
 MushiPage.tsx
 NainJaunePage.tsx
-NapoleonsSquarePage.tsx
 NarcoticPage.tsx
 NertzPage.tsx
 NiuNiuPage.tsx
