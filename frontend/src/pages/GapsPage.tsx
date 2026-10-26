@@ -468,9 +468,6 @@ const gapsDefinition: GameDefinition<GapsResponse, GapsGame, Parameters<typeof g
     ended: state.phase === GapsPhase.GAME_CLEAR || state.phase === GapsPhase.GAME_OVER,
     won: state.phase === GapsPhase.GAME_CLEAR,
   }),
-  reset: ({ game }) => {
-    void game.exec('reset');
-  },
   // Keyboard shortcuts mirror the sibling solitaire pages (EightOff / Baker's
   // Dozen). Bind letter keys only — Enter/Space would double-fire on a focused
   // button. Undo/redeal expose per-binding `enabled` so a disabled action's key
