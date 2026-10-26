@@ -62,6 +62,29 @@ describe('TeenPattiPage', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('shows CPU cards when the showdown reveals their hands', async () => {
+    const state = makeTeenPattiState({
+      phase: 3,
+      isShowdown: true,
+      players: makeTeenPattiState().players.map((player) =>
+        player.isHuman
+          ? player
+          : {
+              ...player,
+              cards: [
+                { design: 'SPADE', value: 5 },
+                { design: 'HEART', value: 6 },
+                { design: 'CLOVER', value: 7 },
+              ],
+            },
+      ),
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<TeenPattiPage />);
+
+    expect(await screen.findAllByRole('img')).toHaveLength(12);
+  });
+
   it('shows the dealer badge alongside the dealer seat status', async () => {
     renderWithProviders(<TeenPattiPage />);
     const badge = await screen.findByText('ディーラー', { selector: 'span' });
@@ -300,6 +323,60 @@ describe('TeenPattiPage', () => {
 
     const minus = await screen.findByRole('button', { name: 'レイズ額を1減らす' });
     expect(minus).toBeDisabled();
+  });
+
+  it('decreases the raise amount by one and stops at the server minimum', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 1, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const minus = await screen.findByRole('button', { name: 'レイズ額を1減らす' });
+    fireEvent.click(minus);
+    expect(screen.getByText('レイズ額: 1')).toBeInTheDocument();
+    expect(minus).toBeDisabled();
+  });
+
+  it('dispatches raise with the selected raise amount', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 1, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const increase = await screen.findByRole('button', { name: 'レイズ額を1増やす' });
+    fireEvent.click(increase);
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('tp-raise-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', { raiseStake: 3 }));
+  });
+
+  it('resets with the selected config from the reset control', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    await screen.findByRole('button', { name: '手札を見る' });
+    fireEvent.click(screen.getByText('設定'));
+    const ante = await screen.findByLabelText('アンティ');
+    fireEvent.change(ante, { target: { value: '2' } });
+    expect(ante).toHaveValue('2');
+    mockExec.mockClear();
+
+    const reset = screen.getByRole('button', { name: 'リセット' });
+    expect(reset).toHaveAttribute('data-tutorial', 'teenpatti-reset-button');
+    fireEvent.click(reset);
+    const confirm = await screen.findByRole('alertdialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { ante: 2, startingChips: 100 } }));
+  });
+
+  it('resets with changed ante and starting chips settings', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    await screen.findByRole('button', { name: '手札を見る' });
+    fireEvent.click(screen.getByText('設定'));
+    const ante = await screen.findByLabelText('アンティ');
+    fireEvent.change(ante, { target: { value: '5' } });
+    expect(ante).toHaveValue('5');
+    const chips = screen.getByLabelText('初期チップ');
+    fireEvent.change(chips, { target: { value: '200' } });
+    expect(chips).toHaveValue('200');
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    const chipsConfirm = await screen.findByRole('alertdialog');
+    fireEvent.click(within(chipsConfirm).getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { ante: 5, startingChips: 200 } }));
   });
 
   // **範囲を出さないと、+/- を連打してボタンが無効になる位置を探るしかない (#5660)。**
