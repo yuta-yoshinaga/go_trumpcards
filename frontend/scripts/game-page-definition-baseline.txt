@@ -77,7 +77,6 @@ CuckooPage.tsx
 CucumberPage.tsx
 CurdsAndWheyPage.tsx
 DaifugoPage.tsx
-DehlaPakadPage.tsx
 DesmochePage.tsx
 DeuceToSevenPage.tsx
 DeucesWildPage.tsx
