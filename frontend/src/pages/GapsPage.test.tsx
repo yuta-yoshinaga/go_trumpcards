@@ -543,4 +543,10 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('gaps-locked-0-0')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<GapsPage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

@@ -108,7 +108,6 @@ FourSeasonsPage.tsx
 FourteenOutPage.tsx
 FreeBetPage.tsx
 FreeCellPage.tsx
-GapsPage.tsx
 GermanSoloPage.tsx
 GermanWhistPage.tsx
 GoFishPage.tsx
