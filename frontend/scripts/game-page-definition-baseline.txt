@@ -97,7 +97,6 @@ FaroPage.tsx
 FiftyOnePage.tsx
 FiveCardStudPage.tsx
 FiveHundredPage.tsx
-FlowerGardenPage.tsx
 FollowTheQueenPage.tsx
 FortressPage.tsx
 FortyAndEightPage.tsx

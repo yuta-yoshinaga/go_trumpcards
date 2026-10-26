@@ -1,42 +1,24 @@
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FlowerGardenMoveZone, flowerGardenApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardFan } from '../components/CardFan';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useFlowerGardenGame } from '../hooks/useFlowerGardenGame';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { FlowerGardenResponse } from '../types/card';
 import { FlowerGardenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { FLOWERGARDEN_HELP, parseFlowerGardenCommand } from '../utils/cli/commands/flowergardenCommands';
 import { formatFlowerGardenState } from '../utils/cli/formatters/flowergardenFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 // Keep in sync with the sm:gap-2 spacing on the bed row below.
@@ -81,8 +63,15 @@ const FG_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the Flower Garden solitaire game page with 6 flower-bed fans, a 16-card bouquet reserve, and 4 foundations. */
-export const FlowerGardenPage = withTutorial(FlowerGardenPageContent, 'flowergarden', FG_TUTORIAL_STEPS);
+const FLOWERGARDEN_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [FlowerGardenPhase.PLAYING]: 'playing',
+  [FlowerGardenPhase.GAME_CLEAR]: 'gameClear',
+  [FlowerGardenPhase.GAME_OVER]: 'gameOver',
+};
+
+type FlowerGardenGame = ReturnType<typeof useFlowerGardenGame>;
+type FlowerGardenView = ReturnType<typeof useFlowerGardenView>;
+type FlowerGardenContext = GamePageContext<FlowerGardenResponse, FlowerGardenGame, FlowerGardenView>;
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation');
@@ -90,26 +79,9 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   return t('frontendHint.tableau', { col });
 }
 
-function FlowerGardenPageContent() {
+function useFlowerGardenView({ game }: { game: FlowerGardenGame }) {
   const selectSourceHintId = useId();
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('flowergarden');
-  const game = useFlowerGardenGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
-  const moveCount = state?.moveCount;
+  const moveCount = game.state?.moveCount;
   const previousMoveCount = useRef<number | null>(null);
   const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
 
@@ -124,27 +96,6 @@ function FlowerGardenPageContent() {
     }
   }, [moveCount]);
 
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('flowergarden', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('flowergarden');
-  const cliConfig: CliGameConfig<FlowerGardenResponse, Parameters<typeof flowerGardenApi.exec>> = useMemo(
-    () => ({
-      gameName: 'flowergarden',
-      parseCommand: parseFlowerGardenCommand,
-      formatResponse: formatFlowerGardenState,
-      helpText: FLOWERGARDEN_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, {
-    addInput,
-    addOutput,
-    addError,
-    clearLog,
-  });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
@@ -166,10 +117,8 @@ function FlowerGardenPageContent() {
     : { cw: dims.cw, ch: dims.ch };
   const foundationWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
   const foundationHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
-  const BedsLayout = isLargeDesktop ? 'div' : Fragment;
-  const bedsLayoutProps = isLargeDesktop ? { className: 'flex flex-wrap justify-center items-start gap-4' } : {};
 
-  const isPlayingForKbd = state?.phase === FlowerGardenPhase.PLAYING;
+  const isPlayingForKbd = game.state?.phase === FlowerGardenPhase.PLAYING;
 
   const dispatchMove = useCallback(
     (source: FlowerGardenMoveZone, target: FlowerGardenMoveZone) => {
@@ -180,48 +129,54 @@ function FlowerGardenPageContent() {
   const dnd = useSolitaireDragDrop<FlowerGardenMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: game.loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+  const phaseNames = usePhaseNames('flowergarden', FLOWERGARDEN_PHASE_KEYS);
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+  return {
+    selectSourceHintId,
+    announcedMoveCount,
+    dims,
+    reserveDims,
+    foundationWidth,
+    foundationHeight,
+    isLargeDesktop,
+    dnd,
+    phaseNames,
+  };
+}
+
+function LiveRegion({ t, tc, view }: FlowerGardenContext) {
+  return (
+    <>
+      <div data-testid="fg-move-count-live" className="sr-only" role="status" aria-live="polite">
+        {view.announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: view.announcedMoveCount })}
+      </div>
+      <span id={view.selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+    </>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
+function HeaderExtra({ state, t }: FlowerGardenContext) {
+  return (
+    <span className="text-sm text-ds-text-muted">
+      {t('moveCount')}: {state.moveCount}
+    </span>
   );
+}
 
-  useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
-  });
-
-  if (!state) return <GameSkeleton gameKey="flowergarden" layout={{ kind: 'tableau', topRow: 4, tableau: 6 }} />;
+function Board({ game, state, t, tc, view, frontendHint }: FlowerGardenContext) {
+  const { selectSourceHintId, dims, reserveDims, foundationWidth, foundationHeight, isLargeDesktop, dnd } = view;
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
 
   const isPlaying = state.phase === FlowerGardenPhase.PLAYING;
-  const isGameClear = state.phase === FlowerGardenPhase.GAME_CLEAR;
   const isGameOver = state.phase === FlowerGardenPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
   // How many of the 52 cards reached a foundation — only needed on game over, so skip the
   // reduce during normal (frequently re-rendered) play.
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  // Auto-complete becomes useful once a foundation has built past its ace, so
-  // pulse the button only then (mirrors Crescent / Spiderette).
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -239,6 +194,9 @@ function FlowerGardenPageContent() {
     tableau: new Set(selectedLegalTargets?.tableau ?? []),
     foundation: new Set(selectedLegalTargets?.foundation ?? []),
   };
+
+  const BedsLayout = isLargeDesktop ? 'div' : Fragment;
+  const bedsLayoutProps = isLargeDesktop ? { className: 'flex flex-wrap justify-center items-start gap-4' } : {};
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
@@ -425,199 +383,180 @@ function FlowerGardenPageContent() {
     });
 
   return (
-    <GamePageShell
-      title={tc('nav.flowergarden')}
-      gameThemeBg={gameTheme.flowergarden.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/flowergarden"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <div data-testid="fg-move-count-live" className="sr-only" role="status" aria-live="polite">
-        {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
-      </div>
-      <span id={selectSourceHintId} className="sr-only">
-        {tc('label.selectSourceFirst')}
-      </span>
-      <LandscapeBanner message={t('landscapeBanner')} />
-
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap gap-2 sm:gap-3 items-start justify-center mb-3">
-              <div
-                className={isLargeDesktop ? 'flex flex-col gap-1 w-full' : 'flex flex-col gap-1'}
-                data-tutorial="fg-reserve"
-              >
-                <span className="text-game-text-muted text-xs">{t('reserve')}</span>
-                <span className="text-game-text-muted text-xs">{t('reserveSelectionHint')}</span>
-                {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
-                    slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
-                {/* Add the card button's 6px border to each card's fan width. */}
-                {isLargeDesktop ? (
-                  <CardFan itemWidth={dims.cw + 6} className="w-full" data-testid="fg-bouquet-fan">
-                    {state.reserve.map((_, idx) => renderReserveCell(idx))}
-                  </CardFan>
-                ) : (
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
-                    {state.reserve.map((_, idx) => renderReserveCell(idx))}
-                  </div>
-                )}
-              </div>
-
-              {!isLargeDesktop && (
-                <div className="flex items-start gap-1 sm:gap-2" data-tutorial="fg-foundation">
-                  {renderFoundations()}
-                </div>
-              )}
+    <>
+      <div className="flex flex-wrap gap-2 sm:gap-3 items-start justify-center mb-3">
+        <div
+          className={isLargeDesktop ? 'flex flex-col gap-1 w-full' : 'flex flex-col gap-1'}
+          data-tutorial="fg-reserve"
+        >
+          <span className="text-game-text-muted text-xs">{t('reserve')}</span>
+          <span className="text-game-text-muted text-xs">{t('reserveSelectionHint')}</span>
+          {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
+              slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
+          {/* Add the card button's 6px border to each card's fan width. */}
+          {isLargeDesktop ? (
+            <CardFan itemWidth={dims.cw + 6} className="w-full" data-testid="fg-bouquet-fan">
+              {state.reserve.map((_, idx) => renderReserveCell(idx))}
+            </CardFan>
+          ) : (
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
+              {state.reserve.map((_, idx) => renderReserveCell(idx))}
             </div>
+          )}
+        </div>
 
-            <details className="mb-1 text-center text-ds-text-muted text-xs">
-              <summary className="cursor-pointer">{t('rules')}</summary>
-              <p data-testid="fg-rules-note">{t('rulesNote')}</p>
-            </details>
-
-            <BedsLayout {...bedsLayoutProps}>
-              <div
-                className="flex gap-1 sm:gap-2"
-                data-tutorial="fg-tableau"
-                style={isLargeDesktop ? { width: 6 * dims.cw + 5 * BED_GAP_PX } : undefined}
-              >
-                {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
-              </div>
-              {isLargeDesktop && (
-                <div className="grid grid-cols-2 gap-1" data-tutorial="fg-foundation">
-                  {renderFoundations()}
-                </div>
-              )}
-            </BedsLayout>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="fg-hint-display" data-testid="fg-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable', { card: cardAlt(hint.card) })}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="fg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / 52) * 100),
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+        {!isLargeDesktop && (
+          <div className="flex items-start gap-1 sm:gap-2" data-tutorial="fg-foundation">
+            {renderFoundations()}
           </div>
+        )}
+      </div>
 
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
+      <details className="mb-1 text-center text-ds-text-muted text-xs">
+        <summary className="cursor-pointer">{t('rules')}</summary>
+        <p data-testid="fg-rules-note">{t('rulesNote')}</p>
+      </details>
 
-          <GameFooter className={`${gameTheme.flowergarden.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="fg-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="fg-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="flower-garden-kbd-shortcuts" />
-          </GameFooter>
-        </>
+      <BedsLayout {...bedsLayoutProps}>
+        <div
+          className="flex gap-1 sm:gap-2"
+          data-tutorial="fg-tableau"
+          style={isLargeDesktop ? { width: 6 * dims.cw + 5 * BED_GAP_PX } : undefined}
+        >
+          {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
+        </div>
+        {isLargeDesktop && (
+          <div className="grid grid-cols-2 gap-1" data-tutorial="fg-foundation">
+            {renderFoundations()}
+          </div>
+        )}
+      </BedsLayout>
+
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="fg-hint-display" data-testid="fg-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable', { card: cardAlt(hint.card) })}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toCol)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="fg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: Math.round((foundationCount / 52) * 100),
+          })}
+        </p>
       )}
-    </GamePageShell>
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction }: FlowerGardenContext) {
+  const isPlaying = state.phase === FlowerGardenPhase.PLAYING;
+  if (!isPlaying) return null;
+  // Auto-complete becomes useful once a foundation has built past its ace, so
+  // pulse the button only then (mirrors Crescent / Spiderette).
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
+
+  return (
+    <div data-tutorial="fg-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={game.loading || game.isAutoCompleting || !state.canUndo}
+      >
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={game.loading || game.isAutoCompleting}
+        />
+      )}
+      <button
+        type="button"
+        className={btnSuccess}
+        onClick={game.handleHint}
+        disabled={game.loading || game.isAutoCompleting}
+      >
+        {t('hint')}
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !game.loading && !game.isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={game.loading || game.isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+      >
+        {t('autoComplete')}
+      </button>
+      <button
+        type="button"
+        className={btnDanger}
+        onClick={confirmGiveUpAction}
+        disabled={game.loading || game.isAutoCompleting}
+      >
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const flowerGardenDefinition: GameDefinition<
+  FlowerGardenResponse,
+  FlowerGardenGame,
+  Parameters<typeof flowerGardenApi.exec>,
+  FlowerGardenView
+> = {
+  key: 'flowergarden',
+  useGame: useFlowerGardenGame,
+  useView: useFlowerGardenView,
+  tutorial: FG_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 4, tableau: 6 },
+  cli: () => ({
+    parseCommand: parseFlowerGardenCommand,
+    formatResponse: formatFlowerGardenState,
+    helpText: FLOWERGARDEN_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === FlowerGardenPhase.GAME_CLEAR || state.phase === FlowerGardenPhase.GAME_OVER,
+    won: state.phase === FlowerGardenPhase.GAME_CLEAR,
+  }),
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === FlowerGardenPhase.PLAYING,
+  shortcutsTestId: 'flower-garden-kbd-shortcuts',
+  resetTutorialId: 'fg-reset-button',
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  landscapeBanner: true,
+  landscapeBannerInCliMode: true,
+  HeaderExtra,
+  LiveRegion,
+  Board,
+  FooterActions,
+};
+
+/** Renders the Flower Garden solitaire game page with 6 flower-bed fans, a 16-card bouquet reserve, and 4 foundations. */
+export const FlowerGardenPage = createGamePage(flowerGardenDefinition);
