@@ -43,7 +43,6 @@
   "belaLine": "ベラ成立: {{name}}（+20）",
   "dixLine": "切札の7を表向きカードと交換しました",
   "settings": {
-    "title": "設定",
     "targetScore": "目標点",
     "allowSchmeiss": "投げを許す"
   },

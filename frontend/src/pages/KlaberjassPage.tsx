@@ -1,37 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { klaberjassApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { KlaberjassResponse } from '../types/card';
 import { KlaberjassPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { KLABERJASS_HELP, parseKlaberjassCommand } from '../utils/cli/commands/klaberjassCommands';
 import { formatKlaberjassState } from '../utils/cli/formatters/klaberjassFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
-import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Target-score options for the Klaberjass settings panel. */
@@ -107,18 +92,63 @@ const KLABERJASS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [KlaberjassPhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Klaberjass game page: the two-player ancestor of the Jass family. */
-export const KlaberjassPage = withTutorial(KlaberjassPageContent, 'klaberjass', KLABERJASS_TUTORIAL_STEPS);
+type KlaberjassGame = ReturnType<typeof useKlaberjassGame>;
+type KlaberjassView = ReturnType<typeof useKlaberjassView>;
+type KlaberjassContext = GamePageContext<KlaberjassResponse, KlaberjassGame, KlaberjassView>;
 
-/** Inner content of the Klaberjass page, wrapped by TutorialProvider. */
-function KlaberjassPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('klaberjass');
+function useKlaberjassGame() {
   const { state, loading, error, exec, retry } = useGameApi(klaberjassApi.exec);
 
   const [targetScore, setTargetScore] = useState(501);
   const [allowSchmeiss, setAllowSchmeiss] = useState(true);
   const [selected, setSelected] = useState<number | null>(null);
+
+  useMountReset(exec);
+
+  const handleTargetChange = (value: string) => {
+    const next = Number(value);
+    setTargetScore(next);
+    exec('reset', { config: { targetScore: next, allowSchmeiss } });
+  };
+
+  const handleAllowSchmeissChange = (checked: boolean) => {
+    setAllowSchmeiss(checked);
+    exec('reset', { config: { targetScore, allowSchmeiss: checked } });
+  };
+
+  const handlePlay = () => {
+    if (selected === null) return;
+    exec('play', { cardIndex: selected });
+    setSelected(null);
+  };
+
+  const handleReset = () => {
+    setSelected(null);
+    exec('reset', { config: { targetScore, allowSchmeiss } });
+  };
+
+  return {
+    state,
+    loading,
+    error,
+    exec,
+    retry,
+    targetScore,
+    allowSchmeiss,
+    selected,
+    setSelected,
+    handlePlay,
+    handleReset,
+    handleTargetChange,
+    handleAllowSchmeissChange,
+  };
+}
+
+function useKlaberjassView({ game, t }: { game: KlaberjassGame; t: KlaberjassContext['t'] }) {
+  const { state } = game;
+  const { cardWidth, isMobile } = useCardDimensions();
+  const phaseNames = usePhaseNames('klaberjass', KLABERJASS_PHASE_KEYS);
+
   const [settlementAnnouncement, setSettlementAnnouncement] = useState('');
   const lastSettlementKey = useRef<string | null>(null);
 
@@ -150,48 +180,228 @@ function KlaberjassPageContent() {
     setSettlementAnnouncement(`${t('settlementTitle')}: ${details.join(t('listSeparator'))}`);
   }, [settlementKey, state, t]);
 
-  useMountReset(exec);
-
-  const handleTargetChange = (value: string) => {
-    const next = Number(value);
-    setTargetScore(next);
-    exec('reset', { config: { targetScore: next, allowSchmeiss } });
+  return {
+    cardWidth,
+    isMobile,
+    phaseNames,
+    settlementAnnouncement,
   };
+}
 
-  const handleAllowSchmeissChange = (checked: boolean) => {
-    setAllowSchmeiss(checked);
-    exec('reset', { config: { targetScore, allowSchmeiss: checked } });
-  };
-
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('klaberjass');
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('klaberjass', state);
-  const cliConfig: CliGameConfig<KlaberjassResponse, Parameters<typeof klaberjassApi.exec>> = useMemo(
-    () => ({
-      gameName: 'klaberjass',
-      parseCommand: parseKlaberjassCommand,
-      formatResponse: formatKlaberjassState,
-      helpText: KLABERJASS_HELP,
-      localCommand: hintLocalCommand(frontendHint),
-    }),
-    [frontendHint],
+function LiveRegion({ view }: KlaberjassContext) {
+  return (
+    <div className="sr-only" role="status" aria-live="polite" data-testid="klaberjass-settlement-announcement">
+      {view.settlementAnnouncement}
+    </div>
   );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+}
 
-  const { cardWidth, isMobile } = useCardDimensions();
-  const phaseNames = usePhaseNames('klaberjass', KLABERJASS_PHASE_KEYS);
+function Board({ state, t, view }: KlaberjassContext) {
+  const { cardWidth, isMobile } = view;
+  const isHandEnd = state.phase === KlaberjassPhase.HAND_END;
+  const isGameEnd = state.phase === KlaberjassPhase.GAME_END || state.gameEndFlag;
 
-  if (!state)
-    return <GameSkeleton gameKey="klaberjass" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
+  const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
+  const suitGlyph = (suit: number): string => SUIT_GLYPHS[suit] ?? t('trumpNone');
 
+  return (
+    <>
+      <div className="text-ds-text-primary text-center mb-2" data-tutorial="klaberjass-info">
+        <span className="mr-4">{t('deal', { n: state.dealNumber })}</span>
+        <span className="mr-4">{t('target', { n: state.targetScore })}</span>
+        <span className="mr-4">
+          {t('trump')}: {suitGlyph(state.trumpSuit)}
+        </span>
+        {state.turnUpCard && state.trumpSuit === 0 && (
+          <span data-testid="klaberjass-turnup">
+            {t('turnUp')}: {suitGlyph(suitOf(state.turnUpCard.design))}
+          </span>
+        )}
+      </div>
+
+      {/* The trump ladder — the one rule people reliably get wrong. */}
+      <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="klaberjass-ladder">
+        <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {TRUMP_LADDER.map((r) => (
+            <span key={r.label} className={r.points >= 14 ? 'text-ds-warning font-semibold' : 'text-ds-text-muted'}>
+              {r.label} ({r.points})
+            </span>
+          ))}
+        </div>
+        <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
+        <div className="text-ds-text-muted">{t('sequenceNote')}</div>
+      </div>
+
+      {/* Turn-up card while bidding */}
+      {state.turnUpCard && state.trumpSuit === 0 && (
+        <div className="mb-2 flex items-center gap-2" data-testid="klaberjass-turnup-card">
+          <span className="text-ds-text-muted text-sm">{t('turnUp')}</span>
+          <CardImage card={state.turnUpCard} width={cardWidth} />
+        </div>
+      )}
+
+      {/* Players */}
+      <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="klaberjass-players">
+        <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+        {state.players.map((p) => (
+          <div
+            key={`player-${p.id}`}
+            data-testid="klaberjass-player"
+            className={`text-sm py-0.5 flex items-center gap-2 ${
+              p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+            } ${p.isHuman ? 'font-semibold' : ''}`}
+          >
+            <span>{playerLabel(p.id, p.isHuman)}</span>
+            {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+            {p.isMaker && <span className="text-ds-success">[{t('maker')}]</span>}
+            <span>{t('score', { n: p.score })}</span>
+            <span>{t('handPoints', { n: p.handPoints })}</span>
+            {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+          </div>
+        ))}
+      </div>
+
+      <section className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="klaberjass-trick-history">
+        <h2 className="mb-1 text-ds-text-primary">{t('trickHistory')}</h2>
+        {state.trickHistory.map((entry, index) => (
+          <div key={`trick-history-${index}`} className="text-ds-text-muted">
+            {t('trickHistoryEntry', {
+              number: index + 1,
+              name: playerLabel(entry.winnerIdx, entry.winnerIdx === 0),
+              points: entry.points,
+            })}
+          </div>
+        ))}
+      </section>
+
+      {/* Current trick */}
+      {state.trick.length > 0 && (
+        <div className="mb-2 flex items-center gap-2" data-testid="klaberjass-trick">
+          <span className="text-ds-text-muted text-sm">{t('currentTrick')}</span>
+          {state.trick.map((c, i) => (
+            <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
+          ))}
+        </div>
+      )}
+
+      {/* Settlement */}
+      {(isHandEnd || isGameEnd) && (
+        <div className={`mb-2 p-2 rounded text-sm ${badgeWarningColors}`} data-testid="klaberjass-settlement">
+          <h2 className="mb-1 font-semibold">{t('settlementTitle')}</h2>
+          <div>{state.bete ? t('beteLine') : t('madeLine')}</div>
+          <ul>
+            {state.players.map((p) => (
+              <li key={p.id} data-testid="klaberjass-points-breakdown">
+                {playerLabel(p.id, p.isHuman)}:{' '}
+                {t('pointsBreakdown', {
+                  card: p.cardPoints,
+                  sequence: p.sequencePoints,
+                  bela: p.belaPoints,
+                  lastTrick: p.lastTrickPoints,
+                  total: p.handPoints,
+                })}{' '}
+                {t('scoreUpdate', { score: p.score })}
+              </li>
+            ))}
+          </ul>
+          <div>
+            {state.sequenceWinner >= 0
+              ? t('sequenceWinner', { name: playerLabel(state.sequenceWinner, state.sequenceWinner === 0) })
+              : t('sequenceNobody')}
+          </div>
+          {state.belaScored && state.belaHolder >= 0 && (
+            <div>{t('belaLine', { name: playerLabel(state.belaHolder, state.belaHolder === 0) })}</div>
+          )}
+          {state.dixUsed && <div>{t('dixLine')}</div>}
+          {/* **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を
+              足しても handPoints と合わない理由が説明できない (#4937)。 */}
+          {state.lastTrickWinner >= 0 && (
+            <div data-testid="klaberjass-last-trick-bonus">
+              {t('lastTrickBonus', {
+                name: playerLabel(state.lastTrickWinner, state.lastTrickWinner === 0),
+                points: state.lastTrickBonus,
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {isMobile && (
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      )}
+    </>
+  );
+}
+
+function FooterHand({ game, state, t, view }: KlaberjassContext) {
   const human = state.players.find((p) => p.isHuman);
+  const isPlay = state.phase === KlaberjassPhase.PLAY;
+  const canPlay = (i: number) => state.validPlays.includes(i);
+
+  return (
+    <div className="mb-2" data-tutorial="klaberjass-hand">
+      <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
+      <div className="flex flex-wrap gap-1">
+        {(human?.cards ?? []).map((c, i) => {
+          const playable = !isPlay || canPlay(i);
+          return (
+            <button
+              key={`hand-${c.design}-${c.value}-${i}`}
+              type="button"
+              data-hint-action="play"
+              // **リングは目にしか届かない。**どの札を選んでいるかを
+              // 音声でも確かめられないと、出す前に検証できない (#6523)。
+              aria-pressed={game.selected === i}
+              onClick={() => game.setSelected(i)}
+              disabled={game.loading || (isPlay && !canPlay(i))}
+              className={`rounded ${game.selected === i ? 'ring-2 ring-ds-accent' : ''} ${
+                playable ? '' : 'opacity-40'
+              }`}
+            >
+              <CardImage card={c} width={view.cardWidth} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: KlaberjassContext) {
+  const isBidTurnUp = state.phase === KlaberjassPhase.BID_TURN_UP;
+  const isBidFree = state.phase === KlaberjassPhase.BID_FREE;
+  const isSchmeiss = state.phase === KlaberjassPhase.SCHMEISS;
+  const isPlay = state.phase === KlaberjassPhase.PLAY;
+  const isGameEnd = state.phase === KlaberjassPhase.GAME_END || state.gameEndFlag;
+  const isHumanBid = (isBidTurnUp || isBidFree) && state.bidPlayerIdx === 0 && !isGameEnd;
+  const isHumanSchmeissAnswer = isSchmeiss && state.bidPlayerIdx === 0 && !isGameEnd;
+  const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
+
+  return (
+    <>
+      {isHumanBid && (
+        <div className="text-ds-text-muted text-xs mb-2" data-testid="klaberjass-bid-notice">
+          {isBidTurnUp ? t('bidNotice') : t('bidFreeNotice')}
+        </div>
+      )}
+      {isHumanSchmeissAnswer && (
+        <div className="text-ds-text-muted text-xs mb-2" data-testid="klaberjass-schmeiss-notice">
+          {t('schmeissNotice')}
+        </div>
+      )}
+      {isHumanPlay && (
+        <div className="text-ds-text-muted text-xs mb-2" data-testid="klaberjass-play-notice">
+          {t('playNotice')}
+        </div>
+      )}
+
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ game, state, t, tc }: KlaberjassContext) {
   const isBidTurnUp = state.phase === KlaberjassPhase.BID_TURN_UP;
   const isBidFree = state.phase === KlaberjassPhase.BID_FREE;
   const isSchmeiss = state.phase === KlaberjassPhase.SCHMEISS;
@@ -200,358 +410,178 @@ function KlaberjassPageContent() {
   const isGameEnd = state.phase === KlaberjassPhase.GAME_END || state.gameEndFlag;
   const humanWon = isGameEnd && state.winnerIdx === 0;
   const isHumanBid = (isBidTurnUp || isBidFree) && state.bidPlayerIdx === 0 && !isGameEnd;
-  // 投げの提案に答えるのは、提案した「相手」ではないほう。
   const isHumanSchmeissAnswer = isSchmeiss && state.bidPlayerIdx === 0 && !isGameEnd;
   const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
-  const suitGlyph = (suit: number): string => SUIT_GLYPHS[suit] ?? t('trumpNone');
-
-  const canPlay = (i: number) => state.validPlays.includes(i);
-
-  const handlePlay = () => {
-    if (selected === null) return;
-    exec('play', { cardIndex: selected });
-    setSelected(null);
-  };
-
-  const handleManualReset = () => {
-    hideActionLog();
-    setSelected(null);
-    exec('reset', { config: { targetScore, allowSchmeiss } });
-  };
-
-  const messageBox = (
-    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-  );
 
   return (
-    <GamePageShell
-      title={tc('nav.klaberjass')}
-      gameThemeBg={gameTheme.klaberjass.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanBid || isHumanSchmeissAnswer || isHumanPlay}
-      gamePath="/klaberjass"
-      gameEndFlag={isGameEnd}
-      winShow={humanWon}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      <div className="sr-only" role="status" aria-live="polite" data-testid="klaberjass-settlement-announcement">
-        {settlementAnnouncement}
-      </div>
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
+    <>
+      {isHumanBid && isBidTurnUp && (
+        <button type="button" className={btnSuccess} onClick={() => void game.exec('accept')} disabled={game.loading}>
+          {t('acceptButton')}
+        </button>
+      )}
+
+      {isHumanBid &&
+        isBidFree &&
+        [1, 2, 3, 4]
+          // **断られた表向きのスートは選べない。**第1ラウンドで流れている。
+          .filter((s) => s !== (state.turnUpCard ? suitOf(state.turnUpCard.design) : 0))
+          .map((s) => (
+            <button
+              key={`call-${s}`}
+              type="button"
+              className={btnPrimary}
+              onClick={() => void game.exec('call', { suit: s })}
+              disabled={game.loading}
+            >
+              {t('callButton', { suit: SUIT_GLYPHS[s], suitName: tc(SUIT_NAME_KEYS[s]) })}
+            </button>
+          ))}
+
+      {isHumanBid && (
         <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'targetScore',
-                    label: t('settings.targetScore'),
-                    value: targetScore,
-                    options: TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: handleTargetChange,
-                  },
-                  {
-                    type: 'checkbox',
-                    id: 'allowSchmeiss',
-                    label: t('settings.allowSchmeiss'),
-                    checked: allowSchmeiss,
-                    onToggle: handleAllowSchmeissChange,
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="klaberjass-info">
-              <span className="mr-4">{t('deal', { n: state.dealNumber })}</span>
-              <span className="mr-4">{t('target', { n: state.targetScore })}</span>
-              <span className="mr-4">
-                {t('trump')}: {suitGlyph(state.trumpSuit)}
-              </span>
-              {state.turnUpCard && state.trumpSuit === 0 && (
-                <span data-testid="klaberjass-turnup">
-                  {t('turnUp')}: {suitGlyph(suitOf(state.turnUpCard.design))}
-                </span>
-              )}
-            </div>
-
-            {/* The trump ladder — the one rule people reliably get wrong. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="klaberjass-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
-              <div className="flex flex-wrap gap-x-3 gap-y-1">
-                {TRUMP_LADDER.map((r) => (
-                  <span
-                    key={r.label}
-                    className={r.points >= 14 ? 'text-ds-warning font-semibold' : 'text-ds-text-muted'}
-                  >
-                    {r.label} ({r.points})
-                  </span>
-                ))}
-              </div>
-              <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
-              <div className="text-ds-text-muted">{t('sequenceNote')}</div>
-            </div>
-
-            {/* Turn-up card while bidding */}
-            {state.turnUpCard && state.trumpSuit === 0 && (
-              <div className="mb-2 flex items-center gap-2" data-testid="klaberjass-turnup-card">
-                <span className="text-ds-text-muted text-sm">{t('turnUp')}</span>
-                <CardImage card={state.turnUpCard} width={cardWidth} />
-              </div>
-            )}
-
-            {/* Players */}
-            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="klaberjass-players">
-              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="klaberjass-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  {p.isMaker && <span className="text-ds-success">[{t('maker')}]</span>}
-                  <span>{t('score', { n: p.score })}</span>
-                  <span>{t('handPoints', { n: p.handPoints })}</span>
-                  {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                </div>
-              ))}
-            </div>
-
-            <section className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="klaberjass-trick-history">
-              <h2 className="mb-1 text-ds-text-primary">{t('trickHistory')}</h2>
-              {state.trickHistory.map((entry, index) => (
-                <div key={`trick-history-${index}`} className="text-ds-text-muted">
-                  {t('trickHistoryEntry', {
-                    number: index + 1,
-                    name: playerLabel(entry.winnerIdx, entry.winnerIdx === 0),
-                    points: entry.points,
-                  })}
-                </div>
-              ))}
-            </section>
-
-            {/* Current trick */}
-            {state.trick.length > 0 && (
-              <div className="mb-2 flex items-center gap-2" data-testid="klaberjass-trick">
-                <span className="text-ds-text-muted text-sm">{t('currentTrick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
-              </div>
-            )}
-
-            {/* Settlement */}
-            {(isHandEnd || isGameEnd) && (
-              <div className={`mb-2 p-2 rounded text-sm ${badgeWarningColors}`} data-testid="klaberjass-settlement">
-                <h2 className="mb-1 font-semibold">{t('settlementTitle')}</h2>
-                <div>{state.bete ? t('beteLine') : t('madeLine')}</div>
-                <ul>
-                  {state.players.map((p) => (
-                    <li key={p.id} data-testid="klaberjass-points-breakdown">
-                      {playerLabel(p.id, p.isHuman)}:{' '}
-                      {t('pointsBreakdown', {
-                        card: p.cardPoints,
-                        sequence: p.sequencePoints,
-                        bela: p.belaPoints,
-                        lastTrick: p.lastTrickPoints,
-                        total: p.handPoints,
-                      })}{' '}
-                      {t('scoreUpdate', { score: p.score })}
-                    </li>
-                  ))}
-                </ul>
-                <div>
-                  {state.sequenceWinner >= 0
-                    ? t('sequenceWinner', { name: playerLabel(state.sequenceWinner, state.sequenceWinner === 0) })
-                    : t('sequenceNobody')}
-                </div>
-                {state.belaScored && state.belaHolder >= 0 && (
-                  <div>{t('belaLine', { name: playerLabel(state.belaHolder, state.belaHolder === 0) })}</div>
-                )}
-                {state.dixUsed && <div>{t('dixLine')}</div>}
-                {/* **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を
-                    足しても handPoints と合わない理由が説明できない (#4937)。 */}
-                {state.lastTrickWinner >= 0 && (
-                  <div data-testid="klaberjass-last-trick-bonus">
-                    {t('lastTrickBonus', {
-                      name: playerLabel(state.lastTrickWinner, state.lastTrickWinner === 0),
-                      points: state.lastTrickBonus,
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {isMobile && messageBox}
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.klaberjass.footer} px-4 py-2.5`}
-            message={isMobile ? undefined : messageBox}
+          <button type="button" className={btnPrimary} onClick={() => void game.exec('pass')} disabled={game.loading}>
+            {t('passButton')}
+          </button>
+          <button
+            type="button"
+            className={btnWarning}
+            onClick={() => void game.exec('schmeiss')}
+            disabled={game.loading}
           >
-            <div className="mb-2" data-tutorial="klaberjass-hand">
-              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => {
-                  const playable = !isPlay || canPlay(i);
-                  return (
-                    <button
-                      key={`hand-${c.design}-${c.value}-${i}`}
-                      type="button"
-                      data-hint-action="play"
-                      // **リングは目にしか届かない。**どの札を選んでいるかを
-                      // 音声でも確かめられないと、出す前に検証できない (#6523)。
-                      aria-pressed={selected === i}
-                      onClick={() => setSelected(i)}
-                      disabled={loading || (isPlay && !canPlay(i))}
-                      className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${
-                        playable ? '' : 'opacity-40'
-                      }`}
-                    >
-                      <CardImage card={c} width={cardWidth} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {isHumanBid && (
-              <div className="text-ds-text-muted text-xs mb-2" data-testid="klaberjass-bid-notice">
-                {isBidTurnUp ? t('bidNotice') : t('bidFreeNotice')}
-              </div>
-            )}
-            {isHumanSchmeissAnswer && (
-              <div className="text-ds-text-muted text-xs mb-2" data-testid="klaberjass-schmeiss-notice">
-                {t('schmeissNotice')}
-              </div>
-            )}
-            {isHumanPlay && (
-              <div className="text-ds-text-muted text-xs mb-2" data-testid="klaberjass-play-notice">
-                {t('playNotice')}
-              </div>
-            )}
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="klaberjass-actions">
-              {isHumanBid && isBidTurnUp && (
-                <button type="button" className={btnSuccess} onClick={() => exec('accept')} disabled={loading}>
-                  {t('acceptButton')}
-                </button>
-              )}
-
-              {isHumanBid &&
-                isBidFree &&
-                [1, 2, 3, 4]
-                  // **断られた表向きのスートは選べない。**第1ラウンドで流れている。
-                  .filter((s) => s !== (state.turnUpCard ? suitOf(state.turnUpCard.design) : 0))
-                  .map((s) => (
-                    <button
-                      key={`call-${s}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => exec('call', { suit: s })}
-                      disabled={loading}
-                    >
-                      {t('callButton', { suit: SUIT_GLYPHS[s], suitName: tc(SUIT_NAME_KEYS[s]) })}
-                    </button>
-                  ))}
-
-              {isHumanBid && (
-                <>
-                  <button type="button" className={btnPrimary} onClick={() => exec('pass')} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                  <button type="button" className={btnWarning} onClick={() => exec('schmeiss')} disabled={loading}>
-                    {t('schmeissButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanSchmeissAnswer && (
-                <>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={() => exec('answerschmeiss', { accept: true })}
-                    disabled={loading}
-                  >
-                    {t('schmeissAcceptButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => exec('answerschmeiss', { accept: false })}
-                    disabled={loading}
-                  >
-                    {t('schmeissRefuseButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanPlay && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePlay}
-                  disabled={loading || selected === null}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextDeal')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose', { name: playerLabel(state.winnerIdx, state.winnerIdx === 0) })}
-                </span>
-              )}
-
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="klaberjass-reset-button"
-              />
-            </div>
-          </GameFooter>
+            {t('schmeissButton')}
+          </button>
         </>
       )}
-    </GamePageShell>
+
+      {isHumanSchmeissAnswer && (
+        <>
+          <button
+            type="button"
+            className={btnSuccess}
+            onClick={() => void game.exec('answerschmeiss', { accept: true })}
+            disabled={game.loading}
+          >
+            {t('schmeissAcceptButton')}
+          </button>
+          <button
+            type="button"
+            className={btnWarning}
+            onClick={() => void game.exec('answerschmeiss', { accept: false })}
+            disabled={game.loading}
+          >
+            {t('schmeissRefuseButton')}
+          </button>
+        </>
+      )}
+
+      {isHumanPlay && (
+        <button
+          type="button"
+          className={btnSuccess}
+          onClick={game.handlePlay}
+          disabled={game.loading || game.selected === null}
+        >
+          {t('playButton')}
+        </button>
+      )}
+
+      {isHandEnd && !isGameEnd && (
+        <button type="button" className={btnSuccess} onClick={() => void game.exec('next')} disabled={game.loading}>
+          {t('nextDeal')}
+        </button>
+      )}
+
+      {isGameEnd && (
+        <span className="text-ds-text-primary text-sm font-semibold mr-1">
+          {humanWon ? t('win') : t('lose', { name: playerLabel(state.winnerIdx, state.winnerIdx === 0) })}
+        </span>
+      )}
+    </>
   );
 }
+
+const klaberjassDefinition: GameDefinition<
+  KlaberjassResponse,
+  KlaberjassGame,
+  Parameters<typeof klaberjassApi.exec>,
+  KlaberjassView
+> = {
+  key: 'klaberjass',
+  useGame: useKlaberjassGame,
+  useView: useKlaberjassView,
+  tutorial: KLABERJASS_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 9 },
+  cli: ({ frontendHint }) => ({
+    parseCommand: parseKlaberjassCommand,
+    formatResponse: formatKlaberjassState,
+    helpText: KLABERJASS_HELP,
+    localCommand: hintLocalCommand(frontendHint.hint),
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === KlaberjassPhase.GAME_END || state.gameEndFlag;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerIdx === 0,
+    };
+  },
+  shell: ({ state }) => {
+    const isBidTurnUp = state.phase === KlaberjassPhase.BID_TURN_UP;
+    const isBidFree = state.phase === KlaberjassPhase.BID_FREE;
+    const isSchmeiss = state.phase === KlaberjassPhase.SCHMEISS;
+    const isPlay = state.phase === KlaberjassPhase.PLAY;
+    const isGameEnd = state.phase === KlaberjassPhase.GAME_END || state.gameEndFlag;
+    const isHumanBid = (isBidTurnUp || isBidFree) && state.bidPlayerIdx === 0 && !isGameEnd;
+    // 投げの提案に答えるのは、提案した「相手」ではないほう。
+    const isHumanSchmeissAnswer = isSchmeiss && state.bidPlayerIdx === 0 && !isGameEnd;
+    const isHumanPlay = isPlay && state.currentPlayerIdx === 0 && !isGameEnd;
+    return {
+      isHumanTurn: isHumanBid || isHumanSchmeissAnswer || isHumanPlay,
+    };
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'targetScore',
+          label: t('settings.targetScore'),
+          value: game.targetScore,
+          options: TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: game.handleTargetChange,
+        },
+        {
+          type: 'checkbox',
+          id: 'allowSchmeiss',
+          label: t('settings.allowSchmeiss'),
+          checked: game.allowSchmeiss,
+          onToggle: game.handleAllowSchmeissChange,
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  message: ({ state, view }) =>
+    !view.isMobile ? (
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    ) : null,
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  actionsTutorialId: 'klaberjass-actions',
+  resetTutorialId: 'klaberjass-reset-button',
+  LiveRegion,
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Klaberjass game page: the two-player ancestor of the Jass family. */
+export const KlaberjassPage = createGamePage(klaberjassDefinition);
 
 /** Maps a wire design string back to the domain's 1-based suit value. */
 function suitOf(design: string): number {
