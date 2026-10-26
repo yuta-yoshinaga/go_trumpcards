@@ -43,7 +43,6 @@
   "belaLine": "Bela declared by {{name}} (+20)",
   "dixLine": "The trump seven was exchanged for the turn-up",
   "settings": {
-    "title": "Settings",
     "targetScore": "Target score",
     "allowSchmeiss": "Allow the schmeiss"
   },

@@ -492,4 +492,10 @@ describe('KlaberjassPage', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     window.dispatchEvent(new Event('resize'));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KlaberjassPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
