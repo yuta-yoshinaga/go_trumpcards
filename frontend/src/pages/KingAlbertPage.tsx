@@ -1,45 +1,29 @@
+import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KingAlbertMoveZone, kingAlbertApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import {
   useBreakpoint,
   useCardDimensions,
   useDenseLargeDesktopCardSize,
   useWindowWidth,
 } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKingAlbertGame } from '../hooks/useKingAlbertGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { Card, KingAlbertResponse } from '../types/card';
 import { KingAlbertPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KINGALBERT_HELP, parseKingAlbertCommand } from '../utils/cli/commands/kingalbertCommands';
 import { formatKingAlbertState } from '../utils/cli/formatters/kingalbertFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -76,8 +60,13 @@ const KA_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the King Albert solitaire game page with 9 tableau columns, a 7-card reserve, and 4 foundations. */
-export const KingAlbertPage = withTutorial(KingAlbertPageContent, 'kingalbert', KA_TUTORIAL_STEPS);
+const KING_ALBERT_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [KingAlbertPhase.PLAYING]: 'playing',
+  [KingAlbertPhase.GAME_CLEAR]: 'gameClear',
+  [KingAlbertPhase.GAME_OVER]: 'gameOver',
+};
+
+type KingAlbertGame = ReturnType<typeof useKingAlbertGame>;
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation');
@@ -85,27 +74,12 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   return t('frontendHint.tableau', { col });
 }
 
-function KingAlbertPageContent() {
+function useKingAlbertView({ game, t }: { game: KingAlbertGame; t: TFunction }) {
+  const { state } = game;
   const selectSourceHintId = useId();
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('kingalbert');
-  const game = useKingAlbertGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   const previousMoveCount = useRef<number | null>(null);
   const [announcedMoveCount, setAnnouncedMoveCount] = useState<number | null>(null);
+
   useEffect(() => {
     if (!state) return;
     if (previousMoveCount.current !== null && previousMoveCount.current !== state.moveCount) {
@@ -114,27 +88,6 @@ function KingAlbertPageContent() {
     previousMoveCount.current = state.moveCount;
   }, [state]);
 
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('kingalbert', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('kingalbert');
-  const cliConfig: CliGameConfig<KingAlbertResponse, Parameters<typeof kingAlbertApi.exec>> = useMemo(
-    () => ({
-      gameName: 'kingalbert',
-      parseCommand: parseKingAlbertCommand,
-      formatResponse: formatKingAlbertState,
-      helpText: KINGALBERT_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, {
-    addInput,
-    addOutput,
-    addError,
-    clearLog,
-  });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const denseCardSize = useDenseLargeDesktopCardSize();
@@ -152,6 +105,7 @@ function KingAlbertPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+
   const topZoneCardWidth = isLargeDesktop ? denseCardSize.width : dims.cw;
   const topZoneCardHeight = isLargeDesktop ? denseCardSize.height : dims.ch;
 
@@ -163,51 +117,87 @@ function KingAlbertPageContent() {
     },
     [game],
   );
+
   const dnd = useSolitaireDragDrop<KingAlbertMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: game.loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+  const phaseNames = usePhaseNames('kingalbert', KING_ALBERT_PHASE_KEYS);
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+  // 選択中の札そのもの。タブローは最上段しか動かせないので、列の一番上を読む。
+  const selectedCard = useMemo((): Card | null => {
+    if (!state || !game.selectedSource || game.selectedSource.col === undefined) return null;
+    if (game.selectedSource.zone === 'reserve') return state.reserve[game.selectedSource.col] ?? null;
+    const col = state.tableau[game.selectedSource.col];
+    return col?.[col.length - 1]?.card ?? null;
+  }, [state, game.selectedSource]);
+
+  const selectedSourceAnnouncement = useMemo(() => {
+    if (!game.selectedSource || !selectedCard) return '';
+    return game.selectedSource.zone === 'reserve'
+      ? t('selectedReserveAnnouncement', { card: cardAlt(selectedCard), idx: game.selectedSource.col })
+      : t('selectedTableauAnnouncement', {
+          card: cardAlt(selectedCard),
+          col: game.selectedSource.col,
+          pos: game.selectedSource.cardIndex,
+        });
+  }, [game.selectedSource, selectedCard, t]);
+
+  return {
+    selectSourceHintId,
+    announcedMoveCount,
+    phaseNames,
+    isLargeDesktop,
+    dims,
+    topZoneCardWidth,
+    topZoneCardHeight,
+    dnd,
+    selectedSourceAnnouncement,
+  };
+}
+
+type KingAlbertView = ReturnType<typeof useKingAlbertView>;
+type KingAlbertContext = GamePageContext<KingAlbertResponse, KingAlbertGame, KingAlbertView>;
+
+function HeaderExtra({ state, t, view }: KingAlbertContext) {
+  return (
+    <>
+      <span data-testid="ka-visible-move-count" className="text-sm text-ds-text-muted">
+        {t('moveCount')}: {state.moveCount}
+      </span>
+      <div data-testid="ka-move-count-live" className="sr-only" role="status" aria-live="polite">
+        {view.announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: view.announcedMoveCount })}
+      </div>
+      <div data-testid="ka-selection-live" className="sr-only" role="status" aria-live="polite">
+        {view.selectedSourceAnnouncement}
+      </div>
+    </>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
+function LiveRegion({ t, tc, view }: KingAlbertContext) {
+  return (
+    <>
+      <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={view.selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+    </>
   );
+}
 
-  useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
-  });
-
-  if (!state) return <GameSkeleton gameKey="kingalbert" layout={{ kind: 'tableau', topRow: 4, tableau: 9 }} />;
+function Board({ game, state, t, frontendHint, view }: KingAlbertContext) {
+  const { isLargeDesktop, dims, topZoneCardWidth, topZoneCardHeight, dnd, selectSourceHintId } = view;
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
 
   const isPlaying = state.phase === KingAlbertPhase.PLAYING;
-  const isGameClear = state.phase === KingAlbertPhase.GAME_CLEAR;
   const isGameOver = state.phase === KingAlbertPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
+
   // How many of the 52 cards reached a foundation — only needed on game over, so skip the
   // reduce during normal (frequently re-rendered) play.
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  // Auto-complete becomes useful once a foundation has built past its ace, so
-  // pulse the button only then (mirrors Crescent / Spiderette).
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -215,13 +205,6 @@ function KingAlbertPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
-  // 選択中の札そのもの。タブローは最上段しか動かせないので、列の一番上を読む。
-  const selectedCard = ((): Card | null => {
-    if (!selectedSource || selectedSource.col === undefined) return null;
-    if (selectedSource.zone === 'reserve') return state.reserve[selectedSource.col] ?? null;
-    const col = state.tableau[selectedSource.col];
-    return col?.[col.length - 1]?.card ?? null;
-  })();
   // リングは**置ける先だけ**に付ける。「選択中なら全部光る」だと、エラーになる手を
   // 勧めることになる (#5598)。
   const legalTargetKey =
@@ -233,16 +216,6 @@ function KingAlbertPageContent() {
     tableau: new Set(selectedLegalTargets?.tableau ?? []),
     foundation: new Set(selectedLegalTargets?.foundation ?? []),
   };
-  const selectedSourceAnnouncement =
-    selectedSource && selectedCard
-      ? selectedSource.zone === 'reserve'
-        ? t('selectedReserveAnnouncement', { card: cardAlt(selectedCard), idx: selectedSource.col })
-        : t('selectedTableauAnnouncement', {
-            card: cardAlt(selectedCard),
-            col: selectedSource.col,
-            pos: selectedSource.cardIndex,
-          })
-      : '';
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
@@ -384,250 +357,219 @@ function KingAlbertPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.kingalbert')}
-      gameThemeBg={gameTheme.kingalbert.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/kingalbert"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span data-testid="ka-visible-move-count" className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
+    <>
+      <div
+        className={
+          isLargeDesktop
+            ? 'flex flex-wrap justify-center items-start gap-1'
+            : 'flex gap-2 sm:gap-3 items-start justify-center mb-3'
+        }
+        data-testid={isLargeDesktop ? 'ka-top-row' : undefined}
+      >
+        <div
+          className={isLargeDesktop ? 'flex flex-col items-center gap-1' : 'flex flex-wrap gap-1 sm:gap-2 items-start'}
+          data-tutorial="ka-reserve"
+        >
+          <span className={`text-game-text-muted text-xs ${isLargeDesktop ? 'mb-1' : 'self-center mr-1'}`}>
+            {t('reserve')}
           </span>
-          <div data-testid="ka-move-count-live" className="sr-only" role="status" aria-live="polite">
-            {announcedMoveCount === null ? '' : t('moveCountAnnouncement', { count: announcedMoveCount })}
-          </div>
-          <div data-testid="ka-selection-live" className="sr-only" role="status" aria-live="polite">
-            {selectedSourceAnnouncement}
-          </div>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <LandscapeBanner message={t('landscapeBanner')} />
-      <span id={selectSourceHintId} className="sr-only">
-        {tc('label.selectSourceFirst')}
-      </span>
+          {isLargeDesktop ? (
+            <div className="flex gap-1">{state.reserve.map((_, idx) => renderReserveCell(idx))}</div>
+          ) : (
+            state.reserve.map((_, idx) => renderReserveCell(idx))
+          )}
+        </div>
 
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div
-              className={
-                isLargeDesktop
-                  ? 'flex flex-wrap justify-center items-start gap-1'
-                  : 'flex gap-2 sm:gap-3 items-start justify-center mb-3'
-              }
-              data-testid={isLargeDesktop ? 'ka-top-row' : undefined}
-            >
-              <div
-                className={
-                  isLargeDesktop ? 'flex flex-col items-center gap-1' : 'flex flex-wrap gap-1 sm:gap-2 items-start'
-                }
-                data-tutorial="ka-reserve"
-              >
-                <span className={`text-game-text-muted text-xs ${isLargeDesktop ? 'mb-1' : 'self-center mr-1'}`}>
-                  {t('reserve')}
-                </span>
-                {isLargeDesktop ? (
-                  <div className="flex gap-1">{state.reserve.map((_, idx) => renderReserveCell(idx))}</div>
-                ) : (
-                  state.reserve.map((_, idx) => renderReserveCell(idx))
-                )}
-              </div>
-
-              <div
-                className={`flex items-start ${isLargeDesktop ? 'gap-1' : 'gap-1 sm:gap-2'}`}
-                data-tutorial="ka-foundation"
-              >
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: KingAlbertMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              count: pile.length,
-                            })}
-                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              legalTargets.foundation.has(idx)
-                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
-                                : ''
-                            }`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={topZoneCardWidth}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
-                            // 空の枠は A の唯一の行き先。ここを暗いままにすると、
-                            // 「置ける先には光る」が片側だけ嘘になる。
-                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
-                              legalTargets.foundation.has(idx)
-                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
-                                : ''
-                            }`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex gap-1 sm:gap-2" data-tutorial="ka-tableau">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(renderTableauColumn)}
-            </div>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="ka-hint-display" data-testid="ka-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="ka-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / 52) * 100),
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
-
-          <GameFooter className={`${gameTheme.kingalbert.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="ka-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
+        <div
+          className={`flex items-start ${isLargeDesktop ? 'gap-1' : 'gap-1 sm:gap-2'}`}
+          data-tutorial="ka-foundation"
+        >
+          {state.foundation.map((pile, idx) => {
+            const foundationZone: KingAlbertMoveZone = { zone: 'foundation', col: idx };
+            return (
+              <div key={`f-${idx.toString()}`} className="text-center">
+                <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                <DropZone
+                  isDropTarget={dnd.isDropTarget(foundationZone)}
+                  onDragOver={dnd.handleDragOver(foundationZone)}
+                  onDrop={dnd.handleDrop(foundationZone)}
+                  onDragLeave={dnd.handleDragLeave}
+                >
+                  {pile.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('foundationAriaLabel', {
+                        suit: FOUNDATION_SUITS[idx],
+                        count: pile.length,
+                      })}
+                      data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                        legalTargets.foundation.has(idx)
+                          ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
+                          : ''
+                      }`}
+                    >
+                      <AnimatedCard
+                        card={pile[pile.length - 1]}
+                        width={topZoneCardWidth}
+                        draggable={false}
+                        dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                      style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
+                      // 空の枠は A の唯一の行き先。ここを暗いままにすると、
+                      // 「置ける先には光る」が片側だけ嘘になる。
+                      data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                        legalTargets.foundation.has(idx)
+                          ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
+                          : ''
+                      }`}
+                    >
+                      A
+                    </button>
                   )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ka-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="king-albert-kbd-shortcuts" />
-          </GameFooter>
-        </>
+                </DropZone>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex gap-1 sm:gap-2" data-tutorial="ka-tableau">
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(renderTableauColumn)}
+      </div>
+
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="ka-hint-display" data-testid="ka-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toCol)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="ka-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: Math.round((foundationCount / 52) * 100),
+          })}
+        </p>
       )}
-    </GamePageShell>
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction, busy }: KingAlbertContext) {
+  const isPlaying = state.phase === KingAlbertPhase.PLAYING;
+  // Auto-complete becomes useful once a foundation has built past its ace, so
+  // pulse the button only then (mirrors Crescent / Spiderette).
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
+  if (!isPlaying) return null;
+
+  return (
+    <div data-tutorial="ka-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={busy || game.isAutoCompleting || !state.canUndo}
+      >
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={busy || game.isAutoCompleting}
+        />
+      )}
+      <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.isAutoCompleting}>
+        {t('hint')}
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !busy && !game.isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={busy || game.isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+      >
+        {t('autoComplete')}
+      </button>
+      <button
+        type="button"
+        className={btnDanger}
+        onClick={confirmGiveUpAction}
+        disabled={busy || game.isAutoCompleting}
+      >
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const kingAlbertDefinition: GameDefinition<
+  KingAlbertResponse,
+  KingAlbertGame,
+  Parameters<typeof kingAlbertApi.exec>,
+  KingAlbertView
+> = {
+  key: 'kingalbert',
+  useGame: useKingAlbertGame,
+  useView: useKingAlbertView,
+  tutorial: KA_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 4, tableau: 9 },
+  cli: () => ({
+    parseCommand: parseKingAlbertCommand,
+    formatResponse: formatKingAlbertState,
+    helpText: KINGALBERT_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase] ?? '',
+    ended: state.phase === KingAlbertPhase.GAME_CLEAR || state.phase === KingAlbertPhase.GAME_OVER,
+    won: state.phase === KingAlbertPhase.GAME_CLEAR,
+  }),
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === KingAlbertPhase.PLAYING,
+  shortcutsTestId: 'king-albert-kbd-shortcuts',
+  resetTutorialId: 'ka-reset-button',
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  HeaderExtra,
+  LiveRegion,
+  Board,
+  FooterActions,
+};
+
+/** Renders the King Albert solitaire game page with 9 tableau columns, a 7-card reserve, and 4 foundations. */
+export const KingAlbertPage = createGamePage(kingAlbertDefinition);

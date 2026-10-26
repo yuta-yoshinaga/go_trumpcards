@@ -131,7 +131,6 @@ JulepePage.tsx
 KaiserPage.tsx
 KalookiPage.tsx
 KempsPage.tsx
-KingAlbertPage.tsx
 KingoPage.tsx
 KlondikePage.tsx
 KoenigrufenPage.tsx

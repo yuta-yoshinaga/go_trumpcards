@@ -490,6 +490,13 @@ describe('KingAlbertPage reserve slot numbering', () => {
     // r6 が最後なので「空のリザーブ枠 7」は存在しえない。
     expect(screen.queryByLabelText('空のリザーブ枠 7')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('KingAlbertPage compact large-desktop dimensions', () => {
