@@ -270,7 +270,6 @@ TriPeaksPage.tsx
 TrogguPage.tsx
 TrucoPage.tsx
 TuSacPage.tsx
-TwoTenJackPage.tsx
 UltimateTexasHoldemPage.tsx
 VideoPokerPage.tsx
 VintPage.tsx
