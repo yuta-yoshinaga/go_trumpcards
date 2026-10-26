@@ -189,6 +189,12 @@ describe('KlaverjasPage', () => {
     });
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KlaverjasPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it.each([
     {
       name: 'must follow suit',

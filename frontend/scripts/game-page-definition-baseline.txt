@@ -139,7 +139,6 @@ KempsPage.tsx
 KingAlbertPage.tsx
 KingoPage.tsx
 KlaberjassPage.tsx
-KlaverjasPage.tsx
 KlondikePage.tsx
 KoenigrufenPage.tsx
 KoiKoiPage.tsx
