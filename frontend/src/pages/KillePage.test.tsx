@@ -464,4 +464,10 @@ describe('KillePage', () => {
     window.dispatchEvent(new Event('resize'));
     mobileState.isMobile = false;
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KillePage />);
+    expect(await screen.findByText('交換', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('exchange', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
