@@ -1,41 +1,23 @@
 import { useCallback, useId, useMemo } from 'react';
 import type { congressApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useCongressGame } from '../hooks/useCongressGame';
 import { useElementWidth } from '../hooks/useElementWidth';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { CongressMoveZone, CongressResponse } from '../types/card';
 import { CongressPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CONGRESS_HELP, parseCongressCommand } from '../utils/cli/commands/congressCommands';
 import { formatCongressState } from '../utils/cli/formatters/congressFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 import { tableauDimensions } from '../utils/tableauDimensions';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -57,8 +39,11 @@ const CG_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="cg-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
 
-/** Renders the Congress page: eight single-card piles flanking eight foundations. */
-export const CongressPage = withTutorial(CongressPageContent, 'congress', CG_TUTORIAL_STEPS);
+const CONGRESS_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [CongressPhase.PLAYING]: 'playing',
+  [CongressPhase.GAME_CLEAR]: 'gameClear',
+  [CongressPhase.GAME_OVER]: 'gameOver',
+};
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, idx: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation', { idx });
@@ -74,43 +59,13 @@ export function congressSourceKey(source: CongressMoveZone): string {
   return '';
 }
 
-function CongressPageContent() {
-  const selectSourceHintId = useId();
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('congress');
-  const game = useCongressGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
-  const emptyPileAriaDisabled = !selectedSource || selectedSource.zone === 'tableau';
+type CongressGame = ReturnType<typeof useCongressGame>;
+type CongressView = ReturnType<typeof useCongressView>;
+type CongressContext = GamePageContext<CongressResponse, CongressGame, CongressView>;
 
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('congress', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('congress');
-  const cliConfig: CliGameConfig<CongressResponse, Parameters<typeof congressApi.exec>> = useMemo(
-    () => ({
-      gameName: 'congress',
-      parseCommand: parseCongressCommand,
-      formatResponse: formatCongressState,
-      helpText: CONGRESS_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+function useCongressView({ game }: { game: CongressGame }) {
+  const selectSourceHintId = useId();
+  const phaseNames = usePhaseNames('congress', CONGRESS_PHASE_KEYS);
   const { cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
   const [tableauRef, tableauRowWidth] = useElementWidth<HTMLDivElement>();
@@ -134,13 +89,11 @@ function CongressPageContent() {
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardOverlap, tableauRowWidth]);
 
-  const isPlayingForKbd = state?.phase === CongressPhase.PLAYING;
-
   const dispatchMove = useCallback(
     (source: CongressMoveZone, target: CongressMoveZone) => {
       // useSolitaireDragDrop only invokes onMove while isPlaying is true, which
       // requires a loaded game state.
-      const currentState = state as CongressResponse;
+      const currentState = game.state as CongressResponse;
       const legalTargets = currentState.legalTargets[congressSourceKey(source)];
       const isLegal =
         legalTargets !== undefined &&
@@ -151,49 +104,40 @@ function CongressPageContent() {
       if (!isLegal) return;
       void game.exec('move', source, target);
     },
-    [game, state],
+    [game],
   );
+
+  const isPlayingForKbd = game.state?.phase === CongressPhase.PLAYING;
   const dnd = useSolitaireDragDrop<CongressMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: game.loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+  return {
+    selectSourceHintId,
+    phaseNames,
+    dims,
+    tableauRef,
+    dnd,
+  };
+}
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+function HeaderExtra({ state, t }: CongressContext) {
+  return (
+    <span className="text-sm text-ds-text-muted">
+      {t('moveCount')}: {state.moveCount}
+    </span>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: game.handleDraw, label: 'draw' },
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
-  );
-
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading && !actionLog });
-
-  if (!state) {
-    return <GameSkeleton gameKey="congress" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES }} />;
-  }
-
+function Board({ game, state, t, tc, view, frontendHint }: CongressContext) {
+  const { selectSourceHintId, dims, tableauRef, dnd } = view;
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
+  const emptyPileAriaDisabled = !selectedSource || selectedSource.zone === 'tableau';
   const isPlaying = state.phase === CongressPhase.PLAYING;
-  const isGameClear = state.phase === CongressPhase.GAME_CLEAR;
   const isGameOver = state.phase === CongressPhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
 
   const activeSource = dnd.dragSource ?? selectedSource;
   const isSourceSelected = (zone: string, col?: number) =>
@@ -300,272 +244,281 @@ function CongressPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.congress')}
-      gameThemeBg={gameTheme.congress.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/congress"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <LandscapeBanner message={t('landscapeBanner')} />
-
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <span id={selectSourceHintId} className="sr-only">
-              {tc('label.selectSourceFirst')}
-            </span>
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: CongressMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div
-                      key={`f-${idx.toString()}`}
-                      className={`text-center${legalTargets?.foundation.includes(idx) ? targetRing : ''}`}
-                      data-legal-target={legalTargets?.foundation.includes(idx) ? 'true' : undefined}
+    <>
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+      <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
+          {state.foundation.map((pile, idx) => {
+            const foundationZone: CongressMoveZone = { zone: 'foundation', col: idx };
+            return (
+              <div
+                key={`f-${idx.toString()}`}
+                className={`text-center${legalTargets?.foundation.includes(idx) ? targetRing : ''}`}
+                data-legal-target={legalTargets?.foundation.includes(idx) ? 'true' : undefined}
+              >
+                <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                <DropZone
+                  isDropTarget={dnd.isDropTarget(foundationZone)}
+                  onDragOver={dnd.handleDragOver(foundationZone)}
+                  onDrop={dnd.handleDrop(foundationZone)}
+                  onDragLeave={dnd.handleDragLeave}
+                >
+                  {pile.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('foundationAriaLabel', {
+                        suit: FOUNDATION_SUITS[idx],
+                        idx,
+                        count: pile.length,
+                      })}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                     >
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              idx,
-                              count: pile.length,
-                            })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={dims.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.1 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
-                            style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-2 items-start" data-tutorial="cg-stock">
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
-                  {/* The stock is both the draw button and, when a card is
-                      selected against an empty pile, a move source. */}
-                  <button
-                    type="button"
-                    onClick={() => (selectedSource ? game.handleSelectSource(stockZone) : game.handleDraw())}
-                    disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0}
-                    aria-label={
-                      state.stockCount === 0
-                        ? t('emptyStockAriaLabel')
-                        : t('stockAriaLabel', { count: state.stockCount })
-                    }
-                    aria-pressed={isSourceSelected('stock', undefined)}
-                    style={{ width: dims.cw, height: dims.ch }}
-                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isSourceSelected('stock', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                  >
-                    {state.stockCount}
-                  </button>
-                </div>
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-                  {wasteTop ? (
-                    <>
-                      <div id="congress-waste-count" className="text-game-text-muted text-xs mb-1">
-                        {t('wasteCount', { count: state.waste.length })}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => game.handleSelectSource(wasteZone)}
-                        disabled={!isPlaying || loading}
-                        aria-label={t('wasteTopCardAriaLabel', { card: cardAlt(wasteTop) })}
-                        aria-describedby="congress-waste-count"
-                        aria-pressed={isSourceSelected('waste', undefined)}
-                        draggable={isPlaying && !loading}
-                        onDragStart={dnd.handleDragStart(wasteZone)}
-                        onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                      >
-                        <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
-                      </button>
-                    </>
+                      <AnimatedCard
+                        card={pile[pile.length - 1]}
+                        width={dims.cw}
+                        draggable={false}
+                        dealDelay={isAutoCompleting ? idx * 0.1 : 0}
+                      />
+                    </button>
                   ) : (
-                    <div
-                      role="img"
-                      aria-label={t('emptyWasteAriaLabel')}
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
                       style={{ width: dims.cw, height: dims.ch }}
-                      className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >
-                      {t('empty')}
-                    </div>
+                      A
+                    </button>
                   )}
-                </div>
+                </DropZone>
               </div>
-            </div>
+            );
+          })}
+        </div>
 
-            <div ref={tableauRef} className="flex gap-1 sm:gap-2 items-start pt-3" data-tutorial="cg-tableau">
-              {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
-            </div>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toIdx)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="cg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              availableDuringPlay
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+        <div className="flex gap-2 items-start" data-tutorial="cg-stock">
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
+            {/* The stock is both the draw button and, when a card is
+                selected against an empty pile, a move source. */}
+            <button
+              type="button"
+              onClick={() => (selectedSource ? game.handleSelectSource(stockZone) : game.handleDraw())}
+              disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0}
+              aria-label={
+                state.stockCount === 0 ? t('emptyStockAriaLabel') : t('stockAriaLabel', { count: state.stockCount })
+              }
+              aria-pressed={isSourceSelected('stock', undefined)}
+              style={{ width: dims.cw, height: dims.ch }}
+              className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isSourceSelected('stock', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+            >
+              {state.stockCount}
+            </button>
           </div>
-
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-          />
-
-          <GameFooter className={`${gameTheme.congress.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="cg-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleDraw}
-                    disabled={loading || isAutoCompleting || state.stockCount === 0}
-                  >
-                    {t('draw')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+            {wasteTop ? (
+              <>
+                <div id="congress-waste-count" className="text-game-text-muted text-xs mb-1">
+                  {t('wasteCount', { count: state.waste.length })}
                 </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="cg-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="congress-kbd-shortcuts" />
-          </GameFooter>
-        </>
+                <button
+                  type="button"
+                  onClick={() => game.handleSelectSource(wasteZone)}
+                  disabled={!isPlaying || loading}
+                  aria-label={t('wasteTopCardAriaLabel', { card: cardAlt(wasteTop) })}
+                  aria-describedby="congress-waste-count"
+                  aria-pressed={isSourceSelected('waste', undefined)}
+                  draggable={isPlaying && !loading}
+                  onDragStart={dnd.handleDragStart(wasteZone)}
+                  onDragEnd={dnd.handleDragEnd}
+                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+                >
+                  <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                </button>
+              </>
+            ) : (
+              <div
+                role="img"
+                aria-label={t('emptyWasteAriaLabel')}
+                style={{ width: dims.cw, height: dims.ch }}
+                className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+              >
+                {t('empty')}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div ref={tableauRef} className="flex gap-1 sm:gap-2 items-start pt-3" data-tutorial="cg-tableau">
+        {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
+      </div>
+
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toIdx)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="cg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
+          })}
+        </p>
       )}
-    </GamePageShell>
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction }: CongressContext) {
+  const isPlaying = state.phase === CongressPhase.PLAYING;
+  const isAutoCompleting = game.isAutoCompleting;
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+
+  if (!isPlaying) return null;
+
+  return (
+    <div data-tutorial="cg-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleDraw}
+        disabled={game.loading || isAutoCompleting || state.stockCount === 0}
+      >
+        {t('draw')}
+      </button>
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={game.loading || isAutoCompleting || !state.canUndo}
+      >
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={game.loading || isAutoCompleting}
+        />
+      )}
+      <button
+        type="button"
+        className={btnSuccess}
+        onClick={game.handleHint}
+        disabled={game.loading || isAutoCompleting}
+      >
+        {t('hint')}
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !game.loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={game.loading || isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+      >
+        {t('autoComplete')}
+      </button>
+      <button
+        type="button"
+        className={btnDanger}
+        onClick={confirmGiveUpAction}
+        disabled={game.loading || isAutoCompleting}
+      >
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const congressDefinition: GameDefinition<
+  CongressResponse,
+  CongressGame,
+  Parameters<typeof congressApi.exec>,
+  CongressView
+> = {
+  key: 'congress',
+  useGame: useCongressGame,
+  useView: useCongressView,
+  tutorial: CG_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES },
+  cli: () => ({
+    parseCommand: parseCongressCommand,
+    formatResponse: formatCongressState,
+    helpText: CONGRESS_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === CongressPhase.GAME_CLEAR || state.phase === CongressPhase.GAME_OVER,
+    won: state.phase === CongressPhase.GAME_CLEAR,
+  }),
+  actionLogDuringPlay: true,
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    {
+      key: 'd',
+      action: game.handleDraw,
+      label: 'draw',
+    },
+    {
+      key: 'h',
+      action: game.handleHint,
+      label: 'hint',
+    },
+    {
+      key: 'a',
+      action: game.handleAutoComplete,
+      label: 'autoComplete',
+    },
+    {
+      key: 'g',
+      action: confirmGiveUpAction ?? (() => undefined),
+      label: 'giveUp',
+    },
+    {
+      key: 'z',
+      action: game.handleUndo,
+      label: 'undo',
+    },
+  ],
+  shortcutsEnabled: ({ state, actionLogOpen }) => state.phase === CongressPhase.PLAYING && !actionLogOpen,
+  shortcutsTestId: 'congress-kbd-shortcuts',
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  landscapeBanner: true,
+  landscapeBannerInCliMode: true,
+  resetTutorialId: 'cg-reset-button',
+  HeaderExtra,
+  Board,
+  FooterActions,
+};
+
+/** Renders the Congress page: eight single-card piles flanking eight foundations. */
+export const CongressPage = createGamePage(congressDefinition);

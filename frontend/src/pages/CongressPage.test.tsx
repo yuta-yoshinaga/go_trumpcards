@@ -108,6 +108,24 @@ describe('CongressPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('draw');
   });
 
+  it('reenables the draw shortcut after closing the action log', async () => {
+    mockExec.mockResolvedValue(playingState);
+    vi.mocked(actionLogApi.congress).mockResolvedValueOnce({ entries: [] });
+    renderWithProviders(<CongressPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    await screen.findByRole('button', { name: '閉じる' });
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('draw');
+
+    fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
   it('renders eight foundations and eight piles', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CongressPage />);
@@ -616,6 +634,13 @@ describe('CongressPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
   });
 });
 
