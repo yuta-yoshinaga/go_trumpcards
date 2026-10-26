@@ -165,6 +165,35 @@ describe('createGamePage', () => {
     expect(shortcut).not.toHaveBeenCalled();
   });
 
+  it('suppresses shortcuts while the action log is open and restores them immediately when closed', async () => {
+    vi.mocked(actionLogApi.acesup).mockResolvedValue({ entries: [] });
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      shortcuts: () => [{ key: 'x', action: shortcut }],
+      shortcutsEnabled: ({ actionLogOpen }) => !actionLogOpen,
+      Board,
+    });
+    currentGame = { ...currentGame, state: { ended: true } };
+    renderWithProviders(<Page />);
+
+    fireEvent.keyDown(document, { key: 'x' });
+    expect(shortcut).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '閉じる' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'x' });
+    expect(shortcut).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+    fireEvent.keyDown(document, { key: 'x' });
+    expect(shortcut).toHaveBeenCalledTimes(2);
+  });
+
   it('suppresses shortcuts and disables reset button when def.busy returns true while loading is false', () => {
     const Page = createGamePage({
       key: 'acesup',
