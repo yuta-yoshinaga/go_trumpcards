@@ -62,7 +62,9 @@ const FooterActions = ({ confirmGiveUpAction }: GamePageContext<State, Game>) =>
   </button>
 );
 
-function makeDefinition(options: { customSettings?: boolean; includeGiveUp?: boolean; shortcuts?: boolean } = {}) {
+function makeDefinition(
+  options: { customSettings?: boolean; includeGiveUp?: boolean; shortcuts?: boolean; contentTestId?: string } = {},
+) {
   const base: Game = {
     ...defaultBaseGame,
     ...(options.includeGiveUp ? { handleGiveUp: giveUp } : {}),
@@ -75,6 +77,7 @@ function makeDefinition(options: { customSettings?: boolean; includeGiveUp?: boo
     skeleton: { kind: 'centered', rows: [1] },
     cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
     phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+    ...(options.contentTestId ? { contentTestId: options.contentTestId } : {}),
     ...(options.shortcuts
       ? { shortcuts: () => [{ key: 'x', action: shortcut, label: 'draw' }], shortcutsEnabled: () => true }
       : {}),
@@ -107,6 +110,22 @@ describe('createGamePage', () => {
     renderWithProviders(<Page />);
     expect(document.querySelector('[data-skeleton-section]')).toBeInTheDocument();
     expect(screen.queryByTestId('board')).not.toBeInTheDocument();
+  });
+
+  it('applies contentTestId to the scrollable board content when configured', () => {
+    const Page = makeDefinition({ contentTestId: 'x-scroll' });
+    renderWithProviders(<Page />);
+    const content = screen.getByTestId('x-scroll');
+    expect(content).toHaveClass('overflow-y-auto');
+    expect(content).toContainElement(screen.getByTestId('board'));
+  });
+
+  it('omits data-testid from the scrollable content when contentTestId is not configured', () => {
+    const Page = makeDefinition();
+    const { container } = renderWithProviders(<Page />);
+    const content = container.querySelector('.overflow-y-auto');
+    expect(content).not.toBeNull();
+    expect(content).not.toHaveAttribute('data-testid');
   });
 
   it('keeps the live region and switches the board for the CLI terminal', async () => {
