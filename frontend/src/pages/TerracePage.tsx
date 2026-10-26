@@ -483,7 +483,7 @@ const terraceDefinition: GameDefinition<
     { key: 'd', action: game.handleDraw, label: 'draw' },
     { key: 'h', action: game.handleHint, label: 'hint' },
     { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-    { key: 'g', action: confirmGiveUpAction ?? game.handleGiveUp, label: 'giveUp' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
     { key: 'z', action: game.handleUndo, label: 'undo' },
   ],
   shortcutsEnabled: ({ state, game }) => state.phase === TerracePhase.PLAYING && !game.isAutoCompleting,
