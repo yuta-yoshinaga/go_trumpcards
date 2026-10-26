@@ -7,7 +7,6 @@
     "gameEnd": "Game Over"
   },
   "settings": {
-    "title": "Settings",
     "ante": "Ante",
     "startingChips": "Starting Chips",
     "easy": "Easy",

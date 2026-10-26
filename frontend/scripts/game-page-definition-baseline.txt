@@ -249,7 +249,6 @@ TablanetPage.tsx
 TappTarockPage.tsx
 TarabishPage.tsx
 TeenDoPaanchPage.tsx
-TeenPattiPage.tsx
 TehonbikiPage.tsx
 TerracePage.tsx
 TexasHoldemBonusPage.tsx
