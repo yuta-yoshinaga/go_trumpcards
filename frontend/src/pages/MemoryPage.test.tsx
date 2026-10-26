@@ -528,6 +528,12 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MemoryPage />);
+    expect(await screen.findByText('1枚目', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('flip1', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('reset hides the action log panel if open', async () => {
     mockExec.mockResolvedValue(gameEndState);
     vi.mocked(actionLogApi.memory).mockResolvedValueOnce({

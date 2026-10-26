@@ -1,25 +1,11 @@
+import type { TFunction } from 'i18next';
 import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { memoryApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import {
   AUTO_NEXT_DELAY_OPTIONS,
   CPU_DIFFICULTY_OPTIONS,
@@ -28,16 +14,13 @@ import {
 } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { Card, MemoryResponse } from '../types/card';
-import type { HintResult } from '../types/hint';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCommands';
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
-import type { CliGameConfig } from '../utils/cli/types';
 import { type GridDir, moveFocus } from '../utils/gridNav';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { memoryKnownMatch } from '../utils/memoryKnownMatch';
@@ -100,59 +83,12 @@ function boardColumns(): number {
   return 7;
 }
 
-/** Renders the Memory card matching game page with board grid and scores. */
-export const MemoryPage = withTutorial(MemoryPageContent, 'memory', MEM_TUTORIAL_STEPS);
-/** Inner content of the Memory page, wrapped by TutorialProvider. */
-function MemoryPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('memory');
-  const { cardWidth } = useCardDimensions();
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    memoryConfig,
-    handleConfigChange,
-    autoNextDelayMs,
-    setAutoNextDelayMs,
-    handleFlip,
-    handleNext,
-  } = useMemoryGame();
-  const { hintEnabled: frontendHintEnabled, setHintEnabled: setFrontendHintEnabled } = useGameHint('memory', state);
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('memory');
-  // frontendHint is computed further down (it needs `seen` and knownMatchIdx, both
-  // declared after this config). A ref lets the CLI read the current hint at command
-  // time without reordering hooks around a useState.
-  const hintRef = useRef<HintResult | null>(null);
+type MemoryGame = ReturnType<typeof useMemoryGame>;
 
-  const cliConfig: CliGameConfig<MemoryResponse, Parameters<typeof memoryApi.exec>> = useMemo(
-    () => ({
-      gameName: 'memory',
-      parseCommand: parseMemoryCommand,
-      formatResponse: formatMemoryState,
-      helpText: MEMORY_HELP,
-      localCommand: hintLocalCommand(hintRef.current),
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const isResultForKbd = state?.phase === MemoryPhase.RESULT;
-
-  const actionBindings = useMemo(
-    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd, label: 'next' }],
-    [handleNext, isResultForKbd],
-  );
-
-  useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: !!state && !loading,
-  });
-
+function useMemoryView({ game, t }: { game: MemoryGame; t: TFunction }) {
+  const { state } = game;
   const phaseNames = usePhaseNames('memory', MEMORY_PHASE_KEYS);
+  const { cardWidth } = useCardDimensions();
 
   // **見た「位置」ではなく見た「札」を覚える。**目のマークは「前に見た」としか
   // 言わず、そこに何があったかを思い出す助けにはならなかった (#4775)。
@@ -251,322 +187,344 @@ function MemoryPageContent() {
   // レジストリの hintFactories は state しか受け取れないので、記憶を渡せる
   // ここで getMemoryHint を呼ぶ。**ヒントもハイライトも同じ位置を読む。**
   const knownMatchIdx = useMemo(() => (state ? memoryKnownMatch(state.board, seen) : null), [state, seen]);
-  const frontendHint = useMemo(
-    () => (frontendHintEnabled && state ? getMemoryHint(state, knownMatchIdx) : null),
-    [frontendHintEnabled, state, knownMatchIdx],
-  );
-  useEffect(() => {
-    hintRef.current = frontendHint;
-  }, [frontendHint]);
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    setSeen(new Map());
-    void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: memoryConfig.pairCount });
-  }, [exec, hideActionLog, memoryConfig.cpuDifficulty, memoryConfig.pairCount]);
+  return {
+    phaseNames,
+    cardWidth,
+    seen,
+    setSeen,
+    pairsOpen,
+    setPairsOpen,
+    boardRef,
+    focusedIdx,
+    handleBoardKeyDown,
+    flipAnnounce,
+    knownMatchIdx,
+  };
+}
 
-  if (!state)
-    return (
-      <GameSkeleton
-        gameKey="memory"
-        layout={{
-          kind: 'card-grid',
-          count: 52,
-          cols: 'grid-cols-7 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13',
-          aspectRatio: 'aspect-[2/3] max-sm:aspect-auto max-sm:h-11 lg:aspect-auto',
-          gridClassName: 'lg:grid-rows-4 lg:h-full',
-          topPills: 4,
-        }}
-      />
-    );
+type MemoryView = ReturnType<typeof useMemoryView>;
+type MemoryContext = GamePageContext<MemoryResponse, MemoryGame, MemoryView>;
 
+function Board({ game, state, t, view, frontendHint, busy }: MemoryContext) {
+  const {
+    seen,
+    pairsOpen,
+    setPairsOpen,
+    boardRef,
+    focusedIdx,
+    handleBoardKeyDown,
+    flipAnnounce,
+    knownMatchIdx,
+    cardWidth,
+  } = view;
+  const { hintEnabled: frontendHintEnabled } = frontendHint;
   const isFlip1 = state.phase === MemoryPhase.FLIP1;
   const isFlip2 = state.phase === MemoryPhase.FLIP2;
-  const isResult = state.phase === MemoryPhase.RESULT;
   const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
   const highestPairCount = Math.max(...state.players.map((player) => player.pairCount));
   const leaders = state.players.filter((player) => player.pairCount === highestPairCount);
-  const soleWinner = leaders.length === 1 ? leaders[0] : undefined;
-  const humanIsSoleWinner = soleWinner?.isHuman === true;
-  const humanIsNotAmongLeaders = !leaders.some((player) => player.isHuman);
   const resultNames = leaders.map((player) => playerName(player.id, player.isHuman)).join(t('listSeparator'));
 
+  const frontendHintResult = useMemo(
+    () => (frontendHintEnabled && state ? getMemoryHint(state, knownMatchIdx) : null),
+    [frontendHintEnabled, state, knownMatchIdx],
+  );
+
   return (
-    <GamePageShell
-      title={tc('nav.memory')}
-      gameThemeBg={gameTheme.memory.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/memory"
-      gameEndFlag={!!isGameEnd}
-      winShow={!!isGameEnd && humanIsSoleWinner}
-      lossShow={!!isGameEnd && leaders.length === 1 && humanIsNotAmongLeaders}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          {/* Settings */}
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: memoryConfig.cpuDifficulty,
-                    // **強さの差は「CPU がどれだけ覚えているか」の差。** domain の
-                    // retentionChance / decayRate が難易度ごとに 30%/60%/95% 保持、
-                    // 15%/5%/1% 減衰と切り替わるのに、選択肢は Easy/Normal/Hard と
-                    // しか出ておらず、何が変わるのか分からなかった (#5492)。
-                    // 数値は出さない -- 実装が変われば嘘になる。順序だけを言う。
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t('settings.difficultyOption', {
-                        level: t(`settings.${o.label.toLowerCase()}`),
-                        memory: t(`settings.memory${o.label}`),
-                      }),
-                    })),
-                    tooltip: t('settings.difficultyTooltip'),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'pairCount',
-                    label: t('settings.pairCount'),
-                    value: memoryConfig.pairCount,
-                    options: PAIR_COUNT_OPTIONS.map((pairs) => ({
-                      value: pairs,
-                      label: t('settings.pairCountOption', { pairs, cards: pairs * 2 }),
-                    })),
-                    // Re-deal at once: this changes the board's shape, so deferring it
-                    // to the next reset would read as the setting doing nothing.
-                    onSelect: (v) => {
-                      const pairs = Number(v);
-                      handleConfigChange('pairCount', v);
-                      hideActionLog();
-                      setSeen(new Map());
-                      void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: pairs });
-                    },
-                  },
-                  {
-                    type: 'select',
-                    id: 'autoNextDelayMs',
-                    label: t('settings.autoNextDelay'),
-                    value: autoNextDelayMs,
-                    options: AUTO_NEXT_DELAY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.autoNextDelayOption.${o.label}`),
-                    })),
-                    onSelect: (v) => setAutoNextDelayMs(Number(v)),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          {/* Content area – scroll on mobile, fit-to-viewport on desktop */}
-          <div className="flex-1 overflow-y-auto lg:overflow-hidden lg:flex lg:flex-col pt-3 lg:pt-1 px-4 lg:px-8">
-            {/* Player scores – compact inline layout to maximise board visibility */}
-            <div
-              className="my-1 px-2 py-1 rounded bg-black/30 text-ds-text-primary text-sm flex flex-wrap items-center gap-y-0.5 lg:shrink-0"
-              data-tutorial="mem-score-table"
-              role="status"
-              aria-label={t('scores')}
-            >
-              {state.players.map((p, idx) => (
-                <span key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                  {idx > 0 && (
-                    <span className="text-ds-text-muted mr-3" aria-hidden="true">
-                      |
-                    </span>
-                  )}
-                  {t('scoreLine', { name: playerName(p.id, p.isHuman), count: p.pairCount })}
-                </span>
-              ))}
-              <span className="ml-3 inline-block rounded bg-ds-surface px-2 py-1 text-ds-text-primary tabular-nums">
-                {t('remainingPairs', {
-                  remaining: state.board.filter((card) => !card.taken).length / 2,
-                  total: state.board.length / 2,
-                })}
+    <>
+      {/* Player scores – compact inline layout to maximise board visibility */}
+      <div
+        className="my-1 px-2 py-1 rounded bg-black/30 text-ds-text-primary text-sm flex flex-wrap items-center gap-y-0.5 lg:shrink-0"
+        data-tutorial="mem-score-table"
+        role="status"
+        aria-label={t('scores')}
+      >
+        {state.players.map((p, idx) => (
+          <span key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+            {idx > 0 && (
+              <span className="text-ds-text-muted mr-3" aria-hidden="true">
+                |
               </span>
-            </div>
-
-            {isGameEnd && (
-              <p className="my-2 text-center font-bold text-ds-text-primary" data-testid="memory-game-result">
-                {leaders.length === 1
-                  ? t('winnerResult', { name: resultNames, count: highestPairCount })
-                  : t('tieResult', { names: resultNames, count: highestPairCount })}
-              </p>
             )}
+            {t('scoreLine', { name: playerName(p.id, p.isHuman), count: p.pairCount })}
+          </span>
+        ))}
+        <span className="ml-3 inline-block rounded bg-ds-surface px-2 py-1 text-ds-text-primary tabular-nums">
+          {t('remainingPairs', {
+            remaining: state.board.filter((card) => !card.taken).length / 2,
+            total: state.board.length / 2,
+          })}
+        </span>
+      </div>
 
-            {/* Captured pairs – mini cards per player. Collapsible on mobile so
-                the board grid keeps its full height (#3028). */}
-            <details
-              className="my-1 px-2 py-1 rounded bg-black/20 text-ds-text-primary text-sm lg:shrink-0"
-              data-testid="mem-captured"
-              open={pairsOpen}
-              onToggle={(e) => setPairsOpen(e.currentTarget.open)}
+      {isGameEnd && (
+        <p className="my-2 text-center font-bold text-ds-text-primary" data-testid="memory-game-result">
+          {leaders.length === 1
+            ? t('winnerResult', { name: resultNames, count: highestPairCount })
+            : t('tieResult', { names: resultNames, count: highestPairCount })}
+        </p>
+      )}
+
+      {/* Captured pairs – mini cards per player. Collapsible on mobile so
+          the board grid keeps its full height (#3028). */}
+      <details
+        className="my-1 px-2 py-1 rounded bg-black/20 text-ds-text-primary text-sm lg:shrink-0"
+        data-testid="mem-captured"
+        open={pairsOpen}
+        onToggle={(e) => setPairsOpen(e.currentTarget.open)}
+      >
+        <summary className="cursor-pointer select-none font-bold py-0.5">{t('capturedPairs')}</summary>
+        <div className="mt-1 flex flex-col gap-1">
+          {state.players.map((p) => (
+            <div
+              key={p.id}
+              data-testid={`mem-captured-${p.id.toString()}`}
+              className="flex items-center gap-1 flex-wrap"
             >
-              <summary className="cursor-pointer select-none font-bold py-0.5">{t('capturedPairs')}</summary>
-              <div className="mt-1 flex flex-col gap-1">
-                {state.players.map((p) => (
-                  <div
-                    key={p.id}
-                    data-testid={`mem-captured-${p.id.toString()}`}
-                    className="flex items-center gap-1 flex-wrap"
-                  >
-                    <span className={`shrink-0 ${p.isHuman ? 'text-ds-accent' : 'text-ds-text-muted'}`}>
-                      {playerName(p.id, p.isHuman)}
-                    </span>
-                    {p.pairs.length === 0 ? (
-                      <span className="text-ds-text-muted">{t('noCapturedPairs')}</span>
-                    ) : (
-                      p.pairs.map((c, i) => (
-                        <AnimatedCard
-                          key={`p${p.id.toString()}-pair-${i.toString()}-${c.design}${c.value.toString()}`}
-                          card={c}
-                          width={Math.max(20, Math.round(cardWidth * 0.5))}
-                          silent
-                        />
-                      ))
+              <span className={`shrink-0 ${p.isHuman ? 'text-ds-accent' : 'text-ds-text-muted'}`}>
+                {playerName(p.id, p.isHuman)}
+              </span>
+              {p.pairs.length === 0 ? (
+                <span className="text-ds-text-muted">{t('noCapturedPairs')}</span>
+              ) : (
+                p.pairs.map((c, i) => (
+                  <AnimatedCard
+                    key={`p${p.id.toString()}-pair-${i.toString()}-${c.design}${c.value.toString()}`}
+                    card={c}
+                    width={Math.max(20, Math.round(cardWidth * 0.5))}
+                    silent
+                  />
+                ))
+              )}
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* Board: responsive grid (7/8/10/13 columns). Narrow screens drop the 2/3 aspect
+          so all 8 rows fit the play area; on lg it fills the remaining height. */}
+      <div
+        className="my-3 max-sm:my-1 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+        data-tutorial="mem-board"
+      >
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: keydown only routes arrow keys for roving focus; the real controls are the child <button>s */}
+        <div
+          ref={boardRef}
+          tabIndex={-1}
+          onKeyDown={handleBoardKeyDown}
+          className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full"
+        >
+          {state.board.map((bc, idx) => {
+            const wasVisited = !bc.faceUp && !bc.taken && seen.has(idx);
+            const isKnownMatch = frontendHintEnabled && idx === knownMatchIdx;
+            return (
+              <button
+                type="button"
+                key={`board-${idx.toString()}`}
+                data-testid={`board-${idx.toString()}`}
+                aria-label={
+                  bc.faceUp && bc.card
+                    ? cardAlt(bc.card)
+                    : // 目のマークを読み上げるなら、より強い「一致がある」も読み上げる。
+                      // 見ただけの印だけ伝えて一致を伏せると、スクリーンリーダー利用者だけが
+                      // 情報の少ない側に置かれる。
+                      isKnownMatch
+                      ? `${t('cardFaceDown', { position: idx + 1 })} (${t('knownMatchMark')})`
+                      : wasVisited
+                        ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
+                        : t('cardFaceDown', { position: idx + 1 })
+                }
+                disabled={busy || !isHumanTurn || bc.taken || bc.faceUp}
+                tabIndex={idx === focusedIdx ? 0 : -1}
+                onClick={() => game.handleFlip(idx)}
+                className={`memory-card relative aspect-[2/3] max-sm:aspect-auto max-sm:h-11 min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
+                  bc.taken
+                    ? 'hidden'
+                    : bc.faceUp
+                      ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
+                      : isKnownMatch
+                        ? 'bg-ds-info border border-white/10 ring-2 ring-ds-success motion-safe:animate-pulse'
+                        : wasVisited
+                          ? 'bg-ds-info border border-white/10 ring-1 ring-ds-accent hover:ring-ds-warning'
+                          : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
+                } transition-all`}
+                data-known-match={isKnownMatch || undefined}
+              >
+                <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
+                  <div className="memory-card-back">
+                    <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                    {wasVisited && (
+                      <span
+                        data-testid={`board-visited-${idx.toString()}`}
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded bg-black/25 pointer-events-none flex items-start justify-end p-0.5"
+                      >
+                        <span className="text-sm leading-none" title={t('visitedMark')}>
+                          {'\u{1F441}'}
+                        </span>
+                      </span>
                     )}
                   </div>
-                ))}
-              </div>
-            </details>
-
-            {/* Board: responsive grid (7/8/10/13 columns). Narrow screens drop the 2/3 aspect
-                so all 8 rows fit the play area; on lg it fills the remaining height. */}
-            <div
-              className="my-3 max-sm:my-1 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
-              data-tutorial="mem-board"
-            >
-              {/* biome-ignore lint/a11y/noStaticElementInteractions: keydown only routes arrow keys for roving focus; the real controls are the child <button>s */}
-              <div
-                ref={boardRef}
-                tabIndex={-1}
-                onKeyDown={handleBoardKeyDown}
-                className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full"
-              >
-                {state.board.map((bc, idx) => {
-                  const wasVisited = !bc.faceUp && !bc.taken && seen.has(idx);
-                  const isKnownMatch = frontendHintEnabled && idx === knownMatchIdx;
-                  return (
-                    <button
-                      type="button"
-                      key={`board-${idx.toString()}`}
-                      data-testid={`board-${idx.toString()}`}
-                      aria-label={
-                        bc.faceUp && bc.card
-                          ? cardAlt(bc.card)
-                          : // 目のマークを読み上げるなら、より強い「一致がある」も読み上げる。
-                            // 見ただけの印だけ伝えて一致を伏せると、スクリーンリーダー利用者だけが
-                            // 情報の少ない側に置かれる。
-                            isKnownMatch
-                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('knownMatchMark')})`
-                            : wasVisited
-                              ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
-                              : t('cardFaceDown', { position: idx + 1 })
-                      }
-                      disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
-                      tabIndex={idx === focusedIdx ? 0 : -1}
-                      onClick={() => handleFlip(idx)}
-                      className={`memory-card relative aspect-[2/3] max-sm:aspect-auto max-sm:h-11 min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
-                        bc.taken
-                          ? 'hidden'
-                          : bc.faceUp
-                            ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
-                            : isKnownMatch
-                              ? 'bg-ds-info border border-white/10 ring-2 ring-ds-success motion-safe:animate-pulse'
-                              : wasVisited
-                                ? 'bg-ds-info border border-white/10 ring-1 ring-ds-accent hover:ring-ds-warning'
-                                : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
-                      } transition-all`}
-                      data-known-match={isKnownMatch || undefined}
-                    >
-                      <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
-                        <div className="memory-card-back">
-                          <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
-                          {wasVisited && (
-                            <span
-                              data-testid={`board-visited-${idx.toString()}`}
-                              aria-hidden="true"
-                              className="absolute inset-0 rounded bg-black/25 pointer-events-none flex items-start justify-end p-0.5"
-                            >
-                              <span className="text-sm leading-none" title={t('visitedMark')}>
-                                {'\u{1F441}'}
-                              </span>
-                            </span>
-                          )}
-                        </div>
-                        <div className="memory-card-front">
-                          {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Polite live region announcing flip results to screen readers (#3029) */}
-            <span className="sr-only" role="status" aria-live="polite" data-testid="mem-flip-announce">
-              {flipAnnounce}
-            </span>
-
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.memory.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center">
-              {isResult && (
-                <div data-tutorial="mem-next-button">
-                  <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-                    {t('nextButton')}
-                  </button>
+                  <div className="memory-card-front">
+                    {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                  </div>
                 </div>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mem-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="memory-kbd-shortcuts" />
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Polite live region announcing flip results to screen readers (#3029) */}
+      <span className="sr-only" role="status" aria-live="polite" data-testid="mem-flip-announce">
+        {flipAnnounce}
+      </span>
+
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHintResult} enabled={frontendHintEnabled} t={t} />
+      </div>
+
+      {/* Message */}
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterActions({ game, state, t, busy }: MemoryContext) {
+  const isResult = state.phase === MemoryPhase.RESULT;
+  return (
+    <>
+      {isResult && (
+        <div data-tutorial="mem-next-button">
+          <button type="button" className={btnSuccess} onClick={game.handleNext} disabled={busy}>
+            {t('nextButton')}
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+const memoryDefinition: GameDefinition<MemoryResponse, MemoryGame, Parameters<typeof memoryApi.exec>, MemoryView> = {
+  key: 'memory',
+  useGame: useMemoryGame,
+  useView: useMemoryView,
+  tutorial: MEM_TUTORIAL_STEPS,
+  skeleton: {
+    kind: 'card-grid',
+    count: 52,
+    cols: 'grid-cols-7 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13',
+    aspectRatio: 'aspect-[2/3] max-sm:aspect-auto max-sm:h-11 lg:aspect-auto',
+    gridClassName: 'lg:grid-rows-4 lg:h-full',
+    topPills: 4,
+  },
+  cli: ({ state, view, frontendHint }) => ({
+    parseCommand: parseMemoryCommand,
+    formatResponse: formatMemoryState,
+    helpText: MEMORY_HELP,
+    localCommand: hintLocalCommand(frontendHint.hintEnabled && state ? getMemoryHint(state, view.knownMatchIdx) : null),
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
+    const highestPairCount = Math.max(...state.players.map((player) => player.pairCount));
+    const leaders = state.players.filter((player) => player.pairCount === highestPairCount);
+    const humanIsSoleWinner = leaders.length === 1 && leaders[0]?.isHuman === true;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && humanIsSoleWinner,
+    };
+  },
+  shell: ({ state }) => {
+    const isFlip1 = state.phase === MemoryPhase.FLIP1;
+    const isFlip2 = state.phase === MemoryPhase.FLIP2;
+    const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
+    const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
+    const highestPairCount = Math.max(...state.players.map((player) => player.pairCount));
+    const leaders = state.players.filter((player) => player.pairCount === highestPairCount);
+    const humanIsNotAmongLeaders = !leaders.some((player) => player.isHuman);
+    return {
+      isHumanTurn,
+      lossShow: !!isGameEnd && leaders.length === 1 && humanIsNotAmongLeaders,
+    };
+  },
+  reset: ({ game, view }) => {
+    view.setSeen(new Map());
+    void game.exec('reset', undefined, {
+      cpuDifficulty: game.memoryConfig.cpuDifficulty,
+      pairCount: game.memoryConfig.pairCount,
+    });
+  },
+  settings: ({ game, t, tc, frontendHint, view, hideActionLog }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.memoryConfig.cpuDifficulty,
+          // **強さの差は「CPU がどれだけ覚えているか」の差。** domain の
+          // retentionChance / decayRate が難易度ごとに 30%/60%/95% 保持、
+          // 15%/5%/1% 減衰と切り替わるのに、選択肢は Easy/Normal/Hard と
+          // しか出ておらず、何が変わるのか分からなかった (#5492)。
+          // 数値は出さない -- 実装が変われば嘘になる。順序だけを言う。
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t('settings.difficultyOption', {
+              level: t(`settings.${o.label.toLowerCase()}`),
+              memory: t(`settings.memory${o.label}`),
+            }),
+          })),
+          tooltip: t('settings.difficultyTooltip'),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'pairCount',
+          label: t('settings.pairCount'),
+          value: game.memoryConfig.pairCount,
+          options: PAIR_COUNT_OPTIONS.map((pairs) => ({
+            value: pairs,
+            label: t('settings.pairCountOption', { pairs, cards: pairs * 2 }),
+          })),
+          // Re-deal at once: this changes the board's shape, so deferring it
+          // to the next reset would read as the setting doing nothing.
+          onSelect: (v) => {
+            const pairs = Number(v);
+            game.handleConfigChange('pairCount', v);
+            hideActionLog();
+            view.setSeen(new Map());
+            void game.exec('reset', undefined, { cpuDifficulty: game.memoryConfig.cpuDifficulty, pairCount: pairs });
+          },
+        },
+        {
+          type: 'select',
+          id: 'autoNextDelayMs',
+          label: t('settings.autoNextDelay'),
+          value: game.autoNextDelayMs,
+          options: AUTO_NEXT_DELAY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.autoNextDelayOption.${o.label}`),
+          })),
+          onSelect: (v) => game.setAutoNextDelayMs(Number(v)),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: 'lg:overflow-hidden lg:flex lg:flex-col pt-3 lg:pt-1 px-4 lg:px-8',
+  shortcuts: ({ game, state }) => [
+    { key: 'n', action: game.handleNext, enabled: state.phase === MemoryPhase.RESULT, label: 'next' },
+  ],
+  shortcutsTestId: 'memory-kbd-shortcuts',
+  resetTutorialId: 'mem-reset-button',
+  actionsClassName: 'flex gap-2 items-center',
+  Board,
+  FooterActions,
+};
+
+/** Renders the Memory card matching game page with board grid and scores. */
+export const MemoryPage = createGamePage(memoryDefinition);
