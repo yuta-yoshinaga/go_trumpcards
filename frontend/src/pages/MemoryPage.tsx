@@ -515,6 +515,7 @@ const memoryDefinition: GameDefinition<MemoryResponse, MemoryGame, Parameters<ty
     },
   ],
   settingsPlacement: 'top',
+  // Content area – scroll on mobile, fit-to-viewport on desktop
   contentClassName: 'lg:overflow-hidden lg:flex lg:flex-col pt-3 lg:pt-1 px-4 lg:px-8',
   shortcuts: ({ game, state }) => [
     { key: 'n', action: game.handleNext, enabled: state.phase === MemoryPhase.RESULT, label: 'next' },

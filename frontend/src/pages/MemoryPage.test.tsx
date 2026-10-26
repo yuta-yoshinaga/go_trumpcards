@@ -703,6 +703,31 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  it('prints the remembered match hint for the h command in CLI mode', async () => {
+    const sawNineState: MemoryResponse = {
+      ...flip1State,
+      board: makeBoard({ 9: { card: { design: 'SPADE', value: 3 }, faceUp: true } }),
+    };
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: true, setHintEnabled: vi.fn() });
+    mockExec.mockResolvedValue(sawNineState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(flip2State);
+    fireEvent.click(screen.getByTestId('board-3'));
+    await waitFor(() => expect(screen.getByTestId('board-9')).toHaveAttribute('data-known-match', 'true'));
+
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'h' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    const log = screen.getByRole('log');
+    await waitFor(() => expect(log).toHaveTextContent('[確度: 高]'));
+    expect(log).not.toHaveTextContent('ヒントはありません');
+    localStorage.removeItem('cli-mode-memory');
+  });
+
   // --- Keyboard grid navigation (#3029) ---
   // matchMedia is mocked to matches:false in test setup, so the grid resolves to
   // 7 columns (the base breakpoint).
