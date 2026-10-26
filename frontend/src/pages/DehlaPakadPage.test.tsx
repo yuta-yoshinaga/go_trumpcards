@@ -448,4 +448,10 @@ describe('DehlaPakadPage', () => {
     window.dispatchEvent(new Event('resize'));
     mobileState.isMobile = false;
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<DehlaPakadPage />);
+    expect(await screen.findByText('切り札宣言', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('selectTrump', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
