@@ -1,44 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { TFunction } from 'i18next';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { tripeaksApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useChainCombo } from '../hooks/useChainCombo';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
 import { useTriPeaksStats } from '../hooks/useTriPeaksStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { TriPeaksResponse } from '../types/card';
 import { TriPeaksPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseTripeaksCommand, TRIPEAKS_HELP } from '../utils/cli/commands/tripeaksCommands';
 import { formatTripeaksState } from '../utils/cli/formatters/tripeaksFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { comboAnnouncement } from '../utils/comboAnnounce';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Valid column positions per row in the TriPeaks tableau. */
 const VALID_COLS: readonly number[][] = [
@@ -114,90 +95,21 @@ const TP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the TriPeaks Solitaire game page with three peaks, stock/waste, and controls. */
-export const TriPeaksPage = withTutorial(TriPeaksPageContent, 'tripeaks', TP_TUTORIAL_STEPS);
-/** Inner content of the TriPeaks page, wrapped by TutorialProvider. */
-function TriPeaksPageContent() {
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('tripeaks');
+type TriPeaksGame = ReturnType<typeof useTriPeaksGame>;
+
+function useTriPeaksView({ game, t }: { game: TriPeaksGame; t: TFunction }) {
   const { playSound } = useSound();
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    hintError,
-    hint,
-    handleDraw,
-    handleReset,
-    handleGiveUp,
-    handleHint,
-    handleUndo,
-    handleUndoEscape,
-    handleSelectCard,
-  } = useTriPeaksGame();
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('tripeaks', state);
-  const hintedCard = hint?.type === 'remove' ? state?.layout[hint.row]?.[hint.col]?.card : undefined;
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tripeaks');
-  const cliConfig: CliGameConfig<TriPeaksResponse, Parameters<typeof tripeaksApi.exec>> = useMemo(
-    () => ({
-      gameName: 'tripeaks',
-      parseCommand: parseTripeaksCommand,
-      formatResponse: formatTripeaksState,
-      helpText: TRIPEAKS_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const isPlayingForKbd = state?.phase === TriPeaksPhase.PLAYING;
+  const phaseName = useMemo(() => {
+    const p = game.state?.phase;
+    if (p === TriPeaksPhase.GAME_CLEAR) return t('phase.gameClear');
+    if (p === TriPeaksPhase.GAME_OVER) return t('phase.gameOver');
+    return t('phase.playing');
+  }, [game.state?.phase, t]);
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
-
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: handleDraw, label: 'draw' },
-      { key: 'h', action: handleHint, label: 'hint' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: handleUndo, label: 'undo' },
-    ],
-    [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
-  );
-
-  useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
-  });
-
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    handleReset();
-  }, [handleReset, hideActionLog]);
-
-  const combo = useChainCombo(state?.moveCount, state?.stockCount);
+  const combo = useChainCombo(game.state?.moveCount, game.state?.stockCount);
 
   // **バッジは combo >= 2 のときだけ描かれる。** 消えることは live region では
   // 伝わらないので、領域は常設して中身を差し替える。判断は Golf と共有の
@@ -212,8 +124,8 @@ function TriPeaksPageContent() {
   }, [combo, t]);
 
   // Remaining-card count per peak, derived from the board layout (issue #3085).
-  const peakRemaining = useMemo(() => computePeakRemaining(state?.layout), [state?.layout]);
-  const isPlayingForPeaks = state?.phase === TriPeaksPhase.PLAYING;
+  const peakRemaining = useMemo(() => computePeakRemaining(game.state?.layout), [game.state?.layout]);
+  const isPlayingForPeaks = game.state?.phase === TriPeaksPhase.PLAYING;
   // Fire a subtle sound once when a peak's remaining count first reaches zero.
   // The ref always tracks the latest counts, so reset/undo (which refill a peak)
   // naturally re-arms the celebration without any explicit teardown.
@@ -233,14 +145,14 @@ function TriPeaksPageContent() {
   // **得点はサーバが数える。** 以前はフロントの useTriPeaksScore が盤面の遷移から
   // 計算しており、同じ式がドメインに無いせいで CUI からは得点に手が届かなかった
   // (#5511)。式は internal/domain/TriPeaks.go に移してある。
-  const score = state?.score ?? 0;
+  const score = game.state?.score ?? 0;
 
   // Best-record persistence in localStorage (issue #3087).
   const { stats, recordResult } = useTriPeaksStats();
   const [newBest, setNewBest] = useState(false);
   // Guard so each finished game is recorded exactly once (phase stays ended across re-renders).
   const recordedRef = useRef(false);
-  const endPhase = state?.phase;
+  const endPhase = game.state?.phase;
   useEffect(() => {
     const ended = endPhase === TriPeaksPhase.GAME_CLEAR || endPhase === TriPeaksPhase.GAME_OVER;
     if (!ended) {
@@ -252,9 +164,86 @@ function TriPeaksPageContent() {
     setNewBest(recordResult({ won: endPhase === TriPeaksPhase.GAME_CLEAR, score }));
   }, [endPhase, score, recordResult]);
 
-  if (!state)
-    return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
+  return {
+    cardHeight,
+    cardWidth,
+    isMobile,
+    windowWidth,
+    phaseName,
+    combo,
+    comboAnnounce,
+    peakRemaining,
+    stats,
+    newBest,
+    score,
+  };
+}
 
+type TriPeaksView = ReturnType<typeof useTriPeaksView>;
+type TriPeaksContext = GamePageContext<TriPeaksResponse, TriPeaksGame, TriPeaksView>;
+
+function HeaderExtra({ state, t, view }: TriPeaksContext) {
+  const isPlaying = state.phase === TriPeaksPhase.PLAYING;
+  // **リングと合計は同じ集合を読む。**別々に数えると、光っている札の数と
+  // ヘッダーの数字がずれる。CUI の playableCount と揃える (#4783)。
+  const playableCells = isPlaying ? new Set(state.playableCells) : new Set<string>();
+
+  return (
+    <>
+      <span>
+        {t('moveCount')}: {state.moveCount}
+      </span>
+      <span data-testid="tp-score">
+        {t('score')}: <span className="font-bold tabular-nums">{view.score}</span>
+      </span>
+      {isPlaying && (
+        <span data-testid="tp-playable" className="text-xs">
+          {t('playableSummary', { count: playableCells.size })}
+          {playableCells.size === 0 && state.stockCount > 0 && (
+            <span className="ml-1 text-ds-warning">{t('drawRecommended')}</span>
+          )}
+        </span>
+      )}
+      {isPlaying && (
+        <span data-testid="peak-remaining" className="flex items-center gap-1 text-xs">
+          <span className="sr-only">{t('peakRemaining')}</span>
+          <span aria-hidden="true">⛰</span>
+          {view.peakRemaining.map((n, i) => (
+            <span key={`peak-${i.toString()}`} className="flex items-center">
+              {i > 0 && <span className="text-game-text-muted mx-0.5">/</span>}
+              <span className="sr-only">{t(['leftPeak', 'middlePeak', 'rightPeak'][i])}</span>
+              <span
+                title={n === 0 ? t('peakCleared') : undefined}
+                className={`font-bold ${n === 0 ? 'text-ds-success' : ''}`}
+              >
+                {n === 0 ? '✓' : n}
+              </span>
+            </span>
+          ))}
+        </span>
+      )}
+      {view.combo >= 2 && (
+        <span
+          data-testid="combo-badge"
+          className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+            view.combo >= 5
+              ? 'bg-ds-error text-white'
+              : view.combo >= 3
+                ? 'bg-ds-warning text-ds-text-on-accent'
+                : 'bg-ds-info text-ds-text-on-accent'
+          }`}
+        >
+          {t('combo', { count: view.combo })}
+        </span>
+      )}
+      <span className="sr-only" role="status" aria-live="polite" data-testid="tripeaks-combo-announce">
+        {view.comboAnnounce}
+      </span>
+    </>
+  );
+}
+
+function Board({ game, state, t, view, frontendHint }: TriPeaksContext) {
   const isPlaying = state.phase === TriPeaksPhase.PLAYING;
   // **リングと合計は同じ集合を読む。**別々に数えると、光っている札の数と
   // ヘッダーの数字がずれる。CUI の playableCount と揃える (#4783)。
@@ -263,313 +252,245 @@ function TriPeaksPageContent() {
   const isGameOver = state.phase === TriPeaksPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
+  const hintedCard = game.hint?.type === 'remove' ? state.layout[game.hint.row]?.[game.hint.col]?.card : undefined;
+
   // Calculate layout dimensions
   const maxCols = 10;
   const cardGap = 4;
-  const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
-  const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
+  const ROW_OVERLAP_RATIO = view.isMobile ? 0.3 : 0.35;
+  const rowOverlap = view.cardHeight * ROW_OVERLAP_RATIO;
   // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
   const CONTAINER_PADDING = 32;
-  const effectiveCardWidth = isMobile
-    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
-    : cardWidth;
+  const effectiveCardWidth = view.isMobile
+    ? Math.floor((view.windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
+    : view.cardWidth;
 
   return (
-    <GamePageShell
-      title={tc('nav.tripeaks')}
-      gameThemeBg={gameTheme.tripeaks.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/tripeaks"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span>
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <span data-testid="tp-score">
-            {t('score')}: <span className="font-bold tabular-nums">{score}</span>
-          </span>
-          {isPlaying && (
-            <span data-testid="tp-playable" className="text-xs">
-              {t('playableSummary', { count: playableCells.size })}
-              {playableCells.size === 0 && state.stockCount > 0 && (
-                <span className="ml-1 text-ds-warning">{t('drawRecommended')}</span>
-              )}
-            </span>
-          )}
-          {isPlaying && (
-            <span data-testid="peak-remaining" className="flex items-center gap-1 text-xs">
-              <span className="sr-only">{t('peakRemaining')}</span>
-              <span aria-hidden="true">⛰</span>
-              {peakRemaining.map((n, i) => (
-                <span key={`peak-${i.toString()}`} className="flex items-center">
-                  {i > 0 && <span className="text-game-text-muted mx-0.5">/</span>}
-                  <span className="sr-only">{t(['leftPeak', 'middlePeak', 'rightPeak'][i])}</span>
-                  <span
-                    title={n === 0 ? t('peakCleared') : undefined}
-                    className={`font-bold ${n === 0 ? 'text-ds-success' : ''}`}
-                  >
-                    {n === 0 ? '✓' : n}
-                  </span>
-                </span>
-              ))}
-            </span>
-          )}
-          {combo >= 2 && (
-            <span
-              data-testid="combo-badge"
-              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                combo >= 5
-                  ? 'bg-ds-error text-white'
-                  : combo >= 3
-                    ? 'bg-ds-warning text-ds-text-on-accent'
-                    : 'bg-ds-info text-ds-text-on-accent'
-              }`}
+    <>
+      {/* Tableau */}
+      <div data-tutorial="tp-peaks" className="flex flex-col items-center mb-3">
+        {VALID_COLS.map((cols, rowIdx) => {
+          const rowWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
+          return (
+            <div
+              key={`row-${rowIdx.toString()}`}
+              className="relative"
+              style={{
+                height: rowIdx < VALID_COLS.length - 1 ? view.cardHeight - rowOverlap : view.cardHeight,
+                width: rowWidth,
+              }}
             >
-              {t('combo', { count: combo })}
-            </span>
-          )}
-          <span className="sr-only" role="status" aria-live="polite" data-testid="tripeaks-combo-announce">
-            {comboAnnounce}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <LandscapeBanner message={t('landscapeBanner')} />
-
-          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-            {/* Tableau */}
-            <div data-tutorial="tp-peaks" className="flex flex-col items-center mb-3">
-              {VALID_COLS.map((cols, rowIdx) => {
-                const rowWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
+              {cols.map((colIdx) => {
+                const tc2 = state.layout[rowIdx]?.[colIdx];
+                const left = colIdx * (effectiveCardWidth + cardGap);
+                if (!tc2 || tc2.removed) {
+                  return (
+                    <div
+                      key={`tc-${rowIdx.toString()}-${colIdx.toString()}`}
+                      className="absolute"
+                      style={{ left, width: effectiveCardWidth, height: view.cardHeight }}
+                    />
+                  );
+                }
+                if (!tc2.card) return null;
+                const exposed = tc2.exposed;
+                const isHinted = game.hint?.type === 'remove' && game.hint.row === rowIdx && game.hint.col === colIdx;
+                const isPlayable = playableCells.has(`${rowIdx.toString()}-${colIdx.toString()}`);
                 return (
-                  <div
-                    key={`row-${rowIdx.toString()}`}
-                    className="relative"
-                    style={{
-                      height: rowIdx < VALID_COLS.length - 1 ? cardHeight - rowOverlap : cardHeight,
-                      width: rowWidth,
-                    }}
-                  >
-                    {cols.map((colIdx) => {
-                      const tc2 = state.layout[rowIdx]?.[colIdx];
-                      const left = colIdx * (effectiveCardWidth + cardGap);
-                      if (!tc2 || tc2.removed) {
-                        return (
-                          <div
-                            key={`tc-${rowIdx.toString()}-${colIdx.toString()}`}
-                            className="absolute"
-                            style={{ left, width: effectiveCardWidth, height: cardHeight }}
-                          />
-                        );
-                      }
-                      if (!tc2.card) return null;
-                      const exposed = tc2.exposed;
-                      const isHinted = hint?.type === 'remove' && hint.row === rowIdx && hint.col === colIdx;
-                      const isPlayable = playableCells.has(`${rowIdx.toString()}-${colIdx.toString()}`);
-                      return (
-                        <div key={`tc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!exposed || !tc2.card) return;
-                              handleSelectCard(rowIdx, colIdx);
-                            }}
-                            disabled={!isPlaying || loading || !exposed}
-                            aria-label={
-                              isPlayable ? t('cardPlayableAria', { card: cardAlt(tc2.card) }) : cardAlt(tc2.card)
-                            }
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              isHinted ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success/70' : ''
-                            } ${!exposed ? 'opacity-60' : ''}`}
-                          >
-                            <AnimatedCard card={tc2.card} width={effectiveCardWidth} />
-                          </button>
-                        </div>
-                      );
-                    })}
+                  <div key={`tc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!exposed || !tc2.card) return;
+                        game.handleSelectCard(rowIdx, colIdx);
+                      }}
+                      disabled={!isPlaying || game.loading || !exposed}
+                      aria-label={isPlayable ? t('cardPlayableAria', { card: cardAlt(tc2.card) }) : cardAlt(tc2.card)}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                        isHinted ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success/70' : ''
+                      } ${!exposed ? 'opacity-60' : ''}`}
+                    >
+                      <AnimatedCard card={tc2.card} width={effectiveCardWidth} />
+                    </button>
                   </div>
                 );
               })}
             </div>
+          );
+        })}
+      </div>
 
-            {/* Stock + Waste */}
-            <div className="flex gap-4 justify-center mb-3" data-tutorial="tp-stock-waste">
-              <div className="text-center">
-                <div className="text-game-text-muted text-xs mb-1">
-                  {t('stock')} ({state.stockCount})
-                </div>
-                {state.stockCount > 0 ? (
-                  <AnimatedCardBack
-                    width={effectiveCardWidth}
-                    onClick={isPlaying ? handleDraw : undefined}
-                    ariaLabel={t('draw')}
-                  />
-                ) : (
-                  <div
-                    style={{ width: effectiveCardWidth, height: cardHeight }}
-                    className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
-                  >
-                    {t('empty')}
-                  </div>
-                )}
-              </div>
-
-              <div className="text-center">
-                <div className="text-game-text-muted text-xs mb-1">
-                  {t('waste')} <span id="tripeaks-waste-count">{t('wasteCount', { count: state.waste.length })}</span>
-                </div>
-                {state.waste.length > 0 ? (
-                  <AnimatedCard
-                    card={state.waste[state.waste.length - 1]}
-                    width={effectiveCardWidth}
-                    ariaDescribedBy="tripeaks-waste-count"
-                  />
-                ) : (
-                  <div
-                    style={{ width: effectiveCardWidth, height: cardHeight }}
-                    className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
-                  >
-                    {t('empty')}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Hint display */}
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="tp-hint-display" data-testid="tp-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 text-center">
-                  {hint.type === 'remove' && hintedCard
-                    ? t('removeHint', {
-                        card: cardAlt(hintedCard),
-                        row: hint.row,
-                        col: hint.col,
-                      })
-                    : `${t('hintAvailable')}: ${t(`hintType.${hint.type}`)}`}
-                </div>
-              )}
-            </div>
-            <div data-testid="tp-stock-empty-guidance" role="status" aria-live="polite">
-              {isPlaying && state.stockCount === 0 && (
-                <div className="text-ds-warning text-sm mb-2 text-center">
-                  {playableCells.size > 0
-                    ? t('stockEmptyPlayable', { count: playableCells.size })
-                    : t('stockEmptyNoPlayable')}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {/* New personal-best badge on the end screen (#3087). */}
-            {isEnded && newBest && (
-              <div
-                data-testid="tp-best-badge"
-                role="status"
-                className="text-center text-ds-success font-semibold text-sm mb-2"
-              >
-                {t('newBest', { score })}
-              </div>
-            )}
-
-            {/* Best-record panel: highest score + clear rate (#3087). */}
-            <div data-testid="tp-stats-panel" className="text-game-text-muted text-xs text-center mb-2">
-              {t('bestScore')}: {stats.bestScore ?? '—'}
-              {stats.plays > 0 && (
-                <>
-                  {' · '}
-                  {t('clears', { wins: stats.wins, plays: stats.plays })}
-                </>
-              )}
-            </div>
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+      {/* Stock + Waste */}
+      <div className="flex gap-4 justify-center mb-3" data-tutorial="tp-stock-waste">
+        <div className="text-center">
+          <div className="text-game-text-muted text-xs mb-1">
+            {t('stock')} ({state.stockCount})
           </div>
-
-          {/* Settings */}
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
-
-          <GameFooter className={`${gameTheme.tripeaks.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="tp-controls">
-                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-                    {t('draw')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleUndo}
-                    disabled={loading || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={handleUndoEscape}
-                      disabled={loading}
-                    />
-                  )}
-                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
-                    {t('hint')}
-                  </button>
-                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tp-reset-button"
-              />
+          {state.stockCount > 0 ? (
+            <AnimatedCardBack
+              width={effectiveCardWidth}
+              onClick={isPlaying ? game.handleDraw : undefined}
+              ariaLabel={t('draw')}
+            />
+          ) : (
+            <div
+              style={{ width: effectiveCardWidth, height: view.cardHeight }}
+              className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
+            >
+              {t('empty')}
             </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="tri-peaks-kbd-shortcuts" />
-          </GameFooter>
-        </>
+          )}
+        </div>
+
+        <div className="text-center">
+          <div className="text-game-text-muted text-xs mb-1">
+            {t('waste')} <span id="tripeaks-waste-count">{t('wasteCount', { count: state.waste.length })}</span>
+          </div>
+          {state.waste.length > 0 ? (
+            <AnimatedCard
+              card={state.waste[state.waste.length - 1]}
+              width={effectiveCardWidth}
+              ariaDescribedBy="tripeaks-waste-count"
+            />
+          ) : (
+            <div
+              style={{ width: effectiveCardWidth, height: view.cardHeight }}
+              className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+            >
+              {t('empty')}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Hint display */}
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="tp-hint-display" data-testid="tp-hint-live" role="status" aria-live="polite">
+        {game.hint && (
+          <div className="text-ds-warning text-sm mb-2 text-center">
+            {game.hint.type === 'remove' && hintedCard
+              ? t('removeHint', {
+                  card: cardAlt(hintedCard),
+                  row: game.hint.row,
+                  col: game.hint.col,
+                })
+              : `${t('hintAvailable')}: ${t(`hintType.${game.hint.type}`)}`}
+          </div>
+        )}
+      </div>
+      <div data-testid="tp-stock-empty-guidance" role="status" aria-live="polite">
+        {isPlaying && state.stockCount === 0 && (
+          <div className="text-ds-warning text-sm mb-2 text-center">
+            {playableCells.size > 0
+              ? t('stockEmptyPlayable', { count: playableCells.size })
+              : t('stockEmptyNoPlayable')}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {/* New personal-best badge on the end screen (#3087). */}
+      {isEnded && view.newBest && (
+        <div
+          data-testid="tp-best-badge"
+          role="status"
+          className="text-center text-ds-success font-semibold text-sm mb-2"
+        >
+          {t('newBest', { score: view.score })}
+        </div>
       )}
-    </GamePageShell>
+
+      {/* Best-record panel: highest score + clear rate (#3087). */}
+      <div data-testid="tp-stats-panel" className="text-game-text-muted text-xs text-center mb-2">
+        {t('bestScore')}: {view.stats.bestScore ?? '—'}
+        {view.stats.plays > 0 && (
+          <>
+            {' · '}
+            {t('clears', { wins: view.stats.wins, plays: view.stats.plays })}
+          </>
+        )}
+      </div>
+    </>
   );
 }
+
+function FooterActions({ game, state, t, busy, confirmGiveUpAction }: TriPeaksContext) {
+  const isPlaying = state.phase === TriPeaksPhase.PLAYING;
+  if (!isPlaying) return null;
+  return (
+    <div data-tutorial="tp-controls">
+      <button type="button" className={btnPrimary} onClick={game.handleDraw} disabled={busy}>
+        {t('draw')}
+      </button>
+      <button type="button" className={btnPrimary} onClick={game.handleUndo} disabled={busy || !state.canUndo}>
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={busy}
+        />
+      )}
+      <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy}>
+        {t('hint')}
+      </button>
+      <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={busy}>
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const tripeaksDefinition: GameDefinition<
+  TriPeaksResponse,
+  TriPeaksGame,
+  Parameters<typeof tripeaksApi.exec>,
+  TriPeaksView
+> = {
+  key: 'tripeaks',
+  useGame: useTriPeaksGame,
+  useView: useTriPeaksView,
+  tutorial: TP_TUTORIAL_STEPS,
+  skeleton: { kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true },
+  cli: () => ({
+    parseCommand: parseTripeaksCommand,
+    formatResponse: formatTripeaksState,
+    helpText: TRIPEAKS_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameClear = state.phase === TriPeaksPhase.GAME_CLEAR;
+    const isGameOver = state.phase === TriPeaksPhase.GAME_OVER;
+    return {
+      name: view.phaseName,
+      ended: isGameClear || isGameOver,
+      won: isGameClear,
+    };
+  },
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'd', action: game.handleDraw, label: 'draw' },
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state }) => state.phase === TriPeaksPhase.PLAYING,
+  shortcutsTestId: 'tri-peaks-kbd-shortcuts',
+  resetTutorialId: 'tp-reset-button',
+  landscapeBanner: true,
+  HeaderExtra,
+  Board,
+  FooterActions,
+};
+
+/** Renders the TriPeaks Solitaire game page with three peaks, stock/waste, and controls. */
+export const TriPeaksPage = createGamePage(tripeaksDefinition);
