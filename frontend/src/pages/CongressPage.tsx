@@ -59,10 +59,6 @@ export function congressSourceKey(source: CongressMoveZone): string {
   return '';
 }
 
-function isActionLogOpen(): boolean {
-  return document.querySelector('[data-testid="copy-announcer"]') !== null;
-}
-
 type CongressGame = ReturnType<typeof useCongressGame>;
 type CongressView = ReturnType<typeof useCongressView>;
 type CongressContext = GamePageContext<CongressResponse, CongressGame, CongressView>;
@@ -489,46 +485,31 @@ const congressDefinition: GameDefinition<
   shortcuts: ({ game, confirmGiveUpAction }) => [
     {
       key: 'd',
-      action: () => {
-        if (isActionLogOpen()) return;
-        game.handleDraw();
-      },
+      action: game.handleDraw,
       label: 'draw',
     },
     {
       key: 'h',
-      action: () => {
-        if (isActionLogOpen()) return;
-        game.handleHint();
-      },
+      action: game.handleHint,
       label: 'hint',
     },
     {
       key: 'a',
-      action: () => {
-        if (isActionLogOpen()) return;
-        game.handleAutoComplete();
-      },
+      action: game.handleAutoComplete,
       label: 'autoComplete',
     },
     {
       key: 'g',
-      action: () => {
-        if (isActionLogOpen()) return;
-        confirmGiveUpAction?.();
-      },
+      action: confirmGiveUpAction ?? (() => undefined),
       label: 'giveUp',
     },
     {
       key: 'z',
-      action: () => {
-        if (isActionLogOpen()) return;
-        game.handleUndo();
-      },
+      action: game.handleUndo,
       label: 'undo',
     },
   ],
-  shortcutsEnabled: ({ state }) => state.phase === CongressPhase.PLAYING && !isActionLogOpen(),
+  shortcutsEnabled: ({ state, actionLogOpen }) => state.phase === CongressPhase.PLAYING && !actionLogOpen,
   shortcutsTestId: 'congress-kbd-shortcuts',
   contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
   landscapeBanner: true,
