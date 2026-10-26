@@ -369,6 +369,12 @@ describe('SpiderettePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SpiderettePage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<SpiderettePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
