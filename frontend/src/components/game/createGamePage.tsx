@@ -188,6 +188,8 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   reset?: (ctx: GamePageContext<S, G, V>) => void;
   /** Replacement class for the main scrollable content area. Defaults to "pt-3 px-4 lg:px-8". */
   contentClassName?: string;
+  /** data-testid on the scrollable content div; use the existing value when a legacy page set one there. */
+  contentTestId?: string;
 }
 
 /** Builds a game page from shared wiring and a game-specific definition. */
@@ -358,7 +360,10 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
               <SettingsPanel title={setup.tc('settings.title')} groups={settings} />
             )}
             {AboveContent && <AboveContent {...context} />}
-            <div className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}>
+            <div
+              className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}
+              data-testid={def.contentTestId}
+            >
               <Board {...context} />
               <ActionLogSection
                 isEndPhase={def.actionLogEndPhase?.(context) ?? phase.ended}

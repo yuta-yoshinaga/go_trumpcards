@@ -91,3 +91,7 @@ CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する�
 ## 追記 (2026-10-26): 操作ログ表示中のショートカット
 
 Briscola、Canfield、Congress、Cuckoo の 4 ページは操作ログ表示中にキーボードショートカットを止めていた。`GamePageContext` に `actionLogOpen` を追加し、各ページの `shortcutsEnabled` から同じ条件を表せるようにした。ファクトリ全体では止めない。Sultan や AcesUp など既存の移行済みページのショートカット挙動を変えないためである。
+
+## 追記 (2026-10-26): スクロール領域の test id
+
+16 以上のページがスクロール領域に `data-testid` を付けており、既存の試験がその値を使っている。移行後も同じ試験を保てるよう、`GameDefinition` に `contentTestId` を追加した。
