@@ -624,6 +624,13 @@ describe('StreetsAndAlleysPage', () => {
     expect(screen.getByRole('button', { name: '空のタブロー列2' })).toHaveAttribute('data-target-candidate', 'true');
     expect(screen.getByRole('button', { name: '♥ 6、タブロー列1' })).not.toHaveAttribute('data-target-candidate');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('StreetsAndAlleysPage foundation layout', () => {
