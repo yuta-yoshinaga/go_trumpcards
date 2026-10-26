@@ -73,6 +73,27 @@ describe('StreetsAndAlleysPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('renders the tableau tutorial target', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    await screen.findByTestId('phase-indicator');
+    expect(document.querySelector('[data-tutorial="sa-tableau"]')).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    await screen.findByRole('button', { name: '次へ' });
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await screen.findByText(/1枚ずつ、スート関係なく/);
+  });
+
+  it('does not render a keyboard shortcuts panel', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryByTestId('streetsandalleys-kbd-shortcuts')).toBeNull();
+  });
+
   it('keeps all nine board columns accessible in a horizontal scroll area on narrow screens', async () => {
     window.innerWidth = 320;
     window.dispatchEvent(new Event('resize'));

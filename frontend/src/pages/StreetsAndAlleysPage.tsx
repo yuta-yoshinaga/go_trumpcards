@@ -38,7 +38,7 @@ const SA_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
-    target: '[data-tutorial="sa-moves"]',
+    target: '[data-tutorial="sa-tableau"]',
     messageKey: 'tutorial.moves',
     placement: 'top',
     advanceOn: 'next',
@@ -199,12 +199,6 @@ function Board({ game, state, t, frontendHint, view }: StreetsAndAlleysContext) 
 
   const hasSelectedSource = selectedSource !== null;
 
-  const attachScrollTestId = useCallback((el: HTMLDivElement | null) => {
-    if (el?.parentElement) {
-      el.parentElement.setAttribute('data-testid', 'sa-board-scroll');
-    }
-  }, []);
-
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
     const tableauColZone: StreetsAndAlleysMoveZone = { zone: 'tableau', col: colIdx };
@@ -301,7 +295,6 @@ function Board({ game, state, t, frontendHint, view }: StreetsAndAlleysContext) 
   return (
     <>
       <div
-        ref={attachScrollTestId}
         className="flex gap-2 sm:gap-3 items-start"
         data-testid="sa-board-content"
         // 9 card columns + gaps: 2 outer gap-2 (8px) + 6 inner gap-1 (4px) = 40px.
@@ -510,16 +503,16 @@ const streetsAndAlleysDefinition: GameDefinition<
     };
   },
   contentClassName: 'overflow-x-auto pt-3 px-2 sm:px-4 lg:px-8',
+  contentTestId: 'sa-board-scroll',
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
   shortcuts: ({ game, confirmGiveUpAction }) => [
-    { key: 'h', action: game.handleHint, label: 'hint' },
-    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
-    { key: 'z', action: game.handleUndo, label: 'undo' },
+    { key: 'h', action: game.handleHint },
+    { key: 'a', action: game.handleAutoComplete },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined) },
+    { key: 'z', action: game.handleUndo },
   ],
-  shortcutsEnabled: ({ state, game }) => state.phase === StreetsAndAlleysPhase.PLAYING && !game.isAutoCompleting,
-  shortcutsTestId: 'streetsandalleys-kbd-shortcuts',
+  shortcutsEnabled: ({ state }) => state.phase === StreetsAndAlleysPhase.PLAYING,
   resetTutorialId: 'sa-reset-button',
   HeaderExtra,
   LiveRegion,
