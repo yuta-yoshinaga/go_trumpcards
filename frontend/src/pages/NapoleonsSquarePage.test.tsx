@@ -90,6 +90,13 @@ describe('NapoleonsSquarePage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('renders all eight foundations', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
