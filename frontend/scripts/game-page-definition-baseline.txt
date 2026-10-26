@@ -261,7 +261,6 @@ TienLenPage.tsx
 TonkPage.tsx
 TrashPage.tsx
 TrenteEtQuarantePage.tsx
-TressettePage.tsx
 TriPeaksPage.tsx
 TrogguPage.tsx
 TrucoPage.tsx
