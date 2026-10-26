@@ -1,41 +1,25 @@
+import type { TFunction } from 'i18next';
 import { useCallback, useId, useMemo } from 'react';
 import type { terraceApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
-import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useTerraceGame } from '../hooks/useTerraceGame';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { TerraceMoveZone, TerraceResponse } from '../types/card';
 import { TerracePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseTerraceCommand, TERRACE_HELP } from '../utils/cli/commands/terraceCommands';
 import { formatTerraceState } from '../utils/cli/formatters/terraceFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const TABLEAU_PILES = 9;
 const FOUNDATIONS = 8;
@@ -55,8 +39,15 @@ const TR_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="tr-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
 
-/** Renders the Terrace page: an 11-card terrace, nine piles, and eight foundations. */
-export const TerracePage = withTutorial(TerracePageContent, 'terrace', TR_TUTORIAL_STEPS);
+const TERRACE_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [TerracePhase.PLAYING]: 'playing',
+  [TerracePhase.GAME_CLEAR]: 'gameClear',
+  [TerracePhase.GAME_OVER]: 'gameOver',
+};
+
+type TerraceGame = ReturnType<typeof useTerraceGame>;
+type TerraceView = ReturnType<typeof useTerraceView>;
+type TerraceContext = GamePageContext<TerraceResponse, TerraceGame, TerraceView>;
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, idx: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation', { idx });
@@ -66,43 +57,9 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   return t('frontendHint.tableau', { pile: idx });
 }
 
-function TerracePageContent() {
-  const {
-    t,
-    tc,
-    actionLog,
-    showActionLog,
-    hideActionLog,
-    confirmOpen,
-    requestConfirm,
-    confirmReset,
-    cancelReset,
-    giveUpConfirmOpen,
-    requestGiveUpConfirm,
-    confirmGiveUp,
-    cancelGiveUp,
-  } = useGamePageSetup('terrace');
-  const game = useTerraceGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+function useTerraceView({ game }: { game: TerraceGame; t: TFunction; tc: TFunction }) {
+  const { state, loading } = game;
   const selectSourceHintId = useId();
-  const isTerraceSourceSelected = selectedSource?.zone === 'reserve';
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('terrace', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('terrace');
-  const cliConfig: CliGameConfig<TerraceResponse, Parameters<typeof terraceApi.exec>> = useMemo(
-    () => ({
-      gameName: 'terrace',
-      parseCommand: parseTerraceCommand,
-      formatResponse: formatTerraceState,
-      helpText: TERRACE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
@@ -136,41 +93,50 @@ function TerracePageContent() {
     disabled: loading,
   });
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    game.handleReset();
-  }, [game, hideActionLog]);
+  const phaseNames = usePhaseNames('terrace', TERRACE_PHASE_KEYS);
 
-  // Give-up is irreversible, so route both the button and the `g` key through
-  // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(
-    () => requestGiveUpConfirm(game.handleGiveUp),
-    [requestGiveUpConfirm, game.handleGiveUp],
+  return {
+    selectSourceHintId,
+    dims,
+    topCardWidth,
+    topCardHeight,
+    isLargeDesktop,
+    dnd,
+    phaseNames,
+  };
+}
+
+function LiveRegion({ t, tc, view }: TerraceContext) {
+  return (
+    <>
+      <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={view.selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+    </>
   );
+}
 
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: game.handleDraw, label: 'draw' },
-      { key: 'h', action: game.handleHint, label: 'hint' },
-      { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
-      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: game.handleUndo, label: 'undo' },
-    ],
-    [game, confirmGiveUpAction],
+function HeaderExtra({ state, t }: TerraceContext) {
+  return (
+    <>
+      <span className="text-sm text-ds-text-muted">
+        {t('baseRankLabel')}: {state.awaitingBaseRank ? t('baseRankUnset') : state.baseRank}
+      </span>
+      <span className="text-sm text-ds-text-muted">
+        {t('moveCount')}: {state.moveCount}
+      </span>
+    </>
   );
+}
 
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading && !isAutoCompleting });
-
-  if (!state) {
-    return <GameSkeleton gameKey="terrace" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES }} />;
-  }
-
+function Board({ game, state, t, frontendHint, view }: TerraceContext) {
+  const { loading, selectedSource, hint, isAutoCompleting } = game;
+  const { dims, topCardWidth, topCardHeight, isLargeDesktop, dnd, selectSourceHintId } = view;
+  const isTerraceSourceSelected = selectedSource?.zone === 'reserve';
   const isPlaying = state.phase === TerracePhase.PLAYING;
-  const isGameClear = state.phase === TerracePhase.GAME_CLEAR;
   const isGameOver = state.phase === TerracePhase.GAME_OVER;
-  const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -254,308 +220,280 @@ function TerracePageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.terrace')}
-      gameThemeBg={gameTheme.terrace.bg}
-      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      gamePath="/terrace"
-      gameEndFlag={isEnded}
-      winShow={isGameClear}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      giveUpConfirmOpen={giveUpConfirmOpen}
-      confirmGiveUp={confirmGiveUp}
-      cancelGiveUp={cancelGiveUp}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('baseRankLabel')}: {state.awaitingBaseRank ? t('baseRankUnset') : state.baseRank}
-          </span>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <LandscapeBanner message={t('landscapeBanner')} />
-      <span id={selectSourceHintId} className="sr-only">
-        {tc('label.selectSourceFirst')}
-      </span>
-
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            {state.awaitingBaseRank && isPlaying && (
-              <p className="text-ds-warning text-sm text-center mb-2">{t('chooseBaseBanner')}</p>
-            )}
-
-            <div
-              className={
-                isLargeDesktop
-                  ? 'flex flex-wrap justify-center items-start gap-2'
-                  : 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
-              }
-              data-testid={isLargeDesktop ? 'tr-top-row' : undefined}
-            >
-              <div className="text-center" data-tutorial="tr-terrace">
-                <div className="text-game-text-muted text-xs mb-1">{t('terrace')}</div>
-                {terraceTop ? (
-                  <button
-                    type="button"
-                    data-testid="terrace-pile"
-                    onClick={() => game.handleSelectSource(terraceZone)}
-                    disabled={!isPlaying || loading}
-                    aria-label={t('terraceAriaLabel', { card: cardAlt(terraceTop), count: state.reserve.length })}
-                    aria-pressed={isSourceSelected('reserve', undefined)}
-                    draggable={isPlaying && !loading}
-                    onDragStart={dnd.handleDragStart(terraceZone)}
-                    onDragEnd={dnd.handleDragEnd}
-                    className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserve', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                  >
-                    <AnimatedCard card={terraceTop} width={topCardWidth} draggable={false} />
-                  </button>
-                ) : (
-                  <div
-                    role="img"
-                    aria-label={t('emptyTerraceAriaLabel')}
-                    style={{ width: topCardWidth, height: topCardHeight }}
-                    className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
-                  >
-                    {t('empty')}
-                  </div>
-                )}
-                <div className="text-game-text-muted text-xs mt-1">{state.reserve.length}</div>
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="tr-foundation">
-                {Array.from({ length: FOUNDATIONS }, (_, idx) => {
-                  const pile = state.foundation[idx] ?? [];
-                  const foundationZone: TerraceMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              idx,
-                              count: pile.length,
-                              card: cardAlt(pile[pile.length - 1]),
-                            })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={topCardWidth}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.1 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { idx })}
-                            style={{ width: topCardWidth, height: topCardHeight }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                          >
-                            {state.awaitingBaseRank ? '?' : state.baseRank}
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-2 items-start" data-tutorial="tr-stock">
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
-                  <button
-                    type="button"
-                    onClick={game.handleDraw}
-                    disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0}
-                    aria-label={
-                      state.stockCount === 0
-                        ? t('emptyStockAriaLabel')
-                        : t('stockAriaLabel', { count: state.stockCount })
-                    }
-                    style={{ width: topCardWidth, height: topCardHeight }}
-                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                  >
-                    {state.stockCount}
-                  </button>
-                </div>
-                <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-                  {wasteTop ? (
-                    <>
-                      <div id="terrace-waste-count" className="text-game-text-muted text-xs mb-1">
-                        {t('wasteCount', { count: state.waste.length })}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => game.handleSelectSource(wasteZone)}
-                        disabled={!isPlaying || loading}
-                        aria-label={cardAlt(wasteTop)}
-                        aria-describedby="terrace-waste-count"
-                        aria-pressed={isSourceSelected('waste', undefined)}
-                        draggable={isPlaying && !loading}
-                        onDragStart={dnd.handleDragStart(wasteZone)}
-                        onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                      >
-                        <AnimatedCard card={wasteTop} width={topCardWidth} draggable={false} />
-                      </button>
-                    </>
-                  ) : (
-                    <div
-                      role="img"
-                      aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: topCardWidth, height: topCardHeight }}
-                      className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
-                    >
-                      {t('empty')}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="tr-tableau">
-              {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
-            </div>
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-tutorial="tr-hint-display" data-testid="tr-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toIdx)}
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            {isGameOver && (
-              <p data-testid="tr-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
-                })}
-              </p>
-            )}
-
-            <ActionLogSection
-              isEndPhase={isEnded}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-          />
-
-          <GameFooter className={`${gameTheme.terrace.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isPlaying && (
-                <div data-tutorial="tr-controls">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleDraw}
-                    disabled={loading || isAutoCompleting || state.stockCount === 0}
-                  >
-                    {t('draw')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={game.handleUndo}
-                    disabled={loading || isAutoCompleting || !state.canUndo}
-                  >
-                    {t('undo')}
-                  </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={game.handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={game.handleHint}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
-                    data-testid="autocomplete-button"
-                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnDanger}
-                    onClick={confirmGiveUpAction}
-                    disabled={loading || isAutoCompleting}
-                  >
-                    {t('giveup')}
-                  </button>
-                </div>
-              )}
-              <GameResetButton
-                isGameEnd={isEnded}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tr-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="terrace-kbd-shortcuts" />
-          </GameFooter>
-        </>
+    <>
+      {state.awaitingBaseRank && isPlaying && (
+        <p className="text-ds-warning text-sm text-center mb-2">{t('chooseBaseBanner')}</p>
       )}
-    </GamePageShell>
+
+      <div
+        className={
+          isLargeDesktop
+            ? 'flex flex-wrap justify-center items-start gap-2'
+            : 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
+        }
+        data-testid={isLargeDesktop ? 'tr-top-row' : undefined}
+      >
+        <div className="text-center" data-tutorial="tr-terrace">
+          <div className="text-game-text-muted text-xs mb-1">{t('terrace')}</div>
+          {terraceTop ? (
+            <button
+              type="button"
+              data-testid="terrace-pile"
+              onClick={() => game.handleSelectSource(terraceZone)}
+              disabled={!isPlaying || loading}
+              aria-label={t('terraceAriaLabel', { card: cardAlt(terraceTop), count: state.reserve.length })}
+              aria-pressed={isSourceSelected('reserve', undefined)}
+              draggable={isPlaying && !loading}
+              onDragStart={dnd.handleDragStart(terraceZone)}
+              onDragEnd={dnd.handleDragEnd}
+              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserve', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+            >
+              <AnimatedCard card={terraceTop} width={topCardWidth} draggable={false} />
+            </button>
+          ) : (
+            <div
+              role="img"
+              aria-label={t('emptyTerraceAriaLabel')}
+              style={{ width: topCardWidth, height: topCardHeight }}
+              className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+            >
+              {t('empty')}
+            </div>
+          )}
+          <div className="text-game-text-muted text-xs mt-1">{state.reserve.length}</div>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="tr-foundation">
+          {Array.from({ length: FOUNDATIONS }, (_, idx) => {
+            const pile = state.foundation[idx] ?? [];
+            const foundationZone: TerraceMoveZone = { zone: 'foundation', col: idx };
+            return (
+              <div key={`f-${idx.toString()}`} className="text-center">
+                <DropZone
+                  isDropTarget={dnd.isDropTarget(foundationZone)}
+                  onDragOver={dnd.handleDragOver(foundationZone)}
+                  onDrop={dnd.handleDrop(foundationZone)}
+                  onDragLeave={dnd.handleDragLeave}
+                >
+                  {pile.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('foundationAriaLabel', {
+                        idx,
+                        count: pile.length,
+                        card: cardAlt(pile[pile.length - 1]),
+                      })}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                    >
+                      <AnimatedCard
+                        card={pile[pile.length - 1]}
+                        width={topCardWidth}
+                        draggable={false}
+                        dealDelay={isAutoCompleting ? idx * 0.1 : 0}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => game.handleSelectTarget(foundationZone)}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-label={t('emptyFoundationAriaLabel', { idx })}
+                      style={{ width: topCardWidth, height: topCardHeight }}
+                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                    >
+                      {state.awaitingBaseRank ? '?' : state.baseRank}
+                    </button>
+                  )}
+                </DropZone>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-2 items-start" data-tutorial="tr-stock">
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
+            <button
+              type="button"
+              onClick={game.handleDraw}
+              disabled={!isPlaying || loading || isAutoCompleting || state.stockCount === 0}
+              aria-label={
+                state.stockCount === 0 ? t('emptyStockAriaLabel') : t('stockAriaLabel', { count: state.stockCount })
+              }
+              style={{ width: topCardWidth, height: topCardHeight }}
+              className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+            >
+              {state.stockCount}
+            </button>
+          </div>
+          <div className="text-center">
+            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+            {wasteTop ? (
+              <>
+                <div id="terrace-waste-count" className="text-game-text-muted text-xs mb-1">
+                  {t('wasteCount', { count: state.waste.length })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => game.handleSelectSource(wasteZone)}
+                  disabled={!isPlaying || loading}
+                  aria-label={cardAlt(wasteTop)}
+                  aria-describedby="terrace-waste-count"
+                  aria-pressed={isSourceSelected('waste', undefined)}
+                  draggable={isPlaying && !loading}
+                  onDragStart={dnd.handleDragStart(wasteZone)}
+                  onDragEnd={dnd.handleDragEnd}
+                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+                >
+                  <AnimatedCard card={wasteTop} width={topCardWidth} draggable={false} />
+                </button>
+              </>
+            ) : (
+              <div
+                role="img"
+                aria-label={t('emptyWasteAriaLabel')}
+                style={{ width: topCardWidth, height: topCardHeight }}
+                className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+              >
+                {t('empty')}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="tr-tableau">
+        {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
+      </div>
+
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-tutorial="tr-hint-display" data-testid="tr-hint-live" role="status" aria-live="polite">
+        {hint && (
+          <div className="text-ds-warning text-sm mb-2 mt-3">
+            {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
+            {formatHintZone(t, hint.toZone, hint.toIdx)}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-center">
+        <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      </div>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      {isGameOver && (
+        <p data-testid="tr-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+          {t('gameOverSummary', {
+            count: foundationCount,
+            percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
+          })}
+        </p>
+      )}
+    </>
   );
 }
+
+function FooterActions({ game, state, t, confirmGiveUpAction, busy }: TerraceContext) {
+  const isPlaying = state.phase === TerracePhase.PLAYING;
+  const isAutoCompleting = game.isAutoCompleting;
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+
+  if (!isPlaying) return null;
+
+  return (
+    <div data-tutorial="tr-controls">
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleDraw}
+        disabled={busy || isAutoCompleting || state.stockCount === 0}
+      >
+        {t('draw')}
+      </button>
+      <button
+        type="button"
+        className={btnPrimary}
+        onClick={game.handleUndo}
+        disabled={busy || isAutoCompleting || !state.canUndo}
+      >
+        {t('undo')}
+      </button>
+      {state.isStalemate && (
+        <StalemateEscapeButton
+          undoToEscape={state.undoToEscape ?? 0}
+          onEscape={game.handleUndoEscape}
+          disabled={busy || isAutoCompleting}
+        />
+      )}
+      <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || isAutoCompleting}>
+        {t('hint')}
+      </button>
+      <button
+        type="button"
+        className={`${btnSuccess}${autoCompleteReady && !busy && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+        onClick={game.handleAutoComplete}
+        disabled={busy || isAutoCompleting || !autoCompleteReady}
+        data-testid="autocomplete-button"
+        title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+      >
+        {t('autoComplete')}
+      </button>
+      <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={busy || isAutoCompleting}>
+        {t('giveup')}
+      </button>
+    </div>
+  );
+}
+
+const terraceDefinition: GameDefinition<
+  TerraceResponse,
+  TerraceGame,
+  Parameters<typeof terraceApi.exec>,
+  TerraceView
+> = {
+  key: 'terrace',
+  useGame: useTerraceGame,
+  useView: useTerraceView,
+  tutorial: TR_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 8, tableau: TABLEAU_PILES },
+  cli: () => ({
+    parseCommand: parseTerraceCommand,
+    formatResponse: formatTerraceState,
+    helpText: TERRACE_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === TerracePhase.GAME_CLEAR || state.phase === TerracePhase.GAME_OVER,
+    won: state.phase === TerracePhase.GAME_CLEAR,
+  }),
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  shortcuts: ({ game, confirmGiveUpAction }) => [
+    { key: 'd', action: game.handleDraw, label: 'draw' },
+    { key: 'h', action: game.handleHint, label: 'hint' },
+    { key: 'a', action: game.handleAutoComplete, label: 'autoComplete' },
+    { key: 'g', action: confirmGiveUpAction ?? game.handleGiveUp, label: 'giveUp' },
+    { key: 'z', action: game.handleUndo, label: 'undo' },
+  ],
+  shortcutsEnabled: ({ state, game }) => state.phase === TerracePhase.PLAYING && !game.isAutoCompleting,
+  shortcutsTestId: 'terrace-kbd-shortcuts',
+  resetTutorialId: 'tr-reset-button',
+  HeaderExtra,
+  LiveRegion,
+  Board,
+  FooterActions,
+};
+
+/** Renders the Terrace page: an 11-card terrace, nine piles, and eight foundations. */
+export const TerracePage = createGamePage(terraceDefinition);

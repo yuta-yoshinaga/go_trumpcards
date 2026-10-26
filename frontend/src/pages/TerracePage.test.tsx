@@ -468,6 +468,13 @@ describe('TerracePage', () => {
     // The count alone leaves a screen-reader user unable to plan the next move.
     expect(terrace.getAttribute('aria-label')).toMatch(/[♠♣♥♦]/);
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
