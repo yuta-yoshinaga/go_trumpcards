@@ -1,34 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { laughandliedownApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import {
   useBreakpoint,
   useCardDimensions,
   useDenseLargeDesktopCardSize,
   useIsMobile,
 } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useLaughAndLieDownGame } from '../hooks/useLaughAndLieDownGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useTutorialMessageParams } from '../providers/TutorialProvider';
-import { gameTheme } from '../styles/gameTheme';
 import type { LaughAndLieDownResponse } from '../types/card';
 import { LaughAndLieDownPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -36,8 +22,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { LAUGHANDLIEDOWN_HELP, parseLaughAndLieDownCommand } from '../utils/cli/commands/laughandliedownCommands';
 import { formatLaughAndLieDownState } from '../utils/cli/formatters/laughandliedownFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { hintCheckboxItem } from '../utils/settingsItems';
 
 const LLD_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="lld-table"]', messageKey: 'tutorial.table', placement: 'bottom', advanceOn: 'next' },
@@ -46,18 +30,26 @@ const LLD_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="lld-rule"]', messageKey: 'tutorial.settle', placement: 'bottom', advanceOn: 'next' },
 ];
 
-/** Renders the Laugh and Lie Down page: capture one or three of a rank, or lay your hand down. */
-export const LaughAndLieDownPage = withTutorial(LaughAndLieDownPageContent, 'laughandliedown', LLD_TUTORIAL_STEPS);
+const LAUGHANDLIEDOWN_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [LaughAndLieDownPhase.PLAY]: 'play',
+  [LaughAndLieDownPhase.GAME_END]: 'end',
+};
 
-function LaughAndLieDownPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('laughandliedown');
-  const game = useLaughAndLieDownGame();
-  const { state, loading, error, retry } = game;
+type LaughAndLieDownGame = ReturnType<typeof useLaughAndLieDownGame>;
+type LaughAndLieDownView = ReturnType<typeof useLaughAndLieDownView>;
+type LaughAndLieDownContext = GamePageContext<LaughAndLieDownResponse, LaughAndLieDownGame, LaughAndLieDownView>;
+
+function useLaughAndLieDownView({ game, t }: { game: LaughAndLieDownGame; t: LaughAndLieDownContext['t'] }) {
+  const { state } = game;
   const isHumanTurn = !!state && state.phase !== LaughAndLieDownPhase.GAME_END && state.currentPlayerIdx === 0;
   const previousState = useRef<LaughAndLieDownResponse | null>(null);
   const [turnAnnouncement, setTurnAnnouncement] = useState('');
   const [announcementNonce, setAnnouncementNonce] = useState(0);
+  // Which hand card is armed for a three-card take. The take size is a real
+  // choice only when the server offered it, so it lives next to the card
+  // rather than as a mode toggle. It sits in the view, not in Board, so a trip
+  // through CLI mode (which unmounts Board) keeps the player's choice.
+  const [threeArmed, setThreeArmed] = useState<number | null>(null);
 
   useEffect(() => {
     if (!state) return;
@@ -73,42 +65,61 @@ function LaughAndLieDownPageContent() {
     previousState.current = state;
   }, [isHumanTurn, state, t]);
 
-  // Which hand card is armed for a three-card take. The take size is a real
-  // choice only when the server offered it, so it lives next to the card
-  // rather than as a mode toggle.
-  const [threeArmed, setThreeArmed] = useState<number | null>(null);
+  const resetAnnouncement = () => {
+    previousState.current = null;
+    setTurnAnnouncement('');
+  };
 
   // チュートリアルの精算ステップはボーナス額を名指しする。**文言に焼き込むと
   // ドメイン定数を変えたとき盤面だけが追随する** ので、盤面と同じ値を渡す
   // (#5936)。state が来る前は空 ── 空にしておけば古い数字を教えることはない。
   useTutorialMessageParams(state ? { amount: state.lastInBonus } : {});
 
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('laughandliedown');
-  const cliConfig: CliGameConfig<LaughAndLieDownResponse, Parameters<typeof laughandliedownApi.exec>> = useMemo(
-    () => ({
-      gameName: 'laughandliedown',
-      parseCommand: parseLaughAndLieDownCommand,
-      formatResponse: formatLaughAndLieDownState,
-      helpText: LAUGHANDLIEDOWN_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth, cpuCardWidth, isMobile: isCardMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const denseCardSize = useDenseLargeDesktopCardSize();
   const handCardWidth = isLargeDesktop ? denseCardSize.width : cardWidth;
   const isMobile = useIsMobile();
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('laughandliedown', state);
+  const phaseNames = usePhaseNames('laughandliedown', LAUGHANDLIEDOWN_PHASE_KEYS);
 
-  if (!state) {
-    return <GameSkeleton gameKey="laughandliedown" layout={{ kind: 'tableau', topRow: 4, tableau: 4 }} />;
-  }
+  return {
+    turnAnnouncement,
+    announcementNonce,
+    threeArmed,
+    setThreeArmed,
+    resetAnnouncement,
+    cardWidth,
+    cpuCardWidth,
+    isCardMobile,
+    isLargeDesktop,
+    handCardWidth,
+    isMobile,
+    phaseNames,
+  };
+}
 
+function LiveRegion({ view }: LaughAndLieDownContext) {
+  return (
+    <div key={view.announcementNonce} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+      {view.turnAnnouncement}
+    </div>
+  );
+}
+
+function HeaderExtra({ state, t }: LaughAndLieDownContext) {
+  return (
+    <span className="text-sm text-ds-text-muted">
+      {t('pot')}: {state.pot} / {t('dealer')}: {t('seat', { n: state.dealerIdx })}
+    </span>
+  );
+}
+
+function Board({ game, state, t, frontendHint, view }: LaughAndLieDownContext) {
+  const { cardWidth, cpuCardWidth, isCardMobile, isLargeDesktop, handCardWidth, isMobile, threeArmed, setThreeArmed } =
+    view;
+  const { hint, hintEnabled: frontendHintEnabled } = frontendHint;
+
+  const isHumanTurn = state.phase !== LaughAndLieDownPhase.GAME_END && state.currentPlayerIdx === 0;
   const ended = state.phase === LaughAndLieDownPhase.GAME_END;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
@@ -132,231 +143,202 @@ function LaughAndLieDownPageContent() {
     game.handlePlay(i, take);
   };
 
-  const reset = () => {
-    previousState.current = null;
-    setTurnAnnouncement('');
-    game.handleReset();
-  };
-
   return (
-    <GamePageShell
-      title={tc('nav.laughandliedown')}
-      gameThemeBg={gameTheme.laughandliedown.bg}
-      phaseName={ended ? t('phase.end') : t('phase.play')}
-      gamePath="/laughandliedown"
-      gameEndFlag={ended}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={
-        <>
-          <span className="text-sm text-ds-text-muted">
-            {t('pot')}: {state.pot} / {t('dealer')}: {t('seat', { n: state.dealerIdx })}
-          </span>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        </>
-      }
-    >
-      <div key={announcementNonce} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {turnAnnouncement}
-      </div>
-      <LandscapeBanner message={t('landscapeBanner')} />
+    <>
+      {/* Permanent, not tutorial-only: "one or three" and "cannot
+          capture means your whole hand goes to the table" are the two
+          things a player gets wrong. */}
+      <details
+        className="mb-3 text-center text-xs text-ds-warning font-medium"
+        data-testid="lld-rules"
+        open={!isMobile || undefined}
+      >
+        <summary className="cursor-pointer select-none" data-tutorial="lld-rule">
+          {t('rules')}
+        </summary>
+        <div className="pt-1">{t('ruleLine')}</div>
+      </details>
 
-      <SettingsPanel
-        title={tc('settings.title')}
-        groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-      />
-
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            {/* Permanent, not tutorial-only: "one or three" and "cannot
-                capture means your whole hand goes to the table" are the two
-                things a player gets wrong. */}
-            <details
-              className="mb-3 text-center text-xs text-ds-warning font-medium"
-              data-testid="lld-rules"
-              open={!isMobile || undefined}
-            >
-              <summary className="cursor-pointer select-none" data-tutorial="lld-rule">
-                {t('rules')}
-              </summary>
-              <div className="pt-1">{t('ruleLine')}</div>
-            </details>
-
-            {/* Opponent hands: backs only. The server withholds the cards. */}
-            <CpuAccordion playerCount={opponents.length} openOnDesktop={false} dataTutorial="lld-seats">
-              <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-4">
-                {opponents.map((o) => (
-                  <div key={`opp-${o.id.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">
-                      {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                      {' · '}
-                      {t('won', { n: o.wonCount })}
-                      {o.laidDown && ` · ${t('laidDown')}`}
-                      {ended ? ` · ${t('score', { n: o.score })}` : ` · ${t('runningScore', { n: o.runningScore })}`}
-                      {ended && state.lastInIdx === o.id && (
-                        <span data-testid={`lld-lastin-${o.id.toString()}`}>
-                          {` · ${t('lastIn', { amount: state.lastInBonus })}`}
-                        </span>
-                      )}
-                    </div>
-                    {ended ? (
-                      <div className="flex gap-1 justify-center flex-wrap">
-                        {o.cards.map((card, i) => (
-                          <AnimatedCard
-                            key={`opp-${o.id.toString()}-c${i.toString()}`}
-                            card={card}
-                            width={cardWidth}
-                            draggable={false}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div
-                        className="flex justify-center flex-wrap sm:flex-nowrap sm:gap-0"
-                        role="img"
-                        aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                      >
-                        {Array.from({ length: o.cardCount }, (_, i) => (
-                          <CardBack
-                            key={`opp-${o.id.toString()}-c${i.toString()}`}
-                            width={isCardMobile ? cpuCardWidth : 36}
-                            style={!isCardMobile && i > 0 ? { marginLeft: -22 } : undefined}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CpuAccordion>
-
-            {/* The table is face up in full: seeing how many of each rank are
-                left is what makes the three-card take a decision. */}
-            <div className="text-center mb-4" data-tutorial="lld-table">
-              <div className="text-game-text-muted text-xs mb-1">{t('table')}</div>
-              <div className="flex gap-1 justify-center flex-wrap">
-                {state.layout.length === 0 ? (
-                  <span className="text-game-text-muted text-xs">—</span>
-                ) : (
-                  state.layout.map((card, i) => (
-                    <AnimatedCard key={`table-${i.toString()}`} card={card} width={cardWidth} draggable={false} />
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="text-center" data-tutorial="lld-hand">
+      {/* Opponent hands: backs only. The server withholds the cards. */}
+      <CpuAccordion playerCount={opponents.length} openOnDesktop={false} dataTutorial="lld-seats">
+        <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-4">
+          {opponents.map((o) => (
+            <div key={`opp-${o.id.toString()}`} className="text-center">
               <div className="text-game-text-muted text-xs mb-1">
-                {t('yourHand')}
+                {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
                 {' · '}
-                {t('won', { n: human?.wonCount ?? 0 })}
-                {human?.laidDown && ` · ${t('laidDown')}`}
-                {ended
-                  ? ` · ${t('score', { n: human?.score ?? 0 })}`
-                  : ` · ${t('runningScore', { n: human?.runningScore ?? 0 })}`}
-                {/* **既に訳文もサーバのデータもあったのに、画面が一度も読んでいなかった**
-                    (#5576)。最終点差の理由の一つがどこにも出ないまま終わっていた。 */}
-                {ended && state.lastInIdx === 0 && (
-                  <span data-testid="lld-lastin-0">{` · ${t('lastIn', { amount: state.lastInBonus })}`}</span>
+                {t('won', { n: o.wonCount })}
+                {o.laidDown && ` · ${t('laidDown')}`}
+                {ended ? ` · ${t('score', { n: o.score })}` : ` · ${t('runningScore', { n: o.runningScore })}`}
+                {ended && state.lastInIdx === o.id && (
+                  <span data-testid={`lld-lastin-${o.id.toString()}`}>
+                    {` · ${t('lastIn', { amount: state.lastInBonus })}`}
+                  </span>
                 )}
               </div>
-              <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'} justify-center flex-wrap items-start`}>
-                {(human?.cards ?? []).map((card, i) => {
-                  const canPlay = isHumanTurn && playable.has(i);
-                  const blockedByMatch = isHumanTurn && !playable.has(i);
-                  const disabledReason = !isHumanTurn
-                    ? t('notYourTurnAria')
-                    : blockedByMatch
-                      ? t('noMatchingRankAria')
-                      : '';
-                  const disabledTitle = !isHumanTurn
-                    ? t('notYourTurnTooltip')
-                    : blockedByMatch
-                      ? t('noMatchingRankTooltip')
-                      : undefined;
-                  return (
-                    <div key={`hand-${i.toString()}`} className="text-center">
-                      <button
-                        type="button"
-                        data-hint-action="play"
-                        // Kept focusable while it cannot act so the reason is
-                        // announced rather than the control leaving the tab order.
-                        aria-disabled={!canPlay}
-                        title={disabledTitle}
-                        aria-label={disabledReason ? `${cardAlt(card)} (${disabledReason})` : cardAlt(card)}
-                        onClick={() => play(i)}
-                        className={[
-                          'rounded transition-transform',
-                          canPlay ? 'hover:-translate-y-2' : 'opacity-60',
-                          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                        ].join(' ')}
-                      >
-                        <AnimatedCard card={card} width={handCardWidth} draggable={false} />
-                      </button>
-                      {/* Only offered where the server said three are on the
-                          table -- the page never recounts. */}
-                      {canPlay && threeTakes.has(i) && (
-                        <button
-                          type="button"
-                          aria-label={t('takeThreeAriaLabel', { rank: valueName(card.value) })}
-                          aria-pressed={threeArmed === i}
-                          onClick={() => setThreeArmed(threeArmed === i ? null : i)}
-                          className={[
-                            'mt-1 px-2 py-1 rounded text-[10px] min-h-11',
-                            threeArmed === i
-                              ? 'bg-ds-accent text-ds-text-on-accent'
-                              : 'bg-ds-surface-elevated text-ds-text-primary',
-                            // **ヒントが 3 枚取りを勧めているなら、そのボタンも
-                            // 示す。**カードを光らせるだけでは、さらにこれを
-                            // 押す必要があることが伝わらない (#4884)。
-                            hintWantsThree && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                          ].join(' ')}
-                          data-hint-take-three={hintWantsThree && state.hint?.cardIndex === i ? 'true' : undefined}
-                        >
-                          {t('takeThree')}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+              {ended ? (
+                <div className="flex gap-1 justify-center flex-wrap">
+                  {o.cards.map((card, i) => (
+                    <AnimatedCard
+                      key={`opp-${o.id.toString()}-c${i.toString()}`}
+                      card={card}
+                      width={cardWidth}
+                      draggable={false}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className="flex justify-center flex-wrap sm:flex-nowrap sm:gap-0"
+                  role="img"
+                  aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                >
+                  {Array.from({ length: o.cardCount }, (_, i) => (
+                    <CardBack
+                      key={`opp-${o.id.toString()}-c${i.toString()}`}
+                      width={isCardMobile ? cpuCardWidth : 36}
+                      style={!isCardMobile && i > 0 ? { marginLeft: -22 } : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </CpuAccordion>
+
+      {/* The table is face up in full: seeing how many of each rank are
+          left is what makes the three-card take a decision. */}
+      <div className="text-center mb-4" data-tutorial="lld-table">
+        <div className="text-game-text-muted text-xs mb-1">{t('table')}</div>
+        <div className="flex gap-1 justify-center flex-wrap">
+          {state.layout.length === 0 ? (
+            <span className="text-game-text-muted text-xs">—</span>
+          ) : (
+            state.layout.map((card, i) => (
+              <AnimatedCard key={`table-${i.toString()}`} card={card} width={cardWidth} draggable={false} />
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="text-center" data-tutorial="lld-hand">
+        <div className="text-game-text-muted text-xs mb-1">
+          {t('yourHand')}
+          {' · '}
+          {t('won', { n: human?.wonCount ?? 0 })}
+          {human?.laidDown && ` · ${t('laidDown')}`}
+          {ended
+            ? ` · ${t('score', { n: human?.score ?? 0 })}`
+            : ` · ${t('runningScore', { n: human?.runningScore ?? 0 })}`}
+          {/* **既に訳文もサーバのデータもあったのに、画面が一度も読んでいなかった**
+              (#5576)。最終点差の理由の一つがどこにも出ないまま終わっていた。 */}
+          {ended && state.lastInIdx === 0 && (
+            <span data-testid="lld-lastin-0">{` · ${t('lastIn', { amount: state.lastInBonus })}`}</span>
+          )}
+        </div>
+        <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'} justify-center flex-wrap items-start`}>
+          {(human?.cards ?? []).map((card, i) => {
+            const canPlay = isHumanTurn && playable.has(i);
+            const blockedByMatch = isHumanTurn && !playable.has(i);
+            const disabledReason = !isHumanTurn ? t('notYourTurnAria') : blockedByMatch ? t('noMatchingRankAria') : '';
+            const disabledTitle = !isHumanTurn
+              ? t('notYourTurnTooltip')
+              : blockedByMatch
+                ? t('noMatchingRankTooltip')
+                : undefined;
+            return (
+              <div key={`hand-${i.toString()}`} className="text-center">
+                <button
+                  type="button"
+                  data-hint-action="play"
+                  // Kept focusable while it cannot act so the reason is
+                  // announced rather than the control leaving the tab order.
+                  aria-disabled={!canPlay}
+                  title={disabledTitle}
+                  aria-label={disabledReason ? `${cardAlt(card)} (${disabledReason})` : cardAlt(card)}
+                  onClick={() => play(i)}
+                  className={[
+                    'rounded transition-transform',
+                    canPlay ? 'hover:-translate-y-2' : 'opacity-60',
+                    frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                  ].join(' ')}
+                >
+                  <AnimatedCard card={card} width={handCardWidth} draggable={false} />
+                </button>
+                {/* Only offered where the server said three are on the
+                    table -- the page never recounts. */}
+                {canPlay && threeTakes.has(i) && (
+                  <button
+                    type="button"
+                    aria-label={t('takeThreeAriaLabel', { rank: valueName(card.value) })}
+                    aria-pressed={threeArmed === i}
+                    onClick={() => setThreeArmed(threeArmed === i ? null : i)}
+                    className={[
+                      'mt-1 px-2 py-1 rounded text-[10px] min-h-11',
+                      threeArmed === i
+                        ? 'bg-ds-accent text-ds-text-on-accent'
+                        : 'bg-ds-surface-elevated text-ds-text-primary',
+                      // **ヒントが 3 枚取りを勧めているなら、そのボタンも
+                      // 示す。**カードを光らせるだけでは、さらにこれを
+                      // 押す必要があることが伝わらない (#4884)。
+                      hintWantsThree && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                    ].join(' ')}
+                    data-hint-take-three={hintWantsThree && state.hint?.cardIndex === i ? 'true' : undefined}
+                  >
+                    {t('takeThree')}
+                  </button>
+                )}
               </div>
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
+            );
+          })}
+        </div>
+        <FrontendHintTooltip hint={hint} enabled={frontendHintEnabled} t={t} />
+      </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={ended}
-              availableDuringPlay
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter className={`${gameTheme.laughandliedown.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              <GameResetButton
-                isGameEnd={ended}
-                onReset={reset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="lld-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+const laughAndLieDownDefinition: GameDefinition<
+  LaughAndLieDownResponse,
+  LaughAndLieDownGame,
+  Parameters<typeof laughandliedownApi.exec>,
+  LaughAndLieDownView
+> = {
+  key: 'laughandliedown',
+  useGame: useLaughAndLieDownGame,
+  useView: useLaughAndLieDownView,
+  tutorial: LLD_TUTORIAL_STEPS,
+  skeleton: { kind: 'tableau', topRow: 4, tableau: 4 },
+  cli: () => ({
+    parseCommand: parseLaughAndLieDownCommand,
+    formatResponse: formatLaughAndLieDownState,
+    helpText: LAUGHANDLIEDOWN_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const ended = state.phase === LaughAndLieDownPhase.GAME_END;
+    return {
+      name: ended ? view.phaseNames[LaughAndLieDownPhase.GAME_END] : view.phaseNames[LaughAndLieDownPhase.PLAY],
+      ended,
+    };
+  },
+  actionLogDuringPlay: true,
+  landscapeBanner: true,
+  landscapeBannerInCliMode: true,
+  settingsPlacement: 'top',
+  settingsInCliMode: true,
+  contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
+  resetTutorialId: 'lld-reset-button',
+  reset: ({ game, view }) => {
+    view.resetAnnouncement();
+    game.handleReset();
+  },
+  HeaderExtra,
+  LiveRegion,
+  Board,
+};
+
+/** Renders the Laugh and Lie Down page: capture one or three of a rank, or lay your hand down. */
+export const LaughAndLieDownPage = createGamePage(laughAndLieDownDefinition);
