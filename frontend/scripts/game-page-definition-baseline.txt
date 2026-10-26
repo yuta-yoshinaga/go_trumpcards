@@ -193,7 +193,6 @@ PreferencePage.tsx
 PresidentPage.tsx
 PrsiPage.tsx
 PutPage.tsx
-PyramidPage.tsx
 QuinzePage.tsx
 QuodlibetPage.tsx
 RamsPage.tsx

@@ -798,6 +798,12 @@ describe('PyramidPage', () => {
     fireEvent.click(screen.getByTestId('stalemate-escape-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 4));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<PyramidPage />);
+    expect(await screen.findByText('プレイ中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('playing', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // --- Best-record persistence (#3083) ---
